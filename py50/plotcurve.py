@@ -94,12 +94,12 @@ class PlotCurve:
 
         # Convert concentration for scaling
         if xscale_unit == 'nM':
-            print('Drug Concentration on X-axis is in nM')
+            print('Concentration on X-axis is in nM')
         elif xscale_unit == 'µM':
-            print('Drug Concentration on X-axis converted to µM')
+            print('Concentration on X-axis converted to µM')
             concentration = concentration / 1000  # convert drug concentration to µM
         else:
-            print('Assume Drug Concentration is in nM')
+            print(f'Assume {drug_name} Concentration is in nM')
 
         # Perform constrained nonlinear regression to estimate the parameters
         initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
@@ -244,12 +244,12 @@ class PlotCurve:
 
             # Convert concentration for scaling
             if xscale_unit == 'nM':
-                print('Drug Concentration on X-axis is in nM')
+                print('Concentration on X-axis is in nM')
             elif xscale_unit == 'µM':
-                print('Drug Concentration on X-axis converted to µM')
+                print('Concentration on X-axis converted to µM')
                 concentration = concentration / 1000  # convert drug concentration to µM
             else:
-                print('Assume Drug Concentration is in nM')
+                print(f'Assume {drug} Concentration is in nM')
 
             concentration_for_list = concentration.values  # Convert into np.array
             concentration_list.append(concentration_for_list)
@@ -441,12 +441,12 @@ class PlotCurve:
 
             # Convert concentration
             if xscale_unit == 'nM':
-                print('Drug Concentration on X-axis is in nM')
+                print('Concentration on X-axis is in nM')
             elif xscale_unit == 'µM':
-                print('Drug Concentration on X-axis converted to µM')
+                print('Concentration on X-axis converted to µM')
                 concentration = concentration / 1000  # convert drug concentration to µM
             else:
-                print('Assume Drug Concentration is in nM')
+                print(f'Assume {drug} Concentration is in nM')
 
             concentration_for_list = concentration.values  # Convert into np.array
             concentration_list.append(concentration_for_list)

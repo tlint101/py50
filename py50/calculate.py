@@ -33,7 +33,6 @@ class Calculate:
         return minimum + (maximum - minimum) / (1 + (concentration / ic50) ** hill_slope)
 
     # Calculate X and Y_fit to  coordinates for line curve
-    #  todo not sure if i need this
     def fit_curve(self, name_col, concentration_col, response_col, initial_guess=None):  # Not sure if I need this
         """
         Calculate curve fit and return as DataFrame
@@ -144,10 +143,6 @@ class Calculate:
             params, covariance, *_ = curve_fit(self.fourpl, concentration, response, p0=[initial_guess],
                                                maxfev=10000)
 
-            # todo Set return to be the params. Using the params, incorporate below in the relative and absolute ic50 df
-            #  splitting it in this way should allow me to give the function a @staticmethod decorator and then I should
-            #  be able to use it in the class PlotCurve. This should significantly shorten the code.
-
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
             # print(drug, ' IC50: ', ic50, f'{input_units}') # For checking
@@ -160,7 +155,6 @@ class Calculate:
                 'ic50 (nM)': ic50,
                 'hill_slope': hill_slope
             })
-        # todo need to figure out what exactly to return.
         return values
 
     def calculate_absolute(self, name_col, concentration_col, response_col, input_units='nM'):
