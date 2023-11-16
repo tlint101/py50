@@ -156,7 +156,11 @@ class PlotCurve:
 
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
-        if box_intercept:
+        if box_intercept is None:
+            box_intercept = 50
+            y_intersection = box_intercept
+            x_intersection = np.interp(y_intersection, y_fit, x_fit)
+        elif box_intercept:
             y_intersection = box_intercept
             x_intersection = np.interp(y_intersection, y_fit, x_fit)
 
