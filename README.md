@@ -9,6 +9,12 @@ they did not meet my requirements:
 2. Adaptable to user needs
 3. Easy to use (hopefully!)
 
+The curves are built on the four parameter logistic regression model:
+$$Y = \text{Min} + \frac{\text{Max} - \text{Min}}{1 + \left(\frac{X}{\text{IC50}}\right)^{\text{Hill coefficient}}}$$
+where min is the minimum response value, max is the maximum response value, Y is the response values of the curves, X 
+is the concentration.  
+
+
 This project meets our needs. And hopefully it can meet the needs of others.
 
 ## Installation
