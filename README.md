@@ -19,7 +19,7 @@ pip install py50
 ```
 
 ## Tutorial
-A Jupyter Notebook demoing the code can be found [here]().
+A Jupyter Notebook demoing the code can be found [here](https://github.com/tlint101/py50/tree/main/tutorials).
 
 A blog post demoing the code can be found at [Practice Coding]()
 
