@@ -124,7 +124,8 @@ class Calculate:
     # Function to calculate curve fits.
     # This method will be used to reduce the functions in the calculating methods below.
     # This will loop through each group.
-    def calculate(self, name_col, concentration_col, response_col, input_units='nM'):
+    # todo rename function. Separate from final function calculate_ic50
+    def relative_calculation(self, name_col, concentration_col, response_col, input_units='nM'):
         name_col = name_col
         name = self.df[name_col].values
 
@@ -156,8 +157,8 @@ class Calculate:
                 'hill_slope': hill_slope
             })
         return values
-
-    def calculate_absolute(self, name_col, concentration_col, response_col, input_units='nM'):
+    # todo rename function. Separate from final function calculate_absolute_ic50
+    def absolute_calculation(self, name_col, concentration_col, response_col, input_units='nM'):
         """
         This function will output a DataFrame containing Compound_name, maximum, minimum, ic50 (nM) (relative), and
         hill_slope. this will require a DataFrame with the following input:
@@ -166,7 +167,7 @@ class Calculate:
         :param response_col: Response column from DataFrame
         :param input_units: Units of results. By default, the units given will be in nM. Results can be reformated by
         using the 'µM' argument.
-        :return: DataFrame
+        :return: params
         """
 
         # Set variables from funtion and convert name_col to np array
@@ -218,8 +219,7 @@ class Calculate:
                 'absolute ic50 (nM)': x_intersection,
                 'hill_slope': hill_slope
             })
-        return params
-        # return values
+        return values
 
     def calculate_ic50(self, name_col, concentration_col, response_col):
         """
@@ -231,14 +231,14 @@ class Calculate:
         return DataFrame
         """
         # Set variables from funtion and convert name_col to np array
-        values = self.calculate(name_col, concentration_col, response_col)
+        values = self.relative_calculation(name_col, concentration_col, response_col)
 
         df = pd.DataFrame(values)
         return df
 
     def calculate_absolute_ic50(self, name_col, concentration_col, response_col, input_units='nM'):
 
-        values = self.calculate_absolute(name_col, concentration_col, response_col, input_units=input_units)
+        values = self.absolute_calculation(name_col, concentration_col, response_col, input_units=input_units)
         df = pd.DataFrame(values)
 
         return df
