@@ -1,11 +1,14 @@
 # py50: Generate Dose-Response Curves
 
+![Static Badge](https://img.shields.io/badge/py50%3A_Dose_Response-800000)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/py50)
+
 ## Summary
 The project was created to laboratory use. I found many of my classmates/coworkers were 
 using a program that I found to be unfriendly to generate dose-response curves. I found
 a few other repositories that can also generate dose-response curves in python, however,
 they did not meet my requirements:
-1. Can plug into a typical Jupyter Notebook or Python script
+1. Use Pandas for the Data so that it can be plugged into a typical Jupyter Notebook or Python scripts
 2. Adaptable to user needs
 3. Easy to use (hopefully!)
 
@@ -24,10 +27,15 @@ The package can be installed using the following:
 pip install py50
 ```
 
+Pacakge can be upgraded specifically using pip with the following:
+```
+pip install py50 -U
+```
+
 ## Tutorial
 A Jupyter Notebook demoing the code can be found [here](https://github.com/tlint101/py50/tree/main/tutorials).
 
-A blog post demoing the code can be found at [Practice Coding]()
+A blog post demoing the code can be found at [Practice Coding]() (under development)
 
 And finally, a documentation page set up through GitHub is currently in the works. 
 
