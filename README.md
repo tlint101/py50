@@ -1,3 +1,5 @@
+![py50_full.png](img/py50_full.png)
+
 # py50: Generate Dose-Response Curves
 
 ![Static Badge](https://img.shields.io/badge/py50%3A_Dose_Response-800000)
