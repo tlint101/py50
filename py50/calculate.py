@@ -166,7 +166,7 @@ class Calculate:
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param input_units: Units of results. By default, the units given will be in nM. Results can be reformated by
-        using the 'µM' argument.
+        using the 'uM' argument.
         :return: params
         """
 
@@ -192,12 +192,12 @@ class Calculate:
 
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
-            print(drug, ' IC50: ', ic50, 'nM')
+            # print(drug, ' IC50: ', ic50, 'nM') # For checking
 
             # Create constraints for the concentration values. This would be for extracting absolute IC50 value
             if input_units == 'nM':
                 x_fit = np.logspace(0, 5, 100)
-            elif input_units == 'µM':
+            elif input_units == 'uM':
                 x_fit = np.logspace(-3, 2, 100)
             else:
                 print('Assuming that =input concentrations is in nM!')
@@ -207,7 +207,6 @@ class Calculate:
             y_fit = self.fourpl(x_fit, *params)
             y_intersection = 50
             x_intersection = np.interp(y_intersection, y_fit, x_fit)
-            # todo conversion may be an issue. Need to double check.
             # print(f'{drug} ABSOLUTE IC50:', x_intersection * 1000, 'nM')
 
             # Generate DataFrame from parameters

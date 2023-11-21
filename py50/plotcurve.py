@@ -30,23 +30,30 @@ class PlotCurve:
         filtered_df = self.df[self.df['Compound Name'] == drug_name]
         return filtered_df
 
+    # todo add matplotlib keyword arguments
     def single_curve_plot(self,
                           concentration_col,
                           response_col,
                           drug_name=None,
                           plot_title=None,
+                          plot_title_size=16,
                           xlabel=None,
                           ylabel=None,
+                          axis_fontsize=14,
                           xscale='log',
                           xscale_unit=None,
                           xscale_ticks=None,
+                          ylimit=None,
                           line_color='black',
+                          line_width=1.5,
                           marker=None,
                           legend=False,
+                          legend_loc='best',
                           box=False,
                           box_color='gray',
                           box_intercept=None,
                           x_concentration=None,
+                          figsize=(6.4, 4.8),
                           output_filename=None):
         """
         Generate a plot for one drug target.
@@ -54,17 +61,22 @@ class PlotCurve:
         :param response_col: Response column from DataFrame
         :param drug_name: Identify name of drug for plotting
         :param plot_title: Title of the figure
+        :param plot_title_size: Modify plot title font size
         :param xlabel: Title of the X-axis
         :param ylabel: Title of the Y-axis
+        :param axis_fontsize: Modify axis label font size
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
         :param xscale_unit: Input will assume that the concentration will be in nM.
         Thus, it will be automatically converted into µM.
         If xscale_unit is given as nM, no conversion will be performed.
         :param xscale_ticks: Set the scale of the X-axis
+        :param ylimit: Give a set maximum limit for the Y-Axis
         :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of
         colors or colors in hex code.
+        :param line_width: Set width of lines in plot.
         :param marker: Optional. Takes a list of for point markers.
         :param legend: Optional. Denotes a figure legend.
+        :param legend_loc: Determine legend location.
         :param box: Optional. Draw a box to highlight a specific location. If box = True, then the box_color,
         box_intercept, and x_concentration MUST ALSO BE GIVEN.
         :param box_color: Set color of box.
@@ -74,6 +86,7 @@ class PlotCurve:
         will override the box_intercept and the response data will move accordingly. Finally, the number must be in the
         same unit as the X-axis. i.e., if the axis is in µM, then the number for hte x_concentration should be in µM and
         vice versa.
+        :param figsize: Set figure size.
         :param output_filename: File path for save location.
         :return: Figure
         """
@@ -94,6 +107,8 @@ class PlotCurve:
 
         # Convert concentration for scaling
         if xscale_unit == 'nM':
+            print('Concentration on X-axis is in nM')
+        elif xscale_unit == 'uM':
             print('Concentration on X-axis is in nM')
         elif xscale_unit == 'µM':
             print('Concentration on X-axis converted to µM')
@@ -136,23 +151,27 @@ class PlotCurve:
             marker = 'o'
 
         # Create the plot
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=figsize)
         ax.set_ylim(top=100)  # Set maximum y axis limit
         ax.scatter(concentration, response, marker=marker, color=line_color)
-        ax.plot(x_fit, y_fit, color=line_color)
-        ax.set_title(plot_title) # todo add hidden functions to increase font of title and labels.
+        ax.plot(x_fit, y_fit, color=line_color, linewidth=line_width)
         ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
+        ax.set_xlabel(xlabel, fontsize=axis_fontsize)
+        ax.set_ylabel(ylabel, fontsize=axis_fontsize)
+        ax.set_title(plot_title, fontsize=plot_title_size)
 
         # Set y-axis limit
         # Y-axis limit will be limited to the largest response number and add 10 for spacing
-        max_value = max(response) + 10
+        if ylimit is None:
+            max_y = max(response) + 10
+        else:
+            max_y = ylimit
+
         min_value = min(response)
         if min_value < 0:
-            ax.set_ylim(min_value-5, max_value)
+            ax.set_ylim(min_value-5, max_y)
         else:
-            ax.set_ylim(0, max_value)
+            ax.set_ylim(0, max_y)
 
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
@@ -167,8 +186,8 @@ class PlotCurve:
         if x_concentration is not None and box_intercept is not None:
             x_intersection = x_concentration
             y_intersection = np.interp(x_intersection, x_fit, y_fit)
-            print(x_intersection)
-            print(y_intersection)
+            print('Box X intersection: ', x_intersection)
+            print('Box Y intersection: ', y_intersection)
 
         # Calculate ymin and ymax for box
         if box:
@@ -180,7 +199,7 @@ class PlotCurve:
 
         # Figure legend
         if legend:
-            ax.legend(handles=[plt.Line2D([0], [0], color=line_color, marker=marker, label=drug_name), ], loc='best')
+            ax.legend(handles=[plt.Line2D([0], [0], color=line_color, marker=marker, label=drug_name), ], loc=legend_loc)
 
         # Save the plot to a file
         if output_filename == None:
@@ -195,17 +214,23 @@ class PlotCurve:
                          response_col,
                          name_col,
                          plot_title='Dose-Response',
+                         plot_title_size=12,
                          xlabel='Logrithmic Concentration (nM)',
                          ylabel='Inhibition %',
                          xscale='log',
                          xscale_unit=None,
                          xscale_ticks=None,
+                         ylimit=None,
+                         axis_fontsize=10,
                          line_color=CBPALETTE,
                          marker=CBMARKERS,
+                         line_width=1.5,
                          legend=False,
+                         legend_loc='best',
                          box_target=False,
                          box_color='gray',
                          box_intercept=None,
+                         figsize=(6.4, 4.8),
                          output_filename=None):
         """
         Genereate a plot with multiple curves.
@@ -213,6 +238,7 @@ class PlotCurve:
         :param response_col: Response column from DataFrame
         :param name_col: Name column from DataFrame
         :param plot_title: Title of the figure
+        :param plot_title_size: Modify plot title font size
         :param xlabel: Title of the X-axis
         :param ylabel: Title of the Y-axis
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
@@ -220,14 +246,19 @@ class PlotCurve:
         Thus, it will be automatically converted into µM.
         If xscale_unit is given as nM, no conversion will be performed.
         :param xscale_ticks: Set the scale of the X-axis
+        :param ylimit: Give a set maximum limit for the Y-Axis
+        :param axis_fontsize: Modify axis label font size
         :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of
         colors or colors in hex code.
+        :param line_width: Set width of lines in plot.
         :param marker: Optional. Takes a list of for point markers.
         :param legend: Optional. Denotes a figure legend.
+        :param legend_loc: Determine legend location.
         :param box_target: Optional. Draw a box to highlight a specific location. If box = True, then the box_color,
         box_intercept, and x_concentration MUST ALSO BE GIVEN.
         :param box_color: Set color of box.
         :param box_intercept: Set horizontal location of box. By default, it is set at Absolute IC50.
+        :param figsize: Set figure size.
         :param output_filename: File path for save location.
         :return: Figure
         """
@@ -248,6 +279,8 @@ class PlotCurve:
 
             # Convert concentration for scaling
             if xscale_unit == 'nM':
+                print('Concentration on X-axis is in nM')
+            elif xscale_unit == 'uM':
                 print('Concentration on X-axis is in nM')
             elif xscale_unit == 'µM':
                 print('Concentration on X-axis converted to µM')
@@ -299,30 +332,30 @@ class PlotCurve:
             y_fit_list.append(y_fit)
 
         # Generate figure
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=figsize)
         ax.set_ylim(top=100)  # Set maximum y axis limit
 
         if line_color is CBPALETTE:
             pass
         else:
-            line_color = None
+            line_color = line_color
 
         if marker is CBMARKERS:
             pass
         else:
-            marker = None
+            marker = marker
 
         # Plotting the data for each line
         legend_handles = []  # Store data for each line as a dictionary inside a list for the legend
         for i, (y_fit_point, concentration_point, response_point, name, color, mark) in enumerate(
                 zip(y_fit_list, concentration_list, response_list, name_list, line_color, marker)):
-            line = plt.plot(x_fit, y_fit_point, color=color, label=name)
+            line = plt.plot(x_fit, y_fit_point, color=color, label=name, linewidth=line_width)
             scatter = ax.scatter(concentration_point, response_point, color=color, marker=mark)
 
             ax.set_title(plot_title)
             ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
-            ax.set_xlabel(xlabel)
-            ax.set_ylabel(ylabel)
+            ax.set_xlabel(xlabel, fontsize=axis_fontsize)
+            ax.set_ylabel(ylabel, fontsize=axis_fontsize)
 
             # Append scatter plot handle to the legend
             legend_piece = {}
@@ -333,7 +366,12 @@ class PlotCurve:
 
         # Set y-axis limit
         # Y-axis limit will be limited to the largest response number and add 10 for spacing
-        max_value = max(response) + 10
+        if ylimit is None:
+            max_y = self.df[response_col].max()
+            max_value = max_y + 10
+        else:
+            max_value = ylimit
+
         min_value = min(response)
         if min_value < 0:
             ax.set_ylim(min_value, max_value)
@@ -354,7 +392,7 @@ class PlotCurve:
                 legend_element = mlines.Line2D([0], [0], color=data['line_color'], marker=data['marker'],
                                                label=data['name'])
                 legend_elements.append(legend_element)
-            ax.legend(handles=legend_elements, loc='best')
+            ax.legend(handles=legend_elements, loc=legend_loc)
 
             # Calculate ymin and ymax for box
             if box_target is True:
@@ -380,6 +418,8 @@ class PlotCurve:
             else:
                 print('Something wrong with box inputs!')
 
+        plt.title(plot_title, fontsize=plot_title_size)
+
         if output_filename is None:
             pass
         else:
@@ -392,17 +432,20 @@ class PlotCurve:
                         response_col,
                         name_col,
                         column_num=2,
-                        # row_num=2,
                         plot_title=None,
+                        plot_title_size=20,
                         xlabel='Logrithmic Concentration (nM)',
                         ylabel='Inhibition %',
                         xscale='log',
                         xscale_unit=None,
                         xscale_ticks=None,
+                        ylimit=None,
                         line_color=CBPALETTE,
+                        line_width=1.5,
                         box=True,
                         box_color='gray',
                         box_intercept=None,
+                        figsize=(10, 8),
                         output_filename=None):
         """
         Generate multiple curves in a grid.
@@ -411,8 +454,10 @@ class PlotCurve:
         :param name_col: Name column from DataFrame
         :param column_num: Set number of column grid
         :param plot_title: Title of the figure
+        :param plot_title_size: Modify plot title font size
         :param xlabel: Title of the X-axis
         :param ylabel: Title of the Y-axis
+        :param ylimit: Give a set maximum limit for the Y-Axis
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
         :param xscale_unit: Input will assume that the concentration will be in nM.
         Thus, it will be automatically converted into µM.
@@ -420,10 +465,12 @@ class PlotCurve:
         :param xscale_ticks: Set the scale of the X-axis
         :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of
         colors or colors in hex code.
+        :param line_width: Set width of lines in plot.
         :param box: Optional. Draw a box to highlight a specific location. If box = True, then the box_color,
         box_intercept, and x_concentration MUST ALSO BE GIVEN.
         :param box_color: Set color of box.
         :param box_intercept: Set horizontal location of box. By default, it is set at Absolute IC50.
+        :param figsize: Set figure size for subplot.
         :param output_filename: File path for save location.
         :return: Figure
         """
@@ -445,6 +492,8 @@ class PlotCurve:
 
             # Convert concentration
             if xscale_unit == 'nM':
+                print('Concentration on X-axis is in nM')
+            elif xscale_unit == 'uM':
                 print('Concentration on X-axis is in nM')
             elif xscale_unit == 'µM':
                 print('Concentration on X-axis converted to µM')
@@ -515,15 +564,16 @@ class PlotCurve:
         # Calculate the number of rows needed
         num_plots = len(name_list)  # determine total plots to make
         row_num = -(-num_plots // column_num)  # Round up to the nearest integer
-        fig, axes = plt.subplots(row_num, column_num, figsize=(10, 8))
-        fig.suptitle(plot_title, fontsize=20)
+        # Squeeze to handle possible 1D array
+        fig, axes = plt.subplots(row_num, column_num, figsize=figsize, squeeze=False)
+        fig.suptitle(plot_title, fontsize=plot_title_size)
 
         # Loop through the data and plot scatter and line plots on each subplot
         for i in range(row_num):
             for j in range(column_num):
                 # Line plot
                 axes[i, j].plot(x_fit_list[i * column_num + j], y_fit_list[i * column_num + j], label='Line Plot',
-                                color=line_color[i * column_num + j])
+                                color=line_color[i * column_num + j], linewidth=line_width)
 
                 # Scatter plot
                 axes[i, j].scatter(concentration_list[i * column_num + j], response_list[i * column_num + j],
@@ -535,8 +585,12 @@ class PlotCurve:
 
                 # Set y-axis limit
                 # Y-axis limit will be limited to the largest response number and add 10 for spacing
-                max_value = np.amax([np.amax(max_value) for max_value in response_list]) + 10
-                ymin = -10  # Y-axis allowed to go -10 for better curve viewing
+                if ylimit is None:
+                    max_value = np.amax([np.amax(max_value) for max_value in response_list]) + 10
+                else:
+                    max_value = ylimit
+                # Y-axis minimum to the lowest respnose - 10 for better plotting
+                ymin = np.amin([np.amin(max_value) for max_value in response_list]) - 10
                 axes[i, j].set_ylim(ymin, max_value)
 
                 # Set subplot title
