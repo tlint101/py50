@@ -41,7 +41,7 @@ class PlotCurve:
                           ylabel=None,
                           axis_fontsize=14,
                           xscale='log',
-                          xscale_unit=None,
+                          xscale_unit='µM',
                           xscale_ticks=None,
                           ylimit=None,
                           line_color='black',
@@ -131,7 +131,7 @@ class PlotCurve:
         elif xscale_unit == 'nM' and xscale_ticks == None:
             x_fit = np.logspace(0, 5, 100)
         elif xscale_unit == 'µM' and xscale_ticks == None:
-            x_fit = np.logspace(-3, 2, 100)
+            x_fit = np.logspace(-3, 3, 100)
         elif xscale_unit == 'nM' and xscale_ticks is not None:
             print('nM with ticks constraints!')
             x_fit = np.logspace(xscale_ticks[0], xscale_ticks[1], 100)
@@ -213,12 +213,12 @@ class PlotCurve:
                          concentration_col,
                          response_col,
                          name_col,
-                         plot_title='Dose-Response',
+                         plot_title=None,
                          plot_title_size=12,
-                         xlabel='Logrithmic Concentration (nM)',
+                         xlabel='Logrithmic Concentration (µM)',
                          ylabel='Inhibition %',
                          xscale='log',
-                         xscale_unit=None,
+                         xscale_unit='µM',
                          xscale_ticks=None,
                          ylimit=None,
                          axis_fontsize=10,
@@ -380,7 +380,10 @@ class PlotCurve:
 
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
-        if box_intercept:
+        if box_intercept is None:
+            y_intersection = 50
+            x_intersection = np.interp(y_intersection, y_fit, x_fit)
+        else:
             y_intersection = box_intercept
             x_intersection = np.interp(y_intersection, y_fit, x_fit)
 
@@ -416,7 +419,7 @@ class PlotCurve:
                 else:
                     print('Drug name does not match box target!')
             else:
-                print('Something wrong with box inputs!')
+                pass
 
         plt.title(plot_title, fontsize=plot_title_size)
 
@@ -437,14 +440,14 @@ class PlotCurve:
                         xlabel='Logrithmic Concentration (nM)',
                         ylabel='Inhibition %',
                         xscale='log',
-                        xscale_unit=None,
+                        xscale_unit='µM',
                         xscale_ticks=None,
                         ylimit=None,
                         line_color=CBPALETTE,
                         line_width=1.5,
                         box=True,
                         box_color='gray',
-                        box_intercept=None,
+                        box_intercept=50,
                         figsize=(10, 8),
                         output_filename=None):
         """
@@ -614,7 +617,7 @@ class PlotCurve:
                     elif box_intercept is not None and isinstance(box_intercept, str):
                         print('box_intercept is not an int or float')
                     elif box_intercept is None:
-                        print('no box_intercept given')
+                        pass
 
                 # Set axis labels
                 axes[i, j].set_xlabel(xlabel)
