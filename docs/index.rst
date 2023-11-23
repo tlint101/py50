@@ -6,23 +6,18 @@ This site will document py50 and its usage.
 Installation
 ------------
 
-py50 can be installed by using the pip:
+py50 can be installed by using pip:
 
-:: bash
+.. code-block:: python
+
    pip install py50
 
-The module
-================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
+   :maxdepth: 1
 
+   calculate
+   plotcurve
+   plot_settings
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
