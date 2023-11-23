@@ -9,7 +9,7 @@
 project = 'py50'
 copyright = '2023, Tony Eight Lin'
 author = 'Tony Eight Lin'
-release = '0.1'
+release = 'v0.1.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -17,7 +17,7 @@ release = '0.1'
 extensions = []
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = []
 
 
 
