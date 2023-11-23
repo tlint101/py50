@@ -1,9 +1,16 @@
-.. py50 documentation master file, created by
-   sphinx-quickstart on Thu Nov 23 10:51:50 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Welcome to py50 Documentation!
+==============================
 
-Welcome to py50's documentation!
+This site will document py50 and its usage.
+
+Installation
+------------
+
+py50 can be installed by using the pip:
+
+:: bash
+   pip install py50
+
 The module
 ================================
 
