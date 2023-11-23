@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py50"
-version = "0.0.7"
+version = "0.1.0"
 description = "Generate Dose-Response Curves"
 authors = ["Tony Eight Lin <tonyelin@tmu.edu.tw>"]
 license = "GPL-3.0"
