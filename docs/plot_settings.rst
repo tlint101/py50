@@ -3,8 +3,7 @@
 Plot Settings
 =====================
 
-Calculate the Relative or Absolute IC50 values for a given dataset. Input must be a DataFrame containing the following columns:
-drug name, drug concentration, and average response.
+Default color palette and marker settings.
 
 .. automodule:: plot_settings
    :members:
