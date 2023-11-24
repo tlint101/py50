@@ -11,9 +11,21 @@ class Calculate:
         self.df = df
 
     def show(self):
+        """
+        show DataFrame
+
+        :return: DataFrame
+        """
         return self.df
 
     def show_column(self, key):
+        """
+        View specific column from DataFrame
+
+        :param key: column header name.
+
+        :return: DataFrame
+        """
         if key not in self.df.columns:
             raise ValueError('Column not found')
         return self.df[key]
@@ -23,11 +35,14 @@ class Calculate:
     def fourpl(concentration, minimum, maximum, ic50, hill_slope):
         """
         Four-Parameter Logistic (4PL) Equation:
+
+
         :param concentration: concentration
         :param minimum: minimum concentration in drug query (bottom plateau)
         :param maximum: maximum concentration for drug query (top plateau)
         :param ic50: Concentration at inflection point (where curve shifts from up or down)
         :param hill_slope: Steepness of hte curve (Hill Slope)
+
         :return: equation
         """
         return minimum + (maximum - minimum) / (1 + (concentration / ic50) ** hill_slope)
@@ -35,14 +50,17 @@ class Calculate:
     # Calculate X and Y_fit to  coordinates for line curve
     def fit_curve(self, name_col, concentration_col, response_col, initial_guess=None):  # Not sure if I need this
         """
-        Calculate curve fit and return as DataFrame
+        Fit a curve to the dataset.
+
         :param name_col: Name column from DataFrame.
-        :param concentration_col: Concentration column from DataFrame
-        :param response_col: Response column from DataFrame
-        :param initial_guess: Initial guesses for calculation. Must be given as a list in the following format:
-        [Max, Min, ic50, and hill_slope]. By default, initial guesses are [max(response), min(response), 1.0, 1.0]
-        :return: DataFrame containing calculated X and Y coordinates for curve.
+        :param concentration_col: Concentration column from DataFrame.
+        :param response_col: Response column from DataFrame.
+        :param initial_guess: Initial guesses for calculation. Must be given as a list in the following format: \
+        [Max, Min, ic50, and hill_slope]. By default, initial guesses are [max(response), min(response), 1.0, 1.0].
+
+        :return: A DataFrame containing calculated X and Y coordinates for drawing the curve.
         """
+
         # Set variables from funtion and convert name_col to np array
         name_col = name_col
         name = self.df[name_col].values
@@ -92,7 +110,16 @@ class Calculate:
         return df
 
     def data_points(self, name_col, concentration_col, response_col):
-        """This will output a dataframe containing datapoints. This will correspond to the concentration datapoints"""
+        """
+        This will output a dataframe containing concentration datapoints for plotting.
+
+        :param name_col: Name column from DataFrame.
+        :param concentration_col: Concentration column from DataFrame.
+        :param response_col: Response column from DataFrame.
+
+        :return: A list of a dictionary containing concentration and response datapoints.
+        """
+        """"""
         name_col = name_col
         name = self.df[name_col].values
         concentration_col = concentration_col
@@ -126,6 +153,16 @@ class Calculate:
     # This will loop through each group.
     # todo rename function. Separate from final function calculate_ic50
     def relative_calculation(self, name_col, concentration_col, response_col, input_units='nM'):
+        """
+        Calculate relative IC50 values for a given drug.
+
+        :param name_col: Name column from DataFrame.
+        :param concentration_col: Concentration column from DataFrame.
+        :param response_col: Response column from DataFrame.
+        :param input_units: Concentration units for tested drug. By default, units given will be in nM.
+
+        :return: A list of a dictionary containing drug name, maximum response, minimum response, IC50 (relative) and hill slope.
+        """
         name_col = name_col
         name = self.df[name_col].values
 
@@ -157,17 +194,19 @@ class Calculate:
                 'hill_slope': hill_slope
             })
         return values
+
     # todo rename function. Separate from final function calculate_absolute_ic50
     def absolute_calculation(self, name_col, concentration_col, response_col, input_units='nM'):
         """
-        This function will output a DataFrame containing Compound_name, maximum, minimum, ic50 (nM) (relative), and
-        hill_slope. this will require a DataFrame with the following input:
+        Calculate Relative and Absolute IC50 values for a given drug.
+
         :param name_col: Name column from DataFrame
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
-        :param input_units: Units of results. By default, the units given will be in nM. Results can be reformated by
-        using the 'uM' argument.
-        :return: params
+        :param input_units: Concentration units for tested drug. By default, units given will be in nM.
+
+        :return: A list of a dictionary containing drug name, maximum response, minimum response, relative IC50, \
+         absolute IC50, and hill slope.
         """
 
         # Set variables from funtion and convert name_col to np array
@@ -222,13 +261,15 @@ class Calculate:
 
     def calculate_ic50(self, name_col, concentration_col, response_col):
         """
-        This will outuput a DataFrame containing Compound_name, maximum, minimum, ic50 (nM) (relative), and hill_slope
-        Requires DataFrame as input
-        - data:
-        - concentration_col:
-        - response_col:
-        return DataFrame
+        This will calculate the Relative IC50 for query. Input will be a DataFrame. The following parameters are needed:
+
+        :param name_col: Name column from DataFrame
+        :param concentration_col: Concentration column from DataFrame
+        :param response_col: Response column from DataFrame
+
+        :return: DataFrame generated from the list from the relative_calculation method
         """
+
         # Set variables from funtion and convert name_col to np array
         values = self.relative_calculation(name_col, concentration_col, response_col)
 
@@ -236,6 +277,17 @@ class Calculate:
         return df
 
     def calculate_absolute_ic50(self, name_col, concentration_col, response_col, input_units='nM'):
+        """
+        This will calculate the Relative and Absolute IC50 for query. Input will be a DataFrame. The following parameters are needed:
+
+
+        :param name_col: Name column from DataFrame
+        :param concentration_col: Concentration column from DataFrame
+        :param response_col: Response column from DataFrame
+        :param input_units: Concentration units for tested drug. By default, units given will be in nM.
+
+        :return: DataFrame generated from the list from the absolute_calculation method
+        """
 
         values = self.absolute_calculation(name_col, concentration_col, response_col, input_units=input_units)
         df = pd.DataFrame(values)

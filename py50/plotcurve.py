@@ -9,7 +9,6 @@ from py50.calculate import Calculate
 
 
 # todo Generate composite functions
-
 class PlotCurve:
     # Will accept input DataFrame and output said DataFrame for double checking.
     def __init__(self, df):
@@ -18,15 +17,35 @@ class PlotCurve:
         self.df = df
 
     def show(self):
+        """
+        Show DataFrame
+
+        :return: DataFrame
+        """
         return self.df
 
     def show_column(self, key):
+        """
+        View specific column from DataFrame
+
+        :param key: column header name.
+
+        :return: DataFrame
+        """
+
         if key not in self.df.columns:
             raise ValueError('Column not found')
         return self.df[key]
 
     # Filter input data based on Compound Name to generate single plot
     def filter_dataframe(self, drug_name):
+        """
+        Filter input DataFrame by query drug name.
+
+        :param drug_name:
+
+        :return: DataFrame
+        """
         filtered_df = self.df[self.df['Compound Name'] == drug_name]
         return filtered_df
 
@@ -56,38 +75,41 @@ class PlotCurve:
                           figsize=(6.4, 4.8),
                           output_filename=None):
         """
-        Generate a plot for one drug target.
+        Generate a plot. This will only generate one plot for one drug. As a result, the name of the drug must be given.
+
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
-        :param drug_name: Identify name of drug for plotting
+        :param drug_name: Name of drug for plotting
         :param plot_title: Title of the figure
         :param plot_title_size: Modify plot title font size
         :param xlabel: Title of the X-axis
         :param ylabel: Title of the Y-axis
         :param axis_fontsize: Modify axis label font size
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
-        :param xscale_unit: Input will assume that the concentration will be in nM.
-        Thus, it will be automatically converted into µM.
+        :param xscale_unit: Input will assume that the concentration will be in nM. \
+        Thus, it will be automatically converted into µM. \
         If xscale_unit is given as nM, no conversion will be performed.
         :param xscale_ticks: Set the scale of the X-axis
         :param ylimit: Give a set maximum limit for the Y-Axis
-        :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of
-        colors or colors in hex code.
+        :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name \
+        of colors or colors in hex code.
         :param line_width: Set width of lines in plot.
         :param marker: Optional. Takes a list of for point markers.
         :param legend: Optional. Denotes a figure legend.
-        :param legend_loc: Determine legend location.
-        :param box: Optional. Draw a box to highlight a specific location. If box = True, then the box_color,
+        :param legend_loc: Determine legend location. Default is best. Matplotlib options can be found here \
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
+        :param box: Optional. Draw a box to highlight a specific location. If box = True, then the box_color, \
         box_intercept, and x_concentration MUST ALSO BE GIVEN.
-        :param box_color: Set color of box.
+        :param box_color: Set color of box. Default is gray.
         :param box_intercept: Set horizontal location of box. By default, it is set at Absolute IC50.
-        :param x_concentration: Set vertical location of the box. By default, this is set to None. For example, if the
-        box_intercept is set to 50%, then the x_concentration must be the Absolute IC50 value. If there is an input, it
-        will override the box_intercept and the response data will move accordingly. Finally, the number must be in the
-        same unit as the X-axis. i.e., if the axis is in µM, then the number for hte x_concentration should be in µM and
+        :param x_concentration: Set vertical location of the box. By default, this is set to None. For example, if the \
+        box_intercept is set to 50%, then the x_concentration must be the Absolute IC50 value. If there is an input to x_concentration, \
+        it will override the box_intercept and the response data will move accordingly. Finally, the number must be in the \
+        same unit as the X-axis. i.e., if the axis is in µM, then the number for hte x_concentration should be in µM and \
         vice versa.
         :param figsize: Set figure size.
         :param output_filename: File path for save location.
+
         :return: Figure
         """
 
@@ -233,7 +255,8 @@ class PlotCurve:
                          figsize=(6.4, 4.8),
                          output_filename=None):
         """
-        Genereate a plot with multiple curves.
+        Generate a plot with multiple curves.
+
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param name_col: Name column from DataFrame
@@ -242,24 +265,27 @@ class PlotCurve:
         :param xlabel: Title of the X-axis
         :param ylabel: Title of the Y-axis
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
-        :param xscale_unit: Input will assume that the concentration will be in nM.
-        Thus, it will be automatically converted into µM.
+        :param xscale_unit: Input will assume that the concentration will be in nM. \
+        Thus, it will be automatically converted into µM. \
         If xscale_unit is given as nM, no conversion will be performed.
         :param xscale_ticks: Set the scale of the X-axis
         :param ylimit: Give a set maximum limit for the Y-Axis
         :param axis_fontsize: Modify axis label font size
-        :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of
+        :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of \
         colors or colors in hex code.
         :param line_width: Set width of lines in plot.
-        :param marker: Optional. Takes a list of for point markers.
+        :param marker: Optional. Takes a list for point markers. Marker options can be found here: \
+        https://matplotlib.org/stable/api/markers_api.html
         :param legend: Optional. Denotes a figure legend.
-        :param legend_loc: Determine legend location.
-        :param box_target: Optional. Draw a box to highlight a specific location. If box = True, then the box_color,
-        box_intercept, and x_concentration MUST ALSO BE GIVEN.
-        :param box_color: Set color of box.
+        :param legend_loc: Determine legend location. Matplotlib options can be found here \
+        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
+        :param box_target: Optional. Draw a box to highlight a specific location. If box = True, then the box_color, \
+        and box_intercept MUST ALSO BE GIVEN.
+        :param box_color: Set color of box. Default color is gray.
         :param box_intercept: Set horizontal location of box. By default, it is set at Absolute IC50.
         :param figsize: Set figure size.
         :param output_filename: File path for save location.
+
         :return: Figure
         """
         global response, x_fit, y_fit, y_intersection, x_intersection, ymin, ymax
@@ -452,6 +478,7 @@ class PlotCurve:
                         output_filename=None):
         """
         Generate multiple curves in a grid.
+
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param name_col: Name column from DataFrame
@@ -462,19 +489,20 @@ class PlotCurve:
         :param ylabel: Title of the Y-axis
         :param ylimit: Give a set maximum limit for the Y-Axis
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
-        :param xscale_unit: Input will assume that the concentration will be in nM.
-        Thus, it will be automatically converted into µM.
+        :param xscale_unit: Input will assume that the concentration will be in nM. \
+        Thus, it will be automatically converted into µM. \
         If xscale_unit is given as nM, no conversion will be performed.
         :param xscale_ticks: Set the scale of the X-axis
-        :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of
+        :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of \
         colors or colors in hex code.
         :param line_width: Set width of lines in plot.
-        :param box: Optional. Draw a box to highlight a specific location. If box = True, then the box_color,
-        box_intercept, and x_concentration MUST ALSO BE GIVEN.
-        :param box_color: Set color of box.
+        :param box: Optional. Draw a box to highlight a specific location. If box = True, then the box_color, \
+        and box_intercept MUST ALSO BE GIVEN.
+        :param box_color: Set color of box. Default color is gray.
         :param box_intercept: Set horizontal location of box. By default, it is set at Absolute IC50.
         :param figsize: Set figure size for subplot.
         :param output_filename: File path for save location.
+
         :return: Figure
         """
 
@@ -592,7 +620,7 @@ class PlotCurve:
                     max_value = np.amax([np.amax(max_value) for max_value in response_list]) + 10
                 else:
                     max_value = ylimit
-                # Y-axis minimum to the lowest respnose - 10 for better plotting
+                # Y-axis minimum to the lowest response - 10 for better plotting
                 ymin = np.amin([np.amin(max_value) for max_value in response_list]) - 10
                 axes[i, j].set_ylim(ymin, max_value)
 
