@@ -2,8 +2,10 @@
 
 # py50: Generate Dose-Response Curves
 
-![Static Badge](https://img.shields.io/badge/py50%3A_Dose_Response-800000)
+![Static Badge](https://img.shields.io/badge/py50%3A_Dose_Response-13406E)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/py50)
+[![Documentation Status](https://readthedocs.org/projects/py50/badge/?version=latest)](https://py50.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
 
 ## Summary
 The project was created to laboratory use. I found many of my classmates/coworkers were 
@@ -35,18 +37,18 @@ pip install py50 -U
 ```
 
 ## Tutorial
+Documentation can be found [here](https://py50.readthedocs.io/en/latest/).
+
 A Jupyter Notebook demoing the code can be found [here](https://github.com/tlint101/py50/tree/main/tutorials).
 
 A blog post demoing the code can be found at [Practice Coding]() (under development)
 
-And finally, a documentation page set up through GitHub is currently in the works. 
-
 ## Citation
-If you are interested in citing the file, I have generated a DOI link using Zenodo here:
+If you are interested in citing the file, I have generated a DOI link using Zenodo here: [![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
 
 ## Future Work
 I am interested in maintaining this for the foreseeable future. As such, I have several
-things on my "To-Do" list. I will get around to them when I can. They are in no particular
+things on my "To-Do" list. I will get around to them when I can. In no particular
 order:
 
 - Code for averaging and creating error bars on plot
