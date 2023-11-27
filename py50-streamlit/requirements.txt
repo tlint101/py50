@@ -1,4 +1,5 @@
 streamlit
+streamlit_extras
 pandas
 numpy
 matplotlib
