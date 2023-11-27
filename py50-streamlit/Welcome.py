@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_extras.app_logo import add_logo
 from PIL import Image
 
 st.set_page_config(
