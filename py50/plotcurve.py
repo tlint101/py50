@@ -237,7 +237,7 @@ class PlotCurve:
                          name_col,
                          plot_title=None,
                          plot_title_size=12,
-                         xlabel='Logrithmic Concentration (µM)',
+                         xlabel='Logarithmic Concentration (µM)',
                          ylabel='Inhibition %',
                          xscale='log',
                          xscale_unit='µM',
