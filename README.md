@@ -6,6 +6,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/py50)
 [![Documentation Status](https://readthedocs.org/projects/py50/badge/?version=latest)](https://py50.readthedocs.io/en/latest/?badge=latest)
 [![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://py50-app.streamlit.app)
 
 ## Summary
 The project was created to laboratory use. I found many of my classmates/coworkers were 
