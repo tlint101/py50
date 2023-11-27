@@ -1,0 +1,9 @@
+streamlit
+pandas
+numpy
+matplotlib
+py50
+
+
+**NOTE**
+may need to include openpyxl ????
