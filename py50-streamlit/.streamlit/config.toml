@@ -9,4 +9,4 @@
 # traceback show in the browser also, but they will be removed in the
 # future.
 # Default: true
-showErrorDetails = true
+showErrorDetails = false
