@@ -9,6 +9,7 @@ st.set_page_config(
 # Place logo image at top of page
 # image = Image.open('img/py50_full.png')
 # st.image(image)
+st.image('img/py50_full.png')
 st.write('# Welcome to Py50!')  # add a title
 
 st.markdown(
