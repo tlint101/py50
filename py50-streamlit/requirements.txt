@@ -3,4 +3,4 @@ pandas
 numpy
 matplotlib
 py50
-PIL
+Pillow
