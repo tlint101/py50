@@ -7,8 +7,33 @@ from py50.plot_settings import CBMARKERS, CBPALETTE
 
 st.set_page_config(page_title='Generate Dose-Response Curves', page_icon='📈')
 
+# Adjust hyperlink colorscheme
+links = """<style>
+a:link , a:visited{
+color: 3081D0;
+background-color: transparent;
+}
+
+a:hover,  a:active {
+color: forestgreen;
+background-color: transparent;
+}
+"""
+st.markdown(links, unsafe_allow_html=True)
+
 # add logo
-st.sidebar.image('img/py50_logo_only.png', width=150)
+st.sidebar.image('../img/py50_logo_only.png', width=150)
+
+# Page text
+datasets = 'https://github.com/tlint101/py50/tree/main/dataset'
+st.markdown('# Generate Dose-Response Curves')
+st.write('This page will plot a dose-response curve. The plot points will be calculated for each query.')
+st.write('The program requires at least three columns:')
+st.write('- Drug Name')
+st.write('- Drug Concentration')
+st.write('- Average Response')
+st.write('Sample datasets can be found [here](%s)' % datasets)
+st.write('')
 
 # Upload the CSV file
 uploaded_file = st.file_uploader('Upload .csv file')
@@ -48,7 +73,7 @@ if fig_type == 'Single Plot':
         st.write('Looking at: ', drug_name)
     else:
         st.markdown('## 🚨Multiple Drugs Detected in File!🚨')
-        st.markdown('Try the **Multi-Curve Plot** or the **Grid Plot**')
+        st.markdown('Input target drug name or try the **Multi-Curve Plot** or the **Grid Plot**')
         drug_name = st.text_input(label='Input Target Drug Name', placeholder='Input Drug Name')
 
     # Add plotting options to the sidebar
@@ -59,11 +84,18 @@ if fig_type == 'Single Plot':
     if label_options is True:
         # Plot title
         plot_title = st.sidebar.text_input(label='Plot Title', placeholder='Input Plot Title')
+        font = st.sidebar.text_input(label='Figure Font', value=None, placeholder='DejaVu Sans')
         plot_title_size = st.sidebar.number_input(label='Title Size', value=None, placeholder='16')
         axis_fontsize = st.sidebar.number_input(label='Axis Fontsize', value=None, placeholder='14')
         xlabel = st.sidebar.text_input(label='X-Axis Label', placeholder='Input X Label')
         ylabel = st.sidebar.text_input(label='Y-Axis Label', placeholder='Input Y Label')
         ylimit = st.sidebar.number_input(label="Y-Axis Limit", value=None, placeholder='Input Limit')
+
+        # set the font name for a font family
+        if font is None:
+            plt.rcParams.update({'font.sans-serif': 'DejaVu Sans'})
+        else:
+            plt.rcParams.update({'font.sans-serif': font})
 
         # Default label sizes
         if plot_title_size:
@@ -173,7 +205,8 @@ if fig_type == 'Single Plot':
         else:
             box_intercept = 50
         x_concentration = st.sidebar.number_input(label='Optional: Highlight By Specific Concentration (will override '
-                                                        'Y-Axis, input must match x-axis units)', value=None, placeholder=None)
+                                                        'Y-Axis, input must match x-axis units)', value=None,
+                                                  placeholder=None)
         if x_concentration:
             x_concentration = x_concentration
         else:
@@ -242,11 +275,18 @@ elif fig_type is 'Multi-Curve Plot':
     if label_options is True:
         # Plot title
         plot_title = st.sidebar.text_input(label='Plot Title', placeholder='Input Plot Title')
+        font = st.sidebar.text_input(label='Figure Font', value=None, placeholder='DejaVu Sans')
         plot_title_size = st.sidebar.number_input(label='Title Size', value=None, placeholder='16')
         axis_fontsize = st.sidebar.number_input(label='Axis Fontsize', value=None, placeholder='14')
         xlabel = st.sidebar.text_input(label='X-Axis Label', placeholder='Input X Label')
         ylabel = st.sidebar.text_input(label='Y-Axis Label', placeholder='Input Y Label')
         ylimit = st.sidebar.number_input(label="Y-Axis Limit", value=None, placeholder='Input Limit')
+
+        # set the font name for a font family
+        if font is None:
+            plt.rcParams.update({'font.sans-serif': 'DejaVu Sans'})
+        else:
+            plt.rcParams.update({'font.sans-serif': font})
 
         # Default label sizes
         if plot_title_size:
@@ -412,8 +452,8 @@ elif fig_type is 'Grid Plot':
         name = ', '.join(map(str, name))
         st.markdown('### Multiple Drugs Detected in File:')
         st.write('Looking at: ', name)
-    elif len(df_calc[drug_name].unique()) <= 1:
-        st.markdown('### 🚨Only 1 Drug Detected in File!!!!🚨')
+    elif len(df_calc[drug_name].unique()) % 2 != 0:
+        st.markdown('### 🚨Odd Number of Drugs!!!!🚨')
     else:
         st.write('Is the input file correct?')
 
@@ -425,11 +465,18 @@ elif fig_type is 'Grid Plot':
     if label_options is True:
         # Plot title
         plot_title = st.sidebar.text_input(label='Plot Title', placeholder='Input Plot Title')
+        font = st.sidebar.text_input(label='Figure Font', value=None, placeholder='DejaVu Sans')
         plot_title_size = st.sidebar.number_input(label='Title Size', value=None, placeholder='16')
         axis_fontsize = st.sidebar.number_input(label='Axis Fontsize', value=None, placeholder='14')
         xlabel = st.sidebar.text_input(label='X-Axis Label', placeholder='Input X Label')
         ylabel = st.sidebar.text_input(label='Y-Axis Label', placeholder='Input Y Label')
         ylimit = st.sidebar.number_input(label="Y-Axis Limit", value=None, placeholder='Input Limit')
+
+        # set the font name for a font family
+        if font is None:
+            plt.rcParams.update({'font.sans-serif': 'DejaVu Sans'})
+        else:
+            plt.rcParams.update({'font.sans-serif': font})
 
         # Default label sizes
         if plot_title_size:
@@ -529,14 +576,8 @@ elif fig_type is 'Grid Plot':
     # Box settings
     box_options = st.sidebar.checkbox(label='Highlight IC Value (Must include Legend)')
     if box_options is True:
-        box_target = st.sidebar.text_input(label='Drug Target to Highlight', placeholder='Drug Name')
         box_color = st.sidebar.text_input(label='Box Color', placeholder='Color Name or Hex Code')
         box_intercept = st.sidebar.number_input(label='Response Percentage', value=None, placeholder='50')
-        if box_target:
-            box_target = box_target
-            st.sidebar.write('This is the box_target:', box_target)
-        else:
-            box_target = None
         if box_color:
             box_color = box_color
         else:
@@ -546,31 +587,30 @@ elif fig_type is 'Grid Plot':
         else:
             box_intercept = 50
     else:
-        box_target = False
+        box_options = False
         box_color = 'gray'
-        box_intercept = 50
+        box_intercept = None
 
-    fig_width = st.sidebar.slider(label='Figure Width:', min_value=1, max_value=50, value=6)
-    fig_height = st.sidebar.slider(label='Figure Height:', min_value=1, max_value=50, value=4)
+    fig_width = st.sidebar.slider(label='Figure Width:', min_value=1, max_value=50, value=10)
+    fig_height = st.sidebar.slider(label='Figure Height:', min_value=1, max_value=50, value=8)
 
     figure = plot_data.grid_curve_plot(concentration_col=compound_conc,
                                        response_col=ave_response,
                                        name_col=drug_name,
-                                       column_num=2,
-                                       plot_title=None,
-                                       plot_title_size=20,
-                                       xlabel='Logrithmic Concentration (nM)',
-                                       ylabel='Inhibition %',
-                                       xscale='log',
-                                       xscale_unit='µM',
-                                       xscale_ticks=None,
-                                       ylimit=None,
-                                       line_color=CBPALETTE,
-                                       line_width=1.5,
-                                       box=True,
-                                       box_color='gray',
-                                       box_intercept=50,
-                                       figsize=(10, 8))
+                                       plot_title=plot_title,
+                                       plot_title_size=plot_title_size,
+                                       xlabel=xlabel,
+                                       ylabel=ylabel,
+                                       xscale=xscale,
+                                       xscale_unit=xscale_unit,
+                                       xscale_ticks=xscale_ticks,
+                                       ylimit=ylimit,
+                                       line_color=line_color,
+                                       line_width=line_width,
+                                       box=box_options,
+                                       box_color=box_color,
+                                       box_intercept=box_intercept,
+                                       figsize=(fig_width, fig_height))
     # Display figure
     st.pyplot(figure)
 
@@ -583,8 +623,4 @@ elif fig_type is 'Grid Plot':
     st.download_button("Download Figure", data=buf.read(), file_name="multi_curve.png", mime="image/png")
 
 else:
-    st.write('OH POOPY!')
-
-# # Sidebar info
-# with st.sidebar:
-#     st.write('Plot Settings')
+    st.write('Something is wrong with the app! Help!')

@@ -4,16 +4,36 @@ from py50.calculate import Calculate
 
 st.set_page_config(page_title='Calculate Relative and Absolute IC50', page_icon='🧮')
 
-# add logo
-st.sidebar.image('img/py50_logo_only.png', width=150)
+# Adjust hyperlink colorscheme
+links = """<style>
+a:link , a:visited{
+color: 3081D0;
+background-color: transparent;
+}
 
-st.markdown('# Calculate Relative and Absolute IC50')
+a:hover,  a:active {
+color: forestgreen;
+background-color: transparent;
+}
+"""
+st.markdown(links, unsafe_allow_html=True)
+
+# add logo
 st.sidebar.header("Calculate IC50")
-st.write(
-    """This demo illustrates a combination of plotting and animation with
-Streamlit. We're generating a bunch of random numbers in a loop for around
-5 seconds. Enjoy!"""
-)
+st.sidebar.image('../img/py50_logo_only.png', width=150)
+
+# Page text
+tutorial = 'https://github.com/tlint101/py50/blob/main/tutorials/002_absolute_ic50.ipynb'
+datasets = 'https://github.com/tlint101/py50/tree/main/dataset'
+st.markdown('# Calculate Relative and Absolute IC50')
+st.write('This page will calculate a final table containing Relative and Absolute IC50 values for a queried drug.')
+st.write('The program requires at least three columns:')
+st.write('- Drug Name')
+st.write('- Drug Concentration')
+st.write('- Average Response')
+st.write('For more information about Relative vs. Absolute IC50, please see the tutorial [here](%s)' % tutorial)
+st.write('Sample datasets can be found [here](%s)' % datasets)
+st.write('')
 
 # Upload the CSV file
 uploaded_file = st.file_uploader('Upload .csv file')
@@ -46,3 +66,4 @@ absolute = data.calculate_absolute_ic50(name_col=drug_name,
 st.markdown('## Calculation Results')
 
 st.dataframe(absolute, hide_index=True)
+
