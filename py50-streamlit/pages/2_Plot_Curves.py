@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from py50.plotcurve import PlotCurve
 from py50.plot_settings import CBMARKERS, CBPALETTE
 
-st.set_page_config(page_title='Generate Dose-Response Curves', page_icon='📈')
+st.set_page_config(page_title='py50: Plot Curves', page_icon='📈')
 
 # Adjust hyperlink colorscheme
 links = """<style>

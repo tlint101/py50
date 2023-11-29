@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from py50.calculate import Calculate
 
-st.set_page_config(page_title='Calculate Relative and Absolute IC50', page_icon='🧮')
+st.set_page_config(page_title='py50: Calculation', page_icon='🧮')
 
 # Adjust hyperlink colorscheme
 links = """<style>
