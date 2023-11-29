@@ -149,7 +149,7 @@ if fig_type == 'Single Plot':
     else:
         line_color = 'Black'
         line_width = 1.5
-        marker = 's'
+        marker = 'o'
 
     # Set Legend options if checked
     legend = st.sidebar.checkbox(label='Legend')
