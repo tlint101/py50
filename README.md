@@ -17,6 +17,7 @@ they did not meet my requirements:
 2. Adaptable to user needs
 3. Easy to use (hopefully!)
 
+
 The curves are built on the four parameter logistic regression model:
 $$Y = \text{Min} + \frac{\text{Max} - \text{Min}}{1 + \left(\frac{X}{\text{IC50}}\right)^{\text{Hill coefficient}}}$$
 where min is the minimum response value, max is the maximum response value, Y is the response values of the curves, X 
@@ -43,6 +44,10 @@ Documentation can be found [here](https://py50.readthedocs.io/en/latest/).
 A Jupyter Notebook demoing the code can be found [here](https://github.com/tlint101/py50/tree/main/tutorials).
 
 A blog post demoing the code can be found at [Practice Coding]() (under development)
+
+# Web Application [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://py50-app.streamlit.app)
+For those who are not versed in python coding, py50 has been converted into a web application using Streamlit!
+The web application can be found here: [py50-app](https://py50-app.streamlit.app)
 
 ## Citation
 If you are interested in citing the file, I have generated a DOI link using Zenodo here: [![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
