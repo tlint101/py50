@@ -20,7 +20,7 @@ background-color: transparent;
 st.markdown(links, unsafe_allow_html=True)
 
 # Place logo image at top of page
-st.image('../img/py50_full.png')
+st.image('img/py50_full.png')
 st.write('# Welcome to py50!')  # add a title
 
 github = 'https://github.com/tlint101/py50'
@@ -38,5 +38,5 @@ st.markdown('Documentation can be found [here](%s).' % documentation)
 st.markdown('If you are interested in citing py50, you are welcome to use the zenodo link [here](%s).' % zenodo)
 
 # add logo
-st.sidebar.image('../img/py50_logo_only.png', width=150)
+st.sidebar.image('img/py50_logo_only.png', width=150)
 st.sidebar.success("Select page above to get started!")

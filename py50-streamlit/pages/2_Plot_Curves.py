@@ -22,7 +22,7 @@ background-color: transparent;
 st.markdown(links, unsafe_allow_html=True)
 
 # add logo
-st.sidebar.image('../img/py50_logo_only.png', width=150)
+st.sidebar.image('img/py50_logo_only.png', width=150)
 
 # Page text
 datasets = 'https://github.com/tlint101/py50/tree/main/dataset'
