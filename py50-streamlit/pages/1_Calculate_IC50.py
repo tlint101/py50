@@ -48,22 +48,25 @@ else:
     st.warning('Please upload a .csv file.')
 
 # Select columns for calculation
-col_header = df.columns.to_list()
-drug_name = st.sidebar.selectbox('Drug Name:', (col_header))
-compound_conc = st.sidebar.selectbox('Compound Concentration:', (col_header))
-ave_response = st.sidebar.selectbox('Average Response column:', (col_header))
+if uploaded_file is not None:  # nested in if/else to remove initial traceback error
+    col_header = df.columns.to_list()
+    drug_name = st.sidebar.selectbox('Drug Name:', (col_header))
+    compound_conc = st.sidebar.selectbox('Drug Concentration:', (col_header))
+    ave_response = st.sidebar.selectbox('Average Response column:', (col_header))
 
-st.write('## Filter Table')
-df_calc = df.filter(items=(drug_name, compound_conc, ave_response), axis=1)
-st.dataframe(df_calc)
+    st.write('## Filter Table')
+    df_calc = df.filter(items=(drug_name, compound_conc, ave_response), axis=1)
+    st.dataframe(df_calc)
 
-# Calculate IC50
-data = Calculate(df)
-absolute = data.calculate_absolute_ic50(name_col=drug_name,
-                                        concentration_col=compound_conc,
-                                        response_col=ave_response)
+    # Calculate IC50
+    data = Calculate(df)
+    absolute = data.calculate_absolute_ic50(name_col=drug_name,
+                                            concentration_col=compound_conc,
+                                            response_col=ave_response)
 
-st.markdown('## Calculation Results')
+    st.markdown('## Calculation Results')
 
-st.dataframe(absolute, hide_index=True)
+    st.dataframe(absolute, hide_index=True)
+else:
+    pass
 
