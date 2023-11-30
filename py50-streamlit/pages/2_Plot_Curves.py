@@ -57,7 +57,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
     df_calc = df.filter(items=(drug_name, drug_conc, ave_response), axis=1)
     st.dataframe(df_calc)
 
-    plot_data = PlotCurve(df)
+    plot_data = PlotCurve(df) # todo fix the broken traceback messages. an if else statement can go here?
 
     # figure type
     fig_type = st.radio(
