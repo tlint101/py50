@@ -44,7 +44,7 @@ Documentation can be found [here](https://py50.readthedocs.io/en/latest/).
 
 A Jupyter Notebook demoing the code can be found [here](https://github.com/tlint101/py50/tree/main/tutorials).
 
-A blog post demoing the code can be found at [Practice Coding]() (under development)
+A blog post demoing the code can be found at [Practice in Code](https://tlint101.github.io/practice-in-code/)
 
 # Web Application [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://py50-app.streamlit.app)
 For those who are not versed in python coding, py50 has been converted into a web application using Streamlit!
