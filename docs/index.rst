@@ -1,10 +1,6 @@
 Welcome to py50 Documentation!
 ==============================
 
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/py50)
-[![Documentation Status](https://readthedocs.org/projects/py50/badge/?version=latest)](https://py50.readthedocs.io/en/latest/?badge=latest)
-[![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
-
 This site will document py50 and its usage.
 
 .. _github-repo:
