@@ -301,7 +301,6 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
 
             # xlabel title
             if xlabel is '':
-                st.sidebar.write('what?', xlabel)
                 xlabel = 'Logarithmic Concentration (µM)'
 
             # ylabel title
