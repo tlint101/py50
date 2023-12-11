@@ -2,7 +2,8 @@ import streamlit as st
 import pandas as pd
 from py50.calculate import Calculate
 
-st.set_page_config(page_title='py50: Calculation', page_icon='🧮')
+# Set page config
+st.set_page_config(page_title='py50: Calculation', page_icon='🧮', layout='wide')
 
 # Adjust hyperlink colorscheme
 links = """<style>
@@ -56,6 +57,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
 
     st.write('## Filter Table')
     df_calc = df.filter(items=(drug_name, compound_conc, ave_response), axis=1)
+    # todo add option for decreasing order
     st.dataframe(df_calc)
 
     # Calculate IC50
@@ -65,6 +67,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                                             response_col=ave_response)
 
     st.markdown('## Calculation Results')
+    # todo add st.markdown reminder that units are converted into µM
 
     st.dataframe(absolute, hide_index=True)
 else:

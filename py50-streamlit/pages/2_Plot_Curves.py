@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from py50.plotcurve import PlotCurve
 from py50.plot_settings import CBMARKERS, CBPALETTE
 
-st.set_page_config(page_title='py50: Plot Curves', page_icon='📈')
+# Set page config
+st.set_page_config(page_title='py50: Plot Curves', page_icon='📈', layout='centered')
 
 # Adjust hyperlink colorscheme
 links = """<style>
@@ -52,9 +53,9 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
     col_header = df.columns.to_list()
     drug_name = st.selectbox('Drug Name:', (col_header))
     drug_conc = st.selectbox('Drug Concentration:', (col_header))
-    ave_response = st.selectbox('Average Response column:', (col_header))
+    response = st.selectbox('Average Response column:', (col_header))
 
-    df_calc = df.filter(items=(drug_name, drug_conc, ave_response), axis=1)
+    df_calc = df.filter(items=(drug_name, drug_conc, response), axis=1)
     st.dataframe(df_calc)
 
     plot_data = PlotCurve(df) # todo fix the broken traceback messages. an if else statement can go here?
@@ -64,6 +65,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
         'Select figure type',
         ['Single Plot', 'Multi-Curve Plot', 'Grid Plot'])
 
+    # todo place each plot type in own python file for maintainability
     # Drug name conditions if figure type is Single PLot
     if fig_type == 'Single Plot':
         # Confirm DataFrame only contains 1 drug
@@ -71,6 +73,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             name = df_calc[drug_name].unique()
             drug_name = ', '.join(map(str, name))
             st.markdown('**Only 1 Drug in table:**')
+            st.write('Input drug concentration is converted from nM into µM')
             st.write('Looking at: ', drug_name)
         else:
             st.markdown('## 🚨Multiple Drugs Detected in File!🚨')
@@ -88,7 +91,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             font = st.sidebar.text_input(label='Figure Font', value=None, placeholder='DejaVu Sans')
             plot_title_size = st.sidebar.number_input(label='Title Size', value=None, placeholder='16')
             axis_fontsize = st.sidebar.number_input(label='Axis Fontsize', value=None, placeholder='14')
-            xlabel = st.sidebar.text_input(label='X-Axis Label', placeholder='Input X Label')
+            xlabel = st.sidebar.text_input(label='X-Axis Label (Default in µM)', placeholder='Input X Label')
             ylabel = st.sidebar.text_input(label='Y-Axis Label', placeholder='Input Y Label')
             ylimit = st.sidebar.number_input(label="Y-Axis Limit", value=None, placeholder='Input Limit')
 
@@ -108,14 +111,6 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             else:
                 axis_fontsize = 14
 
-            # xlabel title
-            if xlabel is '':
-                xlabel = 'Logarithmic Concentration (µM)'
-
-            # ylabel title
-            if ylabel is '':
-                ylabel = 'Inhibition %'
-
             # ylabel limit
             if ylimit is None:
                 ylimit = None
@@ -125,8 +120,8 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             plot_title = None
             plot_title_size = 16
             axis_fontsize = 14
-            xlabel = 'Logarithmic Concentration (µM)'
-            ylabel = 'Inhibition %'
+            xlabel = ''
+            ylabel = ''
             ylimit = None
 
         # Set line color options if checked
@@ -192,38 +187,76 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             xscale_ticks = (-2.5, 2.5)
 
         # Box settings
-        box_options = st.sidebar.checkbox(label='Highlight IC Value')
-        if box_options is True:
-            box = True
-            box_color = st.sidebar.text_input(label='Box Color', placeholder='Color Name or Hex Code')
-            box_intercept = st.sidebar.number_input(label='Response Percentage', value=None, placeholder='50')
-            if box_color:
-                box_color = box_color
-            else:
-                box_color = 'gray'
-            if box_intercept:
-                box_intercept = box_intercept
-            else:
-                box_intercept = 50
-            x_concentration = st.sidebar.number_input(label='Optional: Highlight By Specific Concentration (will override '
-                                                            'Y-Axis, input must match x-axis units)', value=None,
-                                                      placeholder=None)
-            if x_concentration:
-                x_concentration = x_concentration
-            else:
-                x_concentration = None
-        else:
+        highlight_options = st.sidebar.checkbox(label='Highlight IC Value')
+        if highlight_options is True:
+            box_highlight = st.sidebar.checkbox(label='Box Highlight')
+
+            # Set variables that will be changed by logic
             box = False
             box_color = 'gray'
             box_intercept = 50
             x_concentration = None
+            hline = 0
+            hline_color = 'gray'
+            vline = 0
+            vline_color = 'gray'
+
+            if box_highlight is True:
+                # Add logic for checked box_highlight
+                box = True
+                # Logic for box color
+                box_color = st.sidebar.text_input(label='Box Color', placeholder='Color Name or Hex Code')
+                if box_color == '':
+                    box_color = 'gray'
+                else:
+                    box_color = box_color
+                # Logic for box intercept
+                box_intercept = st.sidebar.number_input(label='Response Percentage', value=50, placeholder='50')
+                if box_intercept:
+                    box_intercept = box_intercept
+                # Logic for specific concentration
+                x_concentration = st.sidebar.number_input(
+                    label='Optional: Highlight By Specific Concentration (will override '
+                          'Y-Axis, input must match x-axis units)', value=None,
+                    placeholder=None)
+                if x_concentration:
+                    x_concentration = x_concentration
+            else:
+                box = False
+
+            # Logic for hline and vline # todo reorder logic
+            hline_highlight = st.sidebar.checkbox(label='Horizontal Line')
+            if hline_highlight is True:
+                hline = st.sidebar.number_input(label='Response Percentage', value=50, placeholder='0')
+                hline = hline  # Overwrite hline
+                hline_color = st.sidebar.text_input(label='Hline Color', value='gray', placeholder='Color Name or Hex Code')
+                hline_color = hline_color  # Overwrite color
+
+            vline_highlight = st.sidebar.checkbox(label='Vertical Line')
+            if vline_highlight is True:
+                vline = st.sidebar.number_input(label='Concentration', value=0.1, placeholder='X-Axis')
+                vline = vline  # Overwrite hline
+                vline_color = st.sidebar.text_input(label='Vline Color', value='gray', placeholder='Color Name or Hex Code')
+                vline_color = vline_color  # Overwrite color
+
+        else:
+            # Set variables that will be changed by logic
+            box = False
+            box_color = 'gray'
+            box_intercept = 50
+            x_concentration = None
+            # todo try to remove these variables
+            hline = 0
+            hline_color = 'gray'
+            vline = 0
+            vline_color = 'gray'
 
         fig_width = st.sidebar.slider(label='Figure Width:', min_value=1, max_value=50, value=8)
         fig_height = st.sidebar.slider(label='Figure Height:', min_value=1, max_value=50, value=6)
 
         # py50 plot function
         figure = plot_data.single_curve_plot(concentration_col=drug_conc,
-                                             response_col=ave_response,
+                                             response_col=response,
                                              plot_title=plot_title,
                                              plot_title_size=plot_title_size,
                                              drug_name=drug_name,
@@ -243,6 +276,10 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                                              box_color=box_color,
                                              box_intercept=box_intercept,
                                              x_concentration=x_concentration,
+                                             hline=hline,
+                                             hline_color=hline_color,
+                                             vline=vline,
+                                             vline_color=vline_color,
                                              figsize=(fig_width, fig_height))
         # Display figure
         st.pyplot(figure)
@@ -255,7 +292,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
         # Create a download button
         st.download_button("Download Figure", data=buf.read(), file_name="single_curve.png", mime="image/png")
 
-    # Multi Curve options
+    # Multi Curve options # todo place into own py file for maintainability
     elif fig_type is 'Multi-Curve Plot':
         # Confirm DataFrame only contains multiple drugs
         if len(df_calc[drug_name].unique()) > 1:
@@ -263,6 +300,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             name = ', '.join(map(str, name))
             st.markdown('### Multiple Drugs Detected in File:')
             st.write('Looking at: ', name)
+            st.write('**Note** Input drugs are converted into µM by default') # todo warning message
         elif len(df_calc[drug_name].unique()) <= 1:
             st.markdown('### 🚨Only 1 Drug Detected in File!!!!🚨')
         else:
@@ -279,7 +317,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             font = st.sidebar.text_input(label='Figure Font', value=None, placeholder='DejaVu Sans')
             plot_title_size = st.sidebar.number_input(label='Title Size', value=None, placeholder='16')
             axis_fontsize = st.sidebar.number_input(label='Axis Fontsize', value=None, placeholder='14')
-            xlabel = st.sidebar.text_input(label='X-Axis Label', placeholder='Input X Label')
+            xlabel = st.sidebar.text_input(label='X-Axis Label (Default in µM)', placeholder='Input X Label')
             ylabel = st.sidebar.text_input(label='Y-Axis Label', placeholder='Input Y Label')
             ylimit = st.sidebar.number_input(label="Y-Axis Limit", value=None, placeholder='Input Limit')
 
@@ -299,14 +337,6 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             else:
                 axis_fontsize = 14
 
-            # xlabel title
-            if xlabel is '':
-                xlabel = 'Logarithmic Concentration (µM)'
-
-            # ylabel title
-            if ylabel is '':
-                ylabel = 'Inhibition %'
-
             # ylabel limit
             if ylimit is None:
                 ylimit = None
@@ -316,8 +346,8 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             plot_title = None
             plot_title_size = 16
             axis_fontsize = 14
-            xlabel = 'Logarithmic Concentration (µM)'
-            ylabel = 'Inhibition %'
+            xlabel = ''
+            ylabel = ''
             ylimit = None
 
         # Set line color options if checked
@@ -384,9 +414,16 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             xscale = 'log'
             xscale_ticks = (-2.5, 2.5)
 
+        # todo reorder logic
+        # Set variables that will be changed by logic
+        hline = 0
+        hline_color = 'gray'
+        vline = 0
+        vline_color = 'gray'
+
         # Box settings
-        box_options = st.sidebar.checkbox(label='Highlight IC Value (Must include Legend)')
-        if box_options is True:
+        highlight_options = st.sidebar.checkbox(label='Highlight IC Value (Must include Legend)')
+        if highlight_options is True:
             box_target = st.sidebar.text_input(label='Drug Target to Highlight', placeholder='Drug Name')
             box_color = st.sidebar.text_input(label='Box Color', placeholder='Color Name or Hex Code')
             box_intercept = st.sidebar.number_input(label='Response Percentage', value=None, placeholder='50')
@@ -403,6 +440,27 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                 box_intercept = box_intercept
             else:
                 box_intercept = 50
+
+        # todo reorder logic
+        # Add hline and vline options
+        if highlight_options is True:
+            # Logic for hline and vline
+            hline_highlight = st.sidebar.checkbox(label='Horizontal Line')
+            if hline_highlight is True:
+                hline = st.sidebar.number_input(label='Response Percentage', value=0, placeholder='0')
+                hline = hline  # Overwrite hline
+                hline_color = st.sidebar.text_input(label='Hline Color', value='gray',
+                                                    placeholder='Color Name or Hex Code')
+                hline_color = hline_color  # Overwrite color
+
+            vline_highlight = st.sidebar.checkbox(label='Vertical Line')
+            if vline_highlight is True:
+                vline = st.sidebar.number_input(label='Concentration', value=0.1, placeholder='X-Axis')
+                vline = vline  # Overwrite hline
+                vline_color = st.sidebar.text_input(label='Vline Color', value='gray',
+                                                    placeholder='Color Name or Hex Code')
+                vline_color = vline_color  # Overwrite color
+
         else:
             box_target = False
             box_color = 'gray'
@@ -412,7 +470,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
         fig_height = st.sidebar.slider(label='Figure Height:', min_value=1, max_value=50, value=4)
 
         figure = plot_data.multi_curve_plot(concentration_col=drug_conc,
-                                            response_col=ave_response,
+                                            response_col=response,
                                             name_col=drug_name,
                                             plot_title=plot_title,
                                             plot_title_size=plot_title_size,
@@ -431,6 +489,10 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                                             box_target=box_target,
                                             box_color=box_color,
                                             box_intercept=box_intercept,
+                                            hline=hline,
+                                            hline_color=hline_color,
+                                            vline=vline,
+                                            vline_color=vline_color,
                                             figsize=(fig_width, fig_height))
 
         # Display figure
@@ -468,7 +530,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             font = st.sidebar.text_input(label='Figure Font', value=None, placeholder='DejaVu Sans')
             plot_title_size = st.sidebar.number_input(label='Title Size', value=None, placeholder='16')
             axis_fontsize = st.sidebar.number_input(label='Axis Fontsize', value=None, placeholder='14')
-            xlabel = st.sidebar.text_input(label='X-Axis Label', placeholder='Input X Label')
+            xlabel = st.sidebar.text_input(label='X-Axis Label (Default in µM)', placeholder='Input X Label')
             ylabel = st.sidebar.text_input(label='Y-Axis Label', placeholder='Input Y Label')
             ylimit = st.sidebar.number_input(label="Y-Axis Limit", value=None, placeholder='Input Limit')
 
@@ -488,14 +550,6 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             else:
                 axis_fontsize = 14
 
-            # xlabel title
-            if xlabel is '':
-                xlabel = 'Logarithmic Concentration (µM)'
-
-            # ylabel title
-            if ylabel is '':
-                ylabel = 'Inhibition %'
-
             # ylabel limit
             if ylimit is None:
                 ylimit = None
@@ -505,8 +559,8 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             plot_title = None
             plot_title_size = 16
             axis_fontsize = 14
-            xlabel = 'Logarithmic Concentration (µM)'
-            ylabel = 'Inhibition %'
+            xlabel = ''
+            ylabel = ''
             ylimit = None
 
         # Set line color options if checked
@@ -573,9 +627,14 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             xscale = 'log'
             xscale_ticks = (-2.5, 2.5)
 
+        hline = 0
+        hline_color = 'gray'
+        vline = 0
+        vline_color = 'gray'
+
         # Box settings
-        box_options = st.sidebar.checkbox(label='Highlight IC Value (Must include Legend)')
-        if box_options is True:
+        highlight_options = st.sidebar.checkbox(label='Highlight IC Value (Must include Legend)')
+        if highlight_options is True:
             box_color = st.sidebar.text_input(label='Box Color', placeholder='Color Name or Hex Code')
             box_intercept = st.sidebar.number_input(label='Response Percentage', value=None, placeholder='50')
             if box_color:
@@ -586,16 +645,37 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                 box_intercept = box_intercept
             else:
                 box_intercept = 50
+
+        # todo reorder logic
+        # Add hline and vline options
+        if highlight_options is True:
+            # Logic for hline and vline
+            hline_highlight = st.sidebar.checkbox(label='Horizontal Line')
+            if hline_highlight is True:
+                hline = st.sidebar.number_input(label='Response Percentage', value=0, placeholder='0')
+                hline = hline  # Overwrite hline
+                hline_color = st.sidebar.text_input(label='Hline Color', value='gray',
+                                                    placeholder='Color Name or Hex Code')
+                hline_color = hline_color  # Overwrite color
+
+            vline_highlight = st.sidebar.checkbox(label='Vertical Line')
+            if vline_highlight is True:
+                vline = st.sidebar.number_input(label='Concentration', value=0.1, placeholder='X-Axis')
+                vline = vline  # Overwrite hline
+                vline_color = st.sidebar.text_input(label='Vline Color', value='gray',
+                                                    placeholder='Color Name or Hex Code')
+                vline_color = vline_color  # Overwrite color
+
         else:
-            box_options = False
+            highlight_options = False
             box_color = 'gray'
             box_intercept = None
 
-        fig_width = st.sidebar.slider(label='Figure Width:', min_value=1, max_value=50, value=10)
-        fig_height = st.sidebar.slider(label='Figure Height:', min_value=1, max_value=50, value=8)
+        fig_width = st.sidebar.slider(label='Figure Width:', min_value=1, max_value=50, value=8)
+        fig_height = st.sidebar.slider(label='Figure Height:', min_value=1, max_value=50, value=4)
 
         figure = plot_data.grid_curve_plot(concentration_col=drug_conc,
-                                           response_col=ave_response,
+                                           response_col=response,
                                            name_col=drug_name,
                                            plot_title=plot_title,
                                            plot_title_size=plot_title_size,
@@ -607,9 +687,13 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                                            ylimit=ylimit,
                                            line_color=line_color,
                                            line_width=line_width,
-                                           box=box_options,
+                                           box=highlight_options,
                                            box_color=box_color,
                                            box_intercept=box_intercept,
+                                           hline=hline,
+                                           hline_color=hline_color,
+                                           vline=vline,
+                                           vline_color=vline_color,
                                            figsize=(fig_width, fig_height))
         # Display figure
         st.pyplot(figure)

@@ -19,8 +19,10 @@ background-color: transparent;
 """
 st.markdown(links, unsafe_allow_html=True)
 
+
+
 # Place logo image at top of page
-st.image('img/py50_full.png') # remove "../" before you upload to streamlit
+st.image('img/py50_full.png', )  # remove "../" before you upload to streamlit
 st.write('# Welcome to py50!')  # add a title
 
 github = 'https://github.com/tlint101/py50'
