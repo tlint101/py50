@@ -277,6 +277,7 @@ class Calculate:
                 print('Assuming that input concentrations are in nM!')
                 x_fit = np.logspace(0, 5, 100)
 
+            # todo fix significant figures for negative and positive curves
             # Calculate from parameters 4PL equation
             if reverse == 1:
                 y_fit = self.reverse_fourpl(x_fit, *params)

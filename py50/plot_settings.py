@@ -18,7 +18,7 @@ assert len(CBPALETTE) == len(CBMARKERS)
 
 
 class CurveSettings:
-    def scale_units(self, xscale_unit, xscale_ticks):
+    def scale_units(self, xscale_unit, xscale_ticks): # todo have xscale_unit be automatic based on concentration?
         """Logic function for curve plot"""
 
         if xscale_unit == None and xscale_ticks == None:
