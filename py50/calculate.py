@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
+from scipy.interpolate import interp1d
 
 
 class Calculate:
@@ -46,6 +47,22 @@ class Calculate:
         :return: equation
         """
         return minimum + (maximum - minimum) / (1 + (concentration / ic50) ** hill_slope)
+
+    @staticmethod
+    def reverse_fourpl(concentration, minimum, maximum, ic50, hill_slope):
+        """
+        Four-Parameter Logistic (4PL) Equation. This reverse function will graph the sigmoid curve from 100% to 0%
+
+
+        :param concentration: concentration
+        :param minimum: minimum concentration in drug query (bottom plateau)
+        :param maximum: maximum concentration for drug query (top plateau)
+        :param ic50: Concentration at inflection point (where curve shifts from up or down)
+        :param hill_slope: Steepness of hte curve (Hill Slope)
+
+        :return: equation
+        """
+        return minimum + (maximum - minimum) / (1 + (concentration / ic50) ** -hill_slope)
 
     # Calculate X and Y_fit to  coordinates for line curve
     def fit_curve(self, name_col, concentration_col, response_col, initial_guess=None):  # Not sure if I need this
@@ -93,8 +110,18 @@ class Calculate:
             # Create an array of x coordinates (concentration values)
             x_coordinates = np.linspace(min(concentration), max(concentration), 100)
 
+            # tag response col to determine direction of fourpl equation
+            drug_query.sort_values(by=concentration, inplace=True)
+            if drug_query[response].iloc[0] > drug_query[response].iloc[-1]:  # Sigmoid curve 100% to 0%
+                reverse = 1  # Tag direction of sigmoid
+            elif drug_query[response].iloc[0] < drug_query[response].iloc[-1]:  # sigmoid curve 0% to 100%
+                reverse = 0  # Tag direction of sigmoid
+
             # Calculate the corresponding y coordinates (response values) using the fitted parameters
-            y_fit_coordinates = self.fourpl(x_coordinates, maximum, minimum, ic50, hill_slope)
+            if reverse == 1:
+                y_fit_coordinates = self.reverse_fourpl(x_coordinates, maximum, minimum, ic50, hill_slope)
+            else:
+                y_fit_coordinates = self.fourpl(x_coordinates, maximum, minimum, ic50, hill_slope)
 
             # Generate DataFrame from parameters
             values.append({
@@ -151,7 +178,6 @@ class Calculate:
     # Function to calculate curve fits.
     # This method will be used to reduce the functions in the calculating methods below.
     # This will loop through each group.
-    # todo rename function. Separate from final function calculate_ic50
     def relative_calculation(self, name_col, concentration_col, response_col, input_units='nM'):
         """
         Calculate relative IC50 values for a given drug.
@@ -195,7 +221,6 @@ class Calculate:
             })
         return values
 
-    # todo rename function. Separate from final function calculate_absolute_ic50
     def absolute_calculation(self, name_col, concentration_col, response_col, input_units='nM'):
         """
         Calculate Relative and Absolute IC50 values for a given drug.
@@ -224,10 +249,20 @@ class Calculate:
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
 
+            # Set initial guess for 4PL equation
             initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
 
-            # Fit the data to the 4PL equation using non-linear regression
-            params, covariance, *_ = curve_fit(self.fourpl, concentration, response, p0=[initial_guess], maxfev=10000)
+            # tag response col to determine direction of fourpl equation and fit to 4PL equation
+            # drug_query.sort_values(by=concentration_col, inplace=True)
+            if drug_query[response_col].iloc[0] > drug_query[response_col].iloc[-1]:  # Sigmoid curve 100% to 0%
+                params, covariance, *_ = curve_fit(self.reverse_fourpl, concentration, response, p0=[initial_guess],
+                                                   maxfev=10000)
+                reverse = 1  # Tag direction of sigmoid curve
+
+            elif drug_query[response_col].iloc[0] < drug_query[response_col].iloc[-1]:  # sigmoid curve 0% to 100%
+                params, covariance, *_ = curve_fit(self.fourpl, concentration, response, p0=[initial_guess],
+                                                   maxfev=10000)
+                reverse = 0  # Tag direction of sigmoid curve
 
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
@@ -236,17 +271,23 @@ class Calculate:
             # Create constraints for the concentration values. This would be for extracting absolute IC50 value
             if input_units == 'nM':
                 x_fit = np.logspace(0, 5, 100)
-            elif input_units == 'uM':
+            elif input_units == 'uM' or input_units == 'µM':
                 x_fit = np.logspace(-3, 2, 100)
             else:
-                print('Assuming that =input concentrations is in nM!')
+                print('Assuming that input concentrations are in nM!')
                 x_fit = np.logspace(0, 5, 100)
 
             # Calculate from parameters 4PL equation
-            y_fit = self.fourpl(x_fit, *params)
-            y_intersection = 50
-            x_intersection = np.interp(y_intersection, y_fit, x_fit)
-            # print(f'{drug} ABSOLUTE IC50:', x_intersection * 1000, 'nM')
+            if reverse == 1:
+                y_fit = self.reverse_fourpl(x_fit, *params)
+                y_intersection = 50
+                interpretation = interp1d(y_fit, x_fit, kind='linear', fill_value="extrapolate")
+                x_intersection = np.round(interpretation(y_intersection), 3)  # give results and round to 3 sig figs
+                hill_slope = -1 * hill_slope # ensure hill_slope is negative
+            else:
+                y_fit = self.fourpl(x_fit, *params)
+                y_intersection = 50
+                x_intersection = np.interp(y_intersection, y_fit, x_fit)
 
             # Generate DataFrame from parameters
             values.append({
@@ -278,8 +319,8 @@ class Calculate:
 
     def calculate_absolute_ic50(self, name_col, concentration_col, response_col, input_units='nM'):
         """
-        This will calculate the Relative and Absolute IC50 for query. Input will be a DataFrame. The following parameters are needed:
-
+        This will calculate the Relative and Absolute IC50 for query. Input will be a DataFrame. The
+        following parameters are needed:
 
         :param name_col: Name column from DataFrame
         :param concentration_col: Concentration column from DataFrame
