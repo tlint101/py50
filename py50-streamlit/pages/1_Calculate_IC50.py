@@ -55,6 +55,12 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
     compound_conc = st.sidebar.selectbox('Drug Concentration:', (col_header))
     ave_response = st.sidebar.selectbox('Average Response column:', (col_header))
 
+    # todo add this function, automatically rename DataFrame header
+    # units = st.sidebar.radio(
+    #     'Input Concentration Units',
+    #     ['nM', 'µM'],
+    #     captions=['Nanomolor', 'Micromolar'])
+
     st.write('## Filter Table')
     df_calc = df.filter(items=(drug_name, compound_conc, ave_response), axis=1)
     # todo add option for decreasing order
@@ -72,4 +78,3 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
     st.dataframe(absolute, hide_index=True)
 else:
     pass
-
