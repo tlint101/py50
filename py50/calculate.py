@@ -252,14 +252,18 @@ class Calculate:
             # Set initial guess for 4PL equation
             initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
 
+            # set a new coy of the DataFrame to avoid warnings
+            query = drug_query.copy()
+            query.sort_values(by=concentration_col, inplace=True)
+
             # tag response col to determine direction of fourpl equation and fit to 4PL equation
             # drug_query.sort_values(by=concentration_col, inplace=True)
-            if drug_query[response_col].iloc[0] > drug_query[response_col].iloc[-1]:  # Sigmoid curve 100% to 0%
+            if query[response_col].iloc[0] > query[response_col].iloc[-1]:  # Sigmoid curve 100% to 0%
                 params, covariance, *_ = curve_fit(self.reverse_fourpl, concentration, response, p0=[initial_guess],
                                                    maxfev=10000)
                 reverse = 1  # Tag direction of sigmoid curve
 
-            elif drug_query[response_col].iloc[0] < drug_query[response_col].iloc[-1]:  # sigmoid curve 0% to 100%
+            elif query[response_col].iloc[0] < query[response_col].iloc[-1]:  # sigmoid curve 0% to 100%
                 params, covariance, *_ = curve_fit(self.fourpl, concentration, response, p0=[initial_guess],
                                                    maxfev=10000)
                 reverse = 0  # Tag direction of sigmoid curve
@@ -284,7 +288,7 @@ class Calculate:
                 y_intersection = 50
                 interpretation = interp1d(y_fit, x_fit, kind='linear', fill_value="extrapolate")
                 x_intersection = np.round(interpretation(y_intersection), 3)  # give results and round to 3 sig figs
-                hill_slope = -1 * hill_slope # ensure hill_slope is negative
+                hill_slope = -1 * hill_slope  # ensure hill_slope is negative
             else:
                 y_fit = self.fourpl(x_fit, *params)
                 y_intersection = 50
