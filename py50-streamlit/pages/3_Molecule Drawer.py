@@ -11,8 +11,8 @@ st.sidebar.image('img/py50_logo_only.png', width=150)
 # Page text
 datasets = 'https://github.com/tlint101/py50/tree/main/dataset'
 st.markdown('# Draw Molecular Structures')
-st.write('This page will allow users to draw chemical structures of their molecules. Users can translate a smles string'
-         'into a 2D image or vice versa.')
+st.write('This page will allow users to draw chemical structures of their molecules. Users can translate a smiles string'
+         ' into a 2D image or vice versa.')
 add_vertical_space(1)
 
 molecule = st.text_input(label='', placeholder='Input Smiles String')
