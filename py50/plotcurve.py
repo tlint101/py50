@@ -6,11 +6,10 @@ import itertools
 from scipy.optimize import curve_fit
 from scipy.interpolate import interp1d
 from py50.plot_settings import CBMARKERS, CBPALETTE, CurveSettings
-from py50.calculate import Calculate
+from py50.calculator import Calculator
 
 
 # todo Generate composite functions
-# todo organize logic for maintainability
 class PlotCurve:
     # Will accept input DataFrame and output said DataFrame for double checking.
     def __init__(self, df):
@@ -74,15 +73,17 @@ class PlotCurve:
                           box_color='gray',
                           box_intercept=50,
                           x_concentration=None,
-                          hline=0,
+                          hline=None,
                           hline_color='gray',
-                          vline=0,
+                          vline=None,
                           vline_color='gray',
                           figsize=(6.4, 4.8),
-                          output_filename=None):
+                          output_filename=None,
+                          verbose=None):
         """
         Generate a plot. This will only generate one plot for one drug. As a result, the name of the drug must be given.
 
+        :param verbose: # todo fill out param
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param drug_name: Name of drug for plotting
@@ -139,34 +140,28 @@ class PlotCurve:
         concentration = df[concentration_col]
         response = df[response_col]
 
+        # Create constraints for the concentration values. Only specificy xscale_unit will use default ticks
+        x_fit = CurveSettings().scale_units(xscale_unit, xscale_ticks, verbose=verbose)
+        print('xscale_ticks', xscale_ticks)
+        print('xscale_unit', xscale_unit)
+
         # Function to set plot scales
-        concentration = CurveSettings().xscale(xscale_unit, concentration)
+        concentration = CurveSettings().xscale(xscale_unit, concentration, verbose=verbose)
 
         # Set initial guess for 4PL equation
         initial_guess = [max(response), min(response), 1.0, 1.0]
 
         # Perform constrained nonlinear regression to estimate the parameters
         # set conditions for initial_guess for positive or negative shape of sigmoidal curve
-        if df[response_col].iloc[0] > df[response_col].iloc[-1]:  # Sigmoid curve 100% to 0%
-            params, covariance, *_ = curve_fit(Calculate.reverse_fourpl, concentration, response, p0=[initial_guess],
-                                                   maxfev=10000)
-            reverse = 1  # Tag direction of sigmoid curve
-
-        elif df[response_col].iloc[0] < df[response_col].iloc[-1]:  # sigmoid curve 0% to 100%
-            params, covariance, *_ = curve_fit(Calculate.fourpl, concentration, response, p0=[initial_guess],
-                                                   maxfev=10000)
-            reverse = 0  # Tag direction of sigmoid curve
-
-        # Create constraints for the concentration values. Only specificy xscale_unit will use default ticks
-        x_fit = CurveSettings().scale_units(xscale_unit, xscale_ticks)
+        reverse, params, covariance = Calculator(df).calc_logic(df=df, concentration=concentration,
+                                                                response_col=response_col, initial_guess=initial_guess,
+                                                                response=response)
 
         # Compute the corresponding response values using the 4PL equation and fitted parameters
         if reverse == 1:
-            y_fit = Calculate.reverse_fourpl(x_fit, *params)
+            y_fit = Calculator.reverse_fourpl(x_fit, *params)
         else:
-            y_fit = Calculate.fourpl(x_fit, *params)
-
-        # y_fit = Calculate.fourpl(x_fit, *params)
+            y_fit = Calculator.fourpl(x_fit, *params)
 
         # Boolean check for marker
         if marker is not None:
@@ -193,7 +188,7 @@ class PlotCurve:
 
         min_value = min(response)
         if min_value < 0:
-            ax.set_ylim(min_value-5, max_y)
+            ax.set_ylim(min_value - 5, max_y)
         else:
             ax.set_ylim(0, max_y)
 
@@ -205,23 +200,35 @@ class PlotCurve:
             y_intersection = box_intercept
             interpretation = interp1d(y_fit, x_fit, kind='linear', fill_value="extrapolate")
             x_intersection = interpretation(y_intersection)
+            if verbose is True:
+                print('Box X intersection: ', np.round(x_intersection, 3), f' {xscale_unit}')
+                print('Box Y intersection: ', np.round(y_intersection, 3), f' {xscale_unit}')
+
         elif box_intercept and reverse == 0:
             y_intersection = box_intercept
             x_intersection = np.interp(y_intersection, y_fit, x_fit)
+            if verbose is True:
+                print('Box X intersection: ', x_intersection)
+                print('Box Y intersection: ', y_intersection)
 
         if x_concentration is not None:
             x_intersection = x_concentration
             y_intersection = np.interp(x_intersection, x_fit, y_fit)
-            print('Box X intersection: ', x_intersection)
-            print('Box Y intersection: ', y_intersection)
+
+            if verbose is True:
+                print('Box X intersection: ', x_intersection)
+                print('Box Y intersection: ', y_intersection)
 
         # Calculate yaxis scale for box highlight
-        CurveSettings().yaxis_scale(box=box, reverse=reverse, y_intersection=y_intersection, x_intersection=x_intersection,
-                    box_color=box_color)
+        CurveSettings().yaxis_scale(box=box, reverse=reverse, y_intersection=y_intersection,
+                                    x_intersection=x_intersection,
+                                    box_color=box_color)
 
         # Arguments for hline and vline
-        plt.axhline(y=hline, color=hline_color, linestyle='--')
-        plt.axvline(x=vline, color=vline_color, linestyle='--')
+        if hline is not None:
+            plt.axhline(y=hline, color=hline_color, linestyle='--')
+        if vline is not None:
+            plt.axvline(x=vline, color=vline_color, linestyle='--')
 
         # Figure legend
         if legend:
@@ -262,10 +269,12 @@ class PlotCurve:
                          vline=None,
                          vline_color='gray',
                          figsize=(6.4, 4.8),
-                         output_filename=None):
+                         output_filename=None,
+                         verbose=None):
         """
         Generate a plot with multiple curves.
 
+        :param verbose: # todo fill out param
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param name_col: Name column from DataFrame
@@ -316,10 +325,14 @@ class PlotCurve:
             concentration = df[concentration_col]
             response = df[response_col]
 
+            # Create constraints for the concentration values. Only specificy xscale_unit will use default ticks
+            x_fit = CurveSettings().scale_units(xscale_unit, xscale_ticks, verbose=verbose)
+            x_fit_list.append(x_fit)
+
             # Convert concentration for scaling
             concentration = CurveSettings().xscale(xscale_unit, concentration)
 
-
+            # Append values for each drug into list
             concentration_for_list = concentration.values  # Convert into np.array
             concentration_list.append(concentration_for_list)
             response_for_list = response.values
@@ -330,28 +343,28 @@ class PlotCurve:
             # Perform constrained nonlinear regression to estimate the parameters
             # Set conditions for initial_guess for positive or negative shape of sigmoidal curve
             if df[response_col].iloc[0] > df[response_col].iloc[-1]:  # Sigmoid curve 100% to 0%
-                params, covariance, *_ = curve_fit(Calculate.reverse_fourpl, concentration, response,
-                                                   p0=[initial_guess],
-                                                   maxfev=10000)
+                # Set bounds based on your understanding of the parameter ranges
+                lower_bounds = [min(response), min(response), min(concentration), 0]
+                upper_bounds = [max(response), max(response), max(concentration), 10]
+                params, covariance, *_ = curve_fit(Calculator.reverse_fourpl, concentration, response,
+                                                   p0=[initial_guess], maxfev=10000,
+                                                   bounds=(lower_bounds, upper_bounds))
                 reverse = 1  # Tag direction of sigmoid curve
 
             elif df[response_col].iloc[0] < df[response_col].iloc[-1]:  # sigmoid curve 0% to 100%
-                params, covariance, *_ = curve_fit(Calculate.fourpl, concentration, response, p0=[initial_guess],
-                                                   maxfev=10000)
+                params, covariance, *_ = curve_fit(Calculator.fourpl, concentration, response, p0=[initial_guess],
+                                                   maxfev=10000, bounds=[[0.0, 1.0], [0.0, 1.0]])
                 reverse = 0  # Tag direction of sigmoid curve
 
             # Generate script to calculate the covariance and plot them
             # todo Calculate standard deviations from the covariance matrix
-            std_dev = np.sqrt(np.diag(covariance))
-
-            x_fit = CurveSettings().scale_units(xscale_unit, xscale_ticks)
-            x_fit_list.append(x_fit)
+            # std_dev = np.sqrt(np.diag(covariance))
 
             # Compute the corresponding response values using the 4PL equation and fitted parameters
             if reverse == 1:
-                y_fit = Calculate.reverse_fourpl(x_fit, *params)
+                y_fit = Calculator.reverse_fourpl(x_fit, *params)
             else:
-                y_fit = Calculate.fourpl(x_fit, *params)
+                y_fit = Calculator.fourpl(x_fit, *params)
             y_fit_list.append(y_fit)
 
         # Generate figure
@@ -416,7 +429,8 @@ class PlotCurve:
                     if name_index.size > 0:
                         name_index = name_index[0]
                         # match data to drug using y_fit_list[name_index]
-                        interpretation = interp1d(y_fit_list[name_index], x_fit, kind='linear', fill_value="extrapolate")
+                        interpretation = interp1d(y_fit_list[name_index], x_fit, kind='linear',
+                                                  fill_value="extrapolate")
                         x_intersection = interpretation(y_intersection)
                     ymin = 0  # Starts at the bottom of the plot
                     ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
@@ -441,8 +455,10 @@ class PlotCurve:
                 print('Drug name does not match box target!')
 
         # Arguments for hline and vline
-        plt.axhline(y=hline, color=hline_color, linestyle='--')
-        plt.axvline(x=vline, color=vline_color, linestyle='--')
+        if hline is not None:
+            plt.axhline(y=hline, color=hline_color, linestyle='--')
+        if vline is not None:
+            plt.axvline(x=vline, color=vline_color, linestyle='--')
 
         # Figure legend
         # Extract elements (Line, Scatterplot, and color) from figures and append into a list for generating legend
@@ -486,10 +502,12 @@ class PlotCurve:
                         vline=None,
                         vline_color='gray',
                         figsize=(8.4, 4.8),
-                        output_filename=None):
+                        output_filename=None,
+                        verbose=None):
         """
         Generate multiple curves in a grid.
 
+        :param verbose: # todo fill out param
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param name_col: Name column from DataFrame
@@ -525,6 +543,7 @@ class PlotCurve:
         global x_fit
         name_list = np.unique(self.df[name_col])
 
+        # Generate lists for modifying plots (vline, box, etc)
         concentration_list = []
         response_list = []
         y_fit_list = []
@@ -537,9 +556,10 @@ class PlotCurve:
             concentration = df[concentration_col]
             response = df[response_col]
 
-            # Convert concentration
-            concentration = CurveSettings().xscale(xscale_unit, concentration)
+            # Convert concentration by input unit. Input unit is nM by default. Program will change nM to µM by default.
+            x_fit = CurveSettings().xscale(xscale_unit, concentration)
 
+            # Append values for each drug into list
             concentration_for_list = concentration.values  # Convert into np.array
             concentration_list.append(concentration_for_list)
             response_for_list = response.values
@@ -549,24 +569,24 @@ class PlotCurve:
             initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
 
             if df[response_col].iloc[0] > df[response_col].iloc[-1]:  # Sigmoid curve 100% to 0%
-                params, covariance, *_ = curve_fit(Calculate.reverse_fourpl, concentration, response,
+                params, covariance, *_ = curve_fit(Calculator.reverse_fourpl, concentration, response,
                                                    p0=[initial_guess],
                                                    maxfev=10000)
                 reverse = 1  # Tag direction of sigmoid curve
 
             elif df[response_col].iloc[0] < df[response_col].iloc[-1]:  # sigmoid curve 0% to 100%
-                params, covariance, *_ = curve_fit(Calculate.fourpl, concentration, response, p0=[initial_guess],
+                params, covariance, *_ = curve_fit(Calculator.fourpl, concentration, response, p0=[initial_guess],
                                                    maxfev=10000)
                 reverse = 0  # Tag direction of sigmoid curve
 
-            x_fit = CurveSettings().scale_units(xscale_unit, xscale_ticks)
+            x_fit = CurveSettings().scale_units(xscale_unit, xscale_ticks, verbose=verbose)
             x_fit_list.append(x_fit)
 
             # Compute the corresponding response values using the 4PL equation and fitted parameters
             if reverse == 1:
-                y_fit = Calculate.reverse_fourpl(x_fit, *params)
+                y_fit = Calculator.reverse_fourpl(x_fit, *params)
             else:
-                y_fit = Calculate.fourpl(x_fit, *params)
+                y_fit = Calculator.fourpl(x_fit, *params)
             y_fit_list.append(y_fit)
 
         # Set up color options for line colors
@@ -641,7 +661,7 @@ class PlotCurve:
                         axes[i, j].hlines(y=y_intersection, xmin=0, xmax=x_concentration, colors=box_color,
                                           linestyles='--')
 
-                    elif box_intercept is not None and isinstance(box_intercept, (int, float)) and reverse ==0:
+                    elif box_intercept is not None and isinstance(box_intercept, (int, float)) and reverse == 0:
                         y_intersection = box_intercept
 
                         x_concentration = np.interp(y_intersection, y_fit_list[i * column_num + j],
@@ -659,10 +679,10 @@ class PlotCurve:
 
                 # Arguments for hline and vline
                 if hline is not None:
-                    axes[i,j].axhline(y=hline, color=hline_color, linestyle='--')
+                    axes[i, j].axhline(y=hline, color=hline_color, linestyle='--')
 
                 if vline is not None:
-                    axes[i,j].axvline(x=vline, color=vline_color, linestyle='--')
+                    axes[i, j].axvline(x=vline, color=vline_color, linestyle='--')
 
                 # Set axis labels
                 axes[i, j].set_xlabel(xlabel)
