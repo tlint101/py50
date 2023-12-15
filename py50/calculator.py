@@ -87,19 +87,41 @@ class Calculator:
         """
         return minimum + (maximum - minimum) / (1 + (concentration / ic50) ** -hill_slope)
 
+    def verbose_calculation(self, drug, input_units, verbose):
+        """
+        Logic function to calculate unit concentration for Relative and Absolute IC50 calculation. Information will
+        detail drug name and concentration unit. Units available are nanomolar (nM) or micromolar (µM or uM).
+        :param drug: Input drug name.
+        :param input_units: Input drug concentration. Units available are nanomolar (nM) or micromolar (uM or µM)
+        :param verbose: Print out information regarding the concentration unit.
+
+        :return: input_unit concentration
+        """
+        # Verbose conditions
+        if verbose is True:
+            # Logic to append concentration units to output DataFrame
+            if input_units is None:
+                conc_unit = 'nM'
+            elif input_units == 'uM' or input_units == 'µM':
+                conc_unit = 'µM'
+            else:
+                conc_unit = input_units
+            print(f'{drug} concentration is in {conc_unit}!')
+
     # This method will be used to reduce the functions in the calculating methods below.
     # This will loop through each drug item.
     def relative_calculation(self, name_col, concentration_col, response_col, input_units, verbose=None):
         """
-        Calculate relative IC50 values for a given drug.
+        Calculate relative IC50 values for a given drug. Output will be a dictionary that will be converted into a
+        pandas dataframe using the calculate_ic50() function.
 
         :param name_col: Name column from DataFrame.
         :param concentration_col: Concentration column from DataFrame.
         :param response_col: Response column from DataFrame.
         :param input_units: Concentration units for tested drug. By default, units given will be in nM.
-        :param verbose:  # todo update params
+        :param verbose: Output drug concentration units.
 
-        :return: A list of a dictionary containing drug name, maximum response, minimum response, IC50 (relative) and hill slope.
+        :return: A dictionary containing drug name, maximum response, minimum response, IC50 (relative) and hill slope.
         """
         # Set variables from funtion and convert name_col to np array
         global params, conc_unit
@@ -160,43 +182,23 @@ class Calculator:
             })
         return values
 
-    # todo add params
-    def verbose_calculation(self, drug, input_units, verbose):
-        """
-        Prints out verbose information about for Relative and Absolute IC50 calculation. Information will detail drug
-        name and concentration unit. Units available are nanomolar (nM) or micromolar (µM or uM)
-        :param drug:
-        :param input_units:
-        :param verbose:
-        :return:
-        """
-        # Verbose conditions
-        if verbose is True:
-            # Logic to append concentration units to output DataFrame
-            if input_units is None:
-                conc_unit = 'nM'
-            elif input_units == 'uM' or input_units == 'µM':
-                conc_unit = 'µM'
-            else:
-                conc_unit = input_units
-            print(f'{drug} concentration is in {conc_unit}!')
-
     def absolute_calculation(self, name_col, concentration_col, response_col, input_units, verbose=None):
         """
-        Calculate Relative and Absolute IC50 values for a given drug.
+        Calculate relative IC50 values for a given drug. Output will be a dictionary that will be converted into a
+        pandas dataframe using the calculate_absolute_ic50() function.
 
         :param name_col: Name column from DataFrame
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param input_units: Concentration units for tested drug. By default, units given will be in nM.
-        :param verbose:  # todo update params
+        :param verbose:  Output drug concentration units.
 
-        :return: A list of a dictionary containing drug name, maximum response, minimum response, relative IC50, \
+        :return: A dictionary containing drug name, maximum response, minimum response, relative IC50,
          absolute IC50, and hill slope.
         """
 
         # Set variables from funtion and convert name_col to np array
-        global params
+        global params, conc_unit
         name_col = name_col
         name = self.df[name_col].values
 
@@ -293,15 +295,16 @@ class Calculator:
             reverse = 0  # Tag direction of sigmoid curve
         return reverse, params, covariance
 
-    def calculate_ic50(self, name_col, concentration_col, response_col, input_units='nM', verbose=None):
+    def calculate_ic50(self, name_col, concentration_col, response_col, input_units=None, verbose=None):
         """
-        This will calculate the Relative IC50 for query. Input will be a DataFrame. The following parameters are needed:
+        Calculations previously performed in relative_calculation(). The dictionary results are converted into into a
+        pandas DataFrame
 
         :param name_col: Name column from DataFrame
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param input_units:
-        :param verbose:  # todo update params
+        :param verbose: Output drug concentration units.
 
         :return: DataFrame generated from the list from the relative_calculation method
         """
@@ -312,16 +315,16 @@ class Calculator:
         df = pd.DataFrame(values)
         return df
 
-    def calculate_absolute_ic50(self, name_col, concentration_col, response_col, input_units='nM', verbose=None):
+    def calculate_absolute_ic50(self, name_col, concentration_col, response_col, input_units=None, verbose=None):
         """
-        This will calculate the Relative and Absolute IC50 for query. Input will be a DataFrame. The
-        following parameters are needed:
+        Calculations previously performed in absolute_calculation(). The dictionary results are converted into into a
+        pandas DataFrame
 
         :param name_col: Name column from DataFrame
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param input_units: Concentration units for tested drug. By default, units given will be in nM.
-        :param verbose:  # todo update params
+        :param verbose:  Output drug concentration units.
 
         :return: DataFrame generated from the list from the absolute_calculation method
         """

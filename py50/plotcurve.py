@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import pandas as pd
 import itertools
-from scipy.optimize import curve_fit
 from scipy.interpolate import interp1d
 from py50.plot_settings import CBMARKERS, CBPALETTE, CurveSettings
 from py50.calculator import Calculator
@@ -81,9 +80,9 @@ class PlotCurve:
                           output_filename=None,
                           verbose=None):
         """
-        Generate a plot. This will only generate one plot for one drug. As a result, the name of the drug must be given.
+        Generate a dose-response curve for a single drug target. Because a data table can contain multiple drugs, user
+        must specify specific target.
 
-        :param verbose: # todo fill out param
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param drug_name: Name of drug for plotting
@@ -92,8 +91,10 @@ class PlotCurve:
         :param xlabel: Title of the X-axis
         :param ylabel: Title of the Y-axis
         :param axis_fontsize: Modify axis label font size
-        :param conc_unit: Input unit of concentration. Can accept nanomolar (nM) and micromolar (uM or µM). The final
-        plot will scale based on the conc_unit input. By default, it will assume input concentration will be in nM.
+        :param conc_unit: Input unit of concentration. Can accept nanomolar (nM) and micromolar (uM or µM). If the units
+        are different, for example in the DataFrame units are in nM, but the units for the graph are µM, the units from
+        the DataFrame will be converted to match the conc_unit input. The final plot will scale based on the conc_unit
+        input. By default, it will assume input concentration will be in nM.
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
         :param xscale_ticks: Set the scale of the X-axis
         :param ylimit: Give a set maximum limit for the Y-Axis
@@ -121,6 +122,8 @@ class PlotCurve:
         :param vline_color: Set color of vertical line. Default color is gray.
         :param figsize: Set figure size.
         :param output_filename: File path for save location.
+        :param verbose: Output information about the plot.
+
 
         :return: Figure
         """
@@ -269,7 +272,7 @@ class PlotCurve:
                          plot_title_size=12,
                          xlabel=None,
                          ylabel=None,
-                         conc_unit=None,
+                         conc_unit='nM',
                          xscale='log',
                          xscale_ticks=None,
                          ylimit=None,
@@ -281,7 +284,7 @@ class PlotCurve:
                          legend_loc='best',
                          box_target=None,
                          box_color='gray',
-                         box_intercept=None,
+                         box_intercept=50,
                          hline=None,
                          hline_color='gray',
                          vline=None,
@@ -290,9 +293,8 @@ class PlotCurve:
                          output_filename=None,
                          verbose=None):
         """
-        Generate a plot with multiple curves.
+        Generate a dose-response plot for multiple drug targets. Curves will be placed into a single plot.
 
-        :param verbose: # todo fill out param
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param name_col: Name column from DataFrame
@@ -325,6 +327,7 @@ class PlotCurve:
         :param vline_color: Set color of vertical line. Default color is gray.
         :param figsize: Set figure size.
         :param output_filename: File path for save location.
+        :param verbose: Output information about the plot.
 
         :return: Figure
         """
@@ -334,7 +337,6 @@ class PlotCurve:
         concentration_list = []
         response_list = []
         y_fit_list = []
-        x_fit_list = []
 
         for drug in name_list:
             drug_query = self.filter_dataframe(drug)
@@ -353,17 +355,23 @@ class PlotCurve:
             query = drug_query.copy()
             query.sort_values(by=concentration_col, ascending=True, inplace=True)
 
+            """
+            x_fit and concentration adjustments must come before the calc_logic or curve and datapoints will 
+            not be aligned
+            """
+
+            # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
+            x_fit, xscale_unit = CurveSettings().scale_units(drug, conc_unit, xscale_ticks, verbose)
+
+            # Function to scale the concentration by nM or µM
+            concentration = CurveSettings().conc_scale(xscale_unit, concentration, verbose=verbose)
+
             reverse, params, covariance = calculator.calc_logic(df=query, concentration=concentration,
                                                                 response_col=response_col, initial_guess=initial_guess,
                                                                 response=response)
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
             # print(drug, ' IC50: ', ic50, 'nM') # For checking
-
-            # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
-            x_fit, xscale_unit = CurveSettings().scale_units(drug_name=drug_query, xscale_unit=conc_unit,
-                                                xscale_ticks=xscale_ticks, verbose=verbose)
-            x_fit_list.append(x_fit)
 
             # Calculate from parameters 4PL equation
             if reverse == 1:
@@ -380,8 +388,9 @@ class PlotCurve:
                 x_intersection = np.interp(y_intersection, y_fit, x_fit)
                 y_fit_list.append(y_fit)
 
+            # This script is from single_curve_plot. It is not needed for multi-curve
             # Confirm ic50 unit output
-            ic50, x_intersection = calculator.unit_convert(ic50, x_intersection, conc_unit)
+            # ic50, x_intersection = calculator.unit_convert(ic50, x_intersection, conc_unit)
 
             # Append values for each drug into list for multi curve plotting
             concentration_for_list = concentration.values  # Convert into np.array
@@ -407,9 +416,8 @@ class PlotCurve:
         legend_handles = []  # Store data for each line as a dictionary inside a list for the legend
         for i, (y_fit_point, concentration_point, response_point, name, color, mark) in enumerate(
                 zip(y_fit_list, concentration_list, response_list, name_list, line_color, marker)):
-            line = plt.plot(x_fit, y_fit_point, color=color, label=name, linewidth=line_width)
-            scatter = ax.scatter(concentration_point, response_point, color=color, marker=mark)
-
+            plt.plot(x_fit, y_fit_point, color=color, label=name, linewidth=line_width)
+            ax.scatter(concentration_point, response_point, color=color, marker=mark)
             ax.set_title(plot_title)
             ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
             ax.set_xlabel(xlabel, fontsize=axis_fontsize)
@@ -435,13 +443,11 @@ class PlotCurve:
 
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
-        # todo Compare with single plot. Single plot has more conditions. Can it be copied?
         if box_intercept == None:
             y_intersection = 50
         else:
             y_intersection = box_intercept
 
-        # todo compare with single plot. Can I condense?
         # Specify box target
         if box_target in name_list:
             if isinstance(box_target, str) and reverse == 1:
@@ -457,7 +463,8 @@ class PlotCurve:
                     ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
                             plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0])
                     if verbose is True:
-                        print('Box X intersection: ', np.round(x_intersection, 3), f'{conc_unit}')  # todo label this
+                        print(f'Box will target {box_target}')
+                        print('Box X intersection: ', np.round(x_intersection, 3), f'{conc_unit}')
                         print('Box Y intersection: ', np.round(y_intersection, 3), '%')
                     # Converted x_intersection from a numpy array into a float
                     plt.axvline(x=x_intersection, ymin=ymin, ymax=ymax, color=box_color, linestyle='--')
@@ -472,7 +479,8 @@ class PlotCurve:
                     ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
                             plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0])
                     if verbose is True:
-                        print('Box X intersection: ', np.round(x_intersection, 3), f'{conc_unit}')  # todo label this
+                        print(f'Box will target {box_target}')
+                        print('Box X intersection: ', np.round(x_intersection, 3), f'{conc_unit}')
                         print('Box Y intersection: ', np.round(y_intersection, 3), '%')
                     # Converted x_intersection from a numpy array into a float
                     plt.axvline(x=x_intersection, ymin=ymin, ymax=ymax, color=box_color, linestyle='--')
@@ -512,9 +520,9 @@ class PlotCurve:
                         column_num=2,
                         plot_title=None,
                         plot_title_size=20,
-                        xlabel='Logrithmic Concentration (nM)',
-                        ylabel='Inhibition %',
-                        xscale_unit='µM', # todo rename to input_unit
+                        xlabel=None,
+                        ylabel=None,
+                        conc_unit='µM',
                         xscale='log',
                         xscale_ticks=None,
                         ylimit=None,
@@ -531,9 +539,9 @@ class PlotCurve:
                         output_filename=None,
                         verbose=None):
         """
-        Generate multiple curves in a grid.
+        Generate a dose-response curve for mutliple drugs. Each curve will be placed in its own plot which is then
+        placed in a grid.
 
-        :param verbose: # todo fill out param
         :param concentration_col: Concentration column from DataFrame
         :param response_col: Response column from DataFrame
         :param name_col: Name column from DataFrame
@@ -543,7 +551,7 @@ class PlotCurve:
         :param xlabel: Title of the X-axis
         :param ylabel: Title of the Y-axis
         :param ylimit: Give a set maximum limit for the Y-Axis
-        :param xscale_unit: Input will assume that the concentration will be in nM. \
+        :param conc_unit: Input will assume that the concentration will be in nM. \
         Thus, it will be automatically converted into µM. \
         If xscale_unit is given as nM, no conversion will be performed.
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
@@ -562,11 +570,12 @@ class PlotCurve:
         :param vline_color: Set color of vertical line. Default color is gray.
         :param figsize: Set figure size for subplot.
         :param output_filename: File path for save location.
+        :param verbose: Output information about the plot.
 
         :return: Figure
         """
 
-        global x_fit, reverse, params
+        global x_fit, reverse, params, response, concentration
         name_list = np.unique(self.df[name_col])
 
         # Generate lists for modifying plots (vline, box, etc)
@@ -576,46 +585,61 @@ class PlotCurve:
         x_fit_list = []
 
         for drug in name_list:
-            df = self.filter_dataframe(drug)
+            drug_query = self.filter_dataframe(drug)
 
             # Create variables for inputs. Extract column from Dataframe
-            concentration = df[concentration_col]
-            response = df[response_col]
+            concentration = drug_query[concentration_col]
+            response = drug_query[response_col]
 
-            # Convert concentration by input unit. Input unit is nM by default. Program will change nM to µM by default.
-            x_fit = CurveSettings().conc_scale(xscale_unit, concentration)
+            # Set initial guess for 4PL equation
+            initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
 
+            # Initialize in Calculator class for calculating results for plotting
+            calculator = Calculator(drug_query)
+
+            # set a new coy of the DataFrame to avoid warnings
+            query = drug_query.copy()
+            query.sort_values(by=concentration_col, ascending=True, inplace=True)
+
+            """
+            x_fit and concentration adjustments must come before the calc_logic or curve and datapoints will 
+            not be aligned
+            """
+
+            # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
+            x_fit, xscale_unit = CurveSettings().scale_units(drug, conc_unit, xscale_ticks, verbose)
+            x_fit_list.append(x_fit)
+
+            # Function to scale the concentration by nM or µM
+            concentration = CurveSettings().conc_scale(xscale_unit, concentration, verbose=verbose)
+
+            reverse, params, covariance = calculator.calc_logic(df=query, concentration=concentration,
+                                                                response_col=response_col, initial_guess=initial_guess,
+                                                                response=response)
+            # Extract parameter values
+            maximum, minimum, ic50, hill_slope = params
+            # print(drug, ' IC50: ', ic50, 'nM') # For checking
+
+            # Calculate from parameters 4PL equation
+            if reverse == 1:
+                y_fit = calculator.reverse_fourpl(x_fit, maximum, minimum, ic50, hill_slope)
+                y_intersection = 50
+                interpretation = interp1d(y_fit, x_fit, kind='linear', fill_value="extrapolate")
+                x_intersection = np.round(interpretation(y_intersection), 3)  # give results and round to 3 sig figs
+                hill_slope = -1 * hill_slope  # ensure hill_slope is negative # may not be needed if fixed
+                y_fit_list.append(y_fit)
+            else:
+                y_fit = calculator.fourpl(x_fit, *params)
+                y_intersection = 50
+                x_intersection = np.interp(y_intersection, y_fit, x_fit)
+                y_fit_list.append(y_fit)
+
+            """Appended list will contain concentrations in nM or µM depending on user input"""
             # Append values for each drug into list
             concentration_for_list = concentration.values  # Convert into np.array
             concentration_list.append(concentration_for_list)
             response_for_list = response.values
             response_list.append(response_for_list)
-
-
-            # todo convert as seen with single and multi curve plot
-            # Perform constrained nonlinear regression to estimate the parameters
-            initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
-
-            if df[response_col].iloc[0] > df[response_col].iloc[-1]:  # Sigmoid curve 100% to 0%
-                params, covariance, *_ = curve_fit(Calculator.reverse_fourpl, concentration, response,
-                                                   p0=[initial_guess],
-                                                   maxfev=10000)
-                reverse = 1  # Tag direction of sigmoid curve
-
-            elif df[response_col].iloc[0] < df[response_col].iloc[-1]:  # sigmoid curve 0% to 100%
-                params, covariance, *_ = curve_fit(Calculator.fourpl, concentration, response, p0=[initial_guess],
-                                                   maxfev=10000)
-                reverse = 0  # Tag direction of sigmoid curve
-
-            x_fit = CurveSettings().scale_units(xscale_unit, xscale_ticks, verbose=verbose)
-            x_fit_list.append(x_fit)
-
-            # Compute the corresponding response values using the 4PL equation and fitted parameters
-            if reverse == 1:
-                y_fit = Calculator.reverse_fourpl(x_fit, *params)
-            else:
-                y_fit = Calculator.fourpl(x_fit, *params)
-            y_fit_list.append(y_fit)
 
         # Set up color options for line colors
         if line_color is not CBPALETTE:
@@ -673,7 +697,6 @@ class PlotCurve:
                 # Set subplot title
                 axes[i, j].set_title(name_list[i * column_num + j])
 
-                # todo add exception traps
                 if box is True:
                     if isinstance(box_intercept, (int, float)) and reverse == 1:
                         y_intersection = box_intercept
@@ -688,6 +711,9 @@ class PlotCurve:
                         axes[i, j].axvline(x=x_concentration, ymin=0, ymax=ymax, color=box_color, linestyle='--')
                         axes[i, j].hlines(y=y_intersection, xmin=0, xmax=x_concentration, colors=box_color,
                                           linestyles='--')
+                        if verbose is True:
+                            print(f'Box X intersection ({name_list[j]}): ', np.round(x_concentration, 3), f'{conc_unit}')
+                            print(f'Box Y intersection ({name_list[j]}): ', np.round(y_intersection, 3), '%')
 
                     elif box_intercept is not None and isinstance(box_intercept, (int, float)) and reverse == 0:
                         y_intersection = box_intercept
@@ -702,6 +728,9 @@ class PlotCurve:
                         axes[i, j].axvline(x=x_concentration, ymin=0, ymax=ymax, color=box_color, linestyle='--')
                         axes[i, j].hlines(y=y_intersection, xmin=0, xmax=x_concentration, colors=box_color,
                                           linestyles='--')
+                        if verbose is True:
+                            print(f'Box X intersection ({name_list[j]}): ', np.round(x_concentration, 3), f'{conc_unit}')
+                            print(f'Box Y intersection ({name_list[j]}): ', np.round(y_intersection, 3), '%')
                     elif box_intercept is None:
                         pass
 
@@ -727,7 +756,6 @@ class PlotCurve:
             plt.savefig(output_filename, dpi=300)
 
         return fig
-
 
 if __name__ == '__main__':
     import doctest

@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
-from scipy.optimize import curve_fit
 
 """
 Color and Marker schemes and functions for plotting
@@ -18,19 +17,18 @@ CBMARKERS = ('o', '^', 's', 'D', 'v', '<', '>', 'p')
 assert len(CBPALETTE) == len(CBMARKERS)
 
 
-# todo fill out param documentation
 class CurveSettings:
-    # todo add params
     def scale_units(self, drug_name, xscale_unit, xscale_ticks, verbose=None):
         """
-        Logic function for curve plot. this will scale units for the resulting curve plots.
+        Logic funtion for a curve plot. This will scale units depending on input (nanomolar (nM) or
+        micromolar (uM or µM)). The results will also determine the drawing position for the line curve.
 
-        :param drug_name: Name of the drug to scale units
-        :param xscale_unit:
-        :param xscale_ticks:
-        :param verbose:
+        :param drug_name: Name of the query drug
+        :param xscale_unit: Unit concentration for query drug
+        :param xscale_ticks: Range to scale the line curve. This will also influence the X-axis length
+        :param verbose: Ouput information about drug query and its concentration
         """
-        # todo condense this
+        # todo condense this?
         if xscale_unit == 'nM' and xscale_ticks is None:
             x_fit = np.logspace(0, 5, 1000)
             if verbose is True:
@@ -69,11 +67,11 @@ class CurveSettings:
 
     def conc_scale(self, xscale_unit, concentration, verbose=None):
         """
-        Logic function for curve plot. This will set the concentration to respective units. By default, program will
-        assume that input concentration is in nM and the output for graph will be in µM.
-        :param xscale_unit:
-        :param concentration:
-        :param verbose:
+        Logic function for curve plot. This will help set the concentration to the correct units for plotting. By
+        default, program will assume that input concentration is in nM and the output for graph will be in µM.
+        :param xscale_unit: The unit of drug concentration
+        :param concentration: The concentration unit of interest. This can be nanomolar (nM) or micromolar (uM or µM)
+        :param verbose: Output unit information for the x-axis
         """
 
         if xscale_unit == 'nM':
