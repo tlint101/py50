@@ -17,49 +17,60 @@ CBPALETTE = ('#000000', '#E69F00', '#56B4E9', '#009E73',
 CBMARKERS = ('o', '^', 's', 'D', 'v', '<', '>', 'p')
 assert len(CBPALETTE) == len(CBMARKERS)
 
+
 # todo fill out param documentation
 class CurveSettings:
-    def scale_units(self, xscale_unit, xscale_ticks, verbose=None):
+    # todo add params
+    def scale_units(self, drug_name, xscale_unit, xscale_ticks, verbose=None):
         """
-        Logic function for curve plot
+        Logic function for curve plot. this will scale units for the resulting curve plots.
 
+        :param drug_name: Name of the drug to scale units
         :param xscale_unit:
         :param xscale_ticks:
         :param verbose:
         """
-
+        # todo condense this
         if xscale_unit == 'nM' and xscale_ticks is None:
-            x_fit = np.logspace(0, 1, 1000)
-            if verbose is True:
-                print(f'Input concentration in {xscale_unit}!')
-            return x_fit
-        elif xscale_unit == 'µM' or xscale_unit == 'uM' and xscale_ticks is None:
-            x_fit = np.logspace(-3, 3, 1000)
-            if verbose is True:
-                print(f'Input concentration in {xscale_unit}!')
-            return x_fit
-        elif xscale_unit == 'µM' or xscale_unit == 'uM' and xscale_ticks is not None:
-            x_fit = np.logspace(xscale_ticks[0], xscale_ticks[1], 1000)
-            if verbose is True:
-                print(f'Input concentration in {xscale_unit}!')
-            return x_fit
-        elif xscale_unit == 'nM' and xscale_ticks is not None:
-            x_fit = np.logspace(xscale_ticks[0], xscale_ticks[1], 1000)
-            if verbose is True:
-                print(f'Input concentration in {xscale_unit}!')
-            return x_fit
-
-        elif xscale_unit == None and xscale_ticks == None:
-            xscale_unit == 'nM'
             x_fit = np.logspace(0, 5, 1000)
             if verbose is True:
-                print(f'Assuming input concentration are in {xscale_unit}!')
-            return x_fit
+                print(f'{drug_name} concentration will be in {xscale_unit}!')
+            return x_fit, xscale_unit
+        elif xscale_unit == 'nM' and xscale_ticks is not None:
+            # uses np.logspace tuple to control line length
+            # If xscale_ticks is none, this format will break. See first 2 if/else above
+            x_fit = np.logspace(xscale_ticks[0], xscale_ticks[1], 1000)
+            if verbose is True:
+                print(f'{drug_name} concentration will be in {xscale_unit}!')
+            return x_fit, xscale_unit
+        elif (xscale_unit == 'µM' or xscale_unit == 'uM') and xscale_ticks is None:
+            x_fit = np.logspace(0, 5, 1000)
+            # convert uM to µM
+            if xscale_unit == 'uM':
+                xscale_unit = 'µM'
+            if verbose is True:
+                print(f'{drug_name} concentration will be in {xscale_unit}!')
+            return x_fit, xscale_unit
+        elif (xscale_unit == 'µM' or xscale_unit == 'uM') and xscale_ticks is not None:
+            # uses np.logspace tuple to control line length
+            # If xscale_ticks is none, this format will break. See first 2 if/else above
+            x_fit = np.logspace(xscale_ticks[0], xscale_ticks[1], 1000)
+            # convert uM to µM
+            if xscale_unit == 'uM':
+                xscale_unit = 'µM'
+            if verbose is True:
+                print(f'{drug_name} concentration will be in {xscale_unit}!')
+            return x_fit, xscale_unit
+        elif xscale_unit is None and xscale_ticks is None:
+            x_fit = np.logspace(0, 5, 1000)
+            if verbose is True:
+                print(f'Assuming {drug_name} concentration are in nM!')
+            return x_fit, xscale_unit
 
-
-    def xscale(self, xscale_unit, concentration, verbose=None):
+    def conc_scale(self, xscale_unit, concentration, verbose=None):
         """
-        Logic function for curve plot
+        Logic function for curve plot. This will set the concentration to respective units. By default, program will
+        assume that input concentration is in nM and the output for graph will be in µM.
         :param xscale_unit:
         :param concentration:
         :param verbose:
@@ -67,16 +78,11 @@ class CurveSettings:
 
         if xscale_unit == 'nM':
             if verbose is True:
-                print('Concentration on X-axis will be nM')
+                print('Concentration on X-axis will be in nM')
             return concentration
-        elif xscale_unit == 'uM':
+        elif xscale_unit == 'uM' or xscale_unit == 'µM':
             if verbose is True:
-                print('Concentration on X-axis will be µM')
-            concentration = concentration / 1000  # convert drug concentration to µM
-            return concentration
-        elif xscale_unit == 'µM':
-            if verbose is True:
-                print('Concentration on X-axis will be µM')
+                print('Concentration on X-axis will be in µM')
             concentration = concentration / 1000  # convert drug concentration to µM
             return concentration
         else:
