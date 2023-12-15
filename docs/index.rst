@@ -24,7 +24,7 @@ py50 can be installed by using pip:
    :caption: Contents
    :maxdepth: 1
 
-   calculate
+   calculator
    plotcurve
    plot_settings
 
