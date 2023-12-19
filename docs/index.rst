@@ -27,4 +27,7 @@ py50 can be installed by using pip:
    calculator
    plotcurve
    plot_settings
-
+   notebooks/tutorials/quickstart
+   notebooks/tutorials/single_plot
+   notebooks/tutorials/multi_curve_plot
+   notebooks/tutorials/grid_plot
