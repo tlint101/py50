@@ -23,7 +23,7 @@ release = 'v0.1.0'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx_rtd_theme',
-    'nbsphinx'
+    'nbsphinx',
 ]
 
 templates_path = ['_templates']
