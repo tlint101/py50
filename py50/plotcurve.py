@@ -218,7 +218,7 @@ class PlotCurve:
         # Interpolate to find the x-value (Concentration) at the intersection point
         if box_intercept is None:
             print('Input Inhibition % target')
-        elif box_intercept and reverse == 1:
+        elif box_intercept and conc_target is None and reverse == 1:
             y_intersection = box_intercept
             interpretation = interp1d(y_fit, x_fit, kind='linear', fill_value="extrapolate")
             x_intersection = interpretation(y_intersection)
@@ -226,7 +226,7 @@ class PlotCurve:
                 print('Box X intersection: ', np.round(x_intersection, 3), f'{final_unit}')
                 print('Box Y intersection: ', np.round(y_intersection, 3), '%')
 
-        elif box_intercept and reverse == 0:
+        elif box_intercept and conc_target is None and reverse == 0:
             y_intersection = box_intercept
             x_intersection = np.interp(y_intersection, y_fit, x_fit)
             if verbose is True:
