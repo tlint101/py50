@@ -522,7 +522,7 @@ class PlotCurve:
                         plot_title_size=20,
                         xlabel=None,
                         ylabel=None,
-                        conc_unit='µM',
+                        conc_unit='nM',
                         xscale='log',
                         xscale_ticks=None,
                         ylimit=None,
