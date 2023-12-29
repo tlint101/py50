@@ -42,23 +42,23 @@ uploaded_file = st.file_uploader('Upload .csv file')
 # Check if a CSV file has been uploaded
 if uploaded_file is not None:
     # Read the CSV file into a DataFrame
-    drug_query = pd.read_csv(uploaded_file)
-    st.dataframe(drug_query, hide_index=True)  # visualize dataframe in streamlit app
+    df = pd.read_csv(uploaded_file)
+    st.dataframe(df, hide_index=True)  # visualize dataframe in streamlit app
 else:
     # Display a message if no CSV file has been uploaded
     st.warning('Please upload a .csv file.')
 
 if uploaded_file is not None:  # nested in if/else to remove initial traceback error
     # Select columns for calculation
-    col_header = drug_query.columns.to_list()
+    col_header = df.columns.to_list()
     drug_name = st.selectbox('Drug Name:', (col_header))
     drug_conc = st.selectbox('Drug Concentration:', (col_header))
     response = st.selectbox('Average Response column:', (col_header))
 
-    df_calc = drug_query.filter(items=(drug_name, drug_conc, response), axis=1)
+    df_calc = df.filter(items=(drug_name, drug_conc, response), axis=1)
     st.dataframe(df_calc)
 
-    plot_data = PlotCurve(drug_query) # todo fix the broken traceback messages. an if else statement can go here?
+    plot_data = PlotCurve(df) # todo fix the broken traceback messages. an if else statement can go here?
 
     # figure type
     fig_type = st.radio(
@@ -166,7 +166,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                 'Set units of X Axis',
                 ['µM', 'nM'])
             xscale = st.sidebar.checkbox(label='X Axis Linear Scale')
-            xscale_ticks_input = st.sidebar.text_input(label='Set X-Axis boundaries (i.e. the exponent)',
+            xscale_ticks_input = st.sidebar.text_input(label='Set X-Axis boundaries',
                                                        placeholder='separate number with comma')
             if xscale is True:
                 xscale = 'linear'
@@ -275,7 +275,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                                              box=box,
                                              box_color=box_color,
                                              box_intercept=box_intercept,
-                                             conc_target=x_concentration,
+                                             x_concentration=x_concentration,
                                              hline=hline,
                                              hline_color=hline_color,
                                              vline=vline,
@@ -293,7 +293,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
         st.download_button("Download Figure", data=buf.read(), file_name="single_curve.png", mime="image/png")
 
     # Multi Curve options # todo place into own py file for maintainability
-    elif fig_type == 'Multi-Curve Plot':
+    elif fig_type is 'Multi-Curve Plot':
         # Confirm DataFrame only contains multiple drugs
         if len(df_calc[drug_name].unique()) > 1:
             name = df_calc[drug_name].unique()
@@ -477,7 +477,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                                             xlabel=xlabel,
                                             ylabel=ylabel,
                                             xscale=xscale,
-                                            conc_unit=xscale_unit,
+                                            xscale_unit=xscale_unit,
                                             xscale_ticks=xscale_ticks,
                                             ylimit=ylimit,
                                             axis_fontsize=axis_fontsize,
@@ -507,7 +507,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
         st.download_button("Download Figure", data=buf.read(), file_name="multi_curve.png", mime="image/png")
 
     # Grid options
-    elif fig_type == 'Grid Plot':
+    elif fig_type is 'Grid Plot':
         # Confirm DataFrame only contains multiple drugs
         if len(df_calc[drug_name].unique()) > 1:
             name = df_calc[drug_name].unique()
@@ -682,7 +682,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                                            xlabel=xlabel,
                                            ylabel=ylabel,
                                            xscale=xscale,
-                                           conc_unit=xscale_unit,
+                                           xscale_unit=xscale_unit,
                                            xscale_ticks=xscale_ticks,
                                            ylimit=ylimit,
                                            line_color=line_color,
