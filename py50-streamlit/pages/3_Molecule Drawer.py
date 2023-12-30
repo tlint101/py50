@@ -17,4 +17,4 @@ add_vertical_space(1)
 
 molecule = st.text_input(label='', placeholder='Input Smiles String')
 smile_code = st_ketcher(molecule, height=800)
-st.markdown(f"Smile code: {smile_code}")
+st.markdown(f"Smile string: {smile_code}")
