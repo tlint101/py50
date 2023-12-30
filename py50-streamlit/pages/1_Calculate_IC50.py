@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from py50.calculate import Calculate
+from py50.calculator import Calculator
 
 # Set page config
 st.set_page_config(page_title='py50: Calculation', page_icon='🧮', layout='wide')
@@ -42,35 +42,36 @@ uploaded_file = st.file_uploader('Upload .csv file')
 # Check if a CSV file has been uploaded
 if uploaded_file is not None:
     # Read the CSV file into a DataFrame
-    df = pd.read_csv(uploaded_file)
-    st.dataframe(df, hide_index=True)  # visualize dataframe in streamlit app
+    drug_query = pd.read_csv(uploaded_file)
+    st.dataframe(drug_query, hide_index=True)  # visualize dataframe in streamlit app
 else:
     # Display a message if no CSV file has been uploaded
     st.warning('Please upload a .csv file.')
 
 # Select columns for calculation
 if uploaded_file is not None:  # nested in if/else to remove initial traceback error
-    col_header = df.columns.to_list()
+    col_header = drug_query.columns.to_list()
     drug_name = st.sidebar.selectbox('Drug Name:', (col_header))
     compound_conc = st.sidebar.selectbox('Drug Concentration:', (col_header))
     ave_response = st.sidebar.selectbox('Average Response column:', (col_header))
 
     # todo add this function, automatically rename DataFrame header
-    # units = st.sidebar.radio(
-    #     'Input Concentration Units',
-    #     ['nM', 'µM'],
-    #     captions=['Nanomolor', 'Micromolar'])
+    units = st.sidebar.radio('Input Concentration Units',
+                                options=['nM', 'µM'],
+                                captions=['Nanomolor', 'Micromolar'])
 
     st.write('## Filter Table')
-    df_calc = df.filter(items=(drug_name, compound_conc, ave_response), axis=1)
+    df_calc = drug_query.filter(items=(drug_name, compound_conc, ave_response), axis=1)
     # todo add option for decreasing order
     st.dataframe(df_calc)
 
     # Calculate IC50
-    data = Calculate(df)
+    data = Calculator(drug_query)
+
     absolute = data.calculate_absolute_ic50(name_col=drug_name,
                                             concentration_col=compound_conc,
-                                            response_col=ave_response)
+                                            response_col=ave_response,
+                                            input_units=units)
 
     st.markdown('## Calculation Results')
     # todo add st.markdown reminder that units are converted into µM
