@@ -55,7 +55,6 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
     compound_conc = st.sidebar.selectbox('Drug Concentration:', (col_header))
     ave_response = st.sidebar.selectbox('Average Response column:', (col_header))
 
-    # todo add this function, automatically rename DataFrame header
     units = st.sidebar.radio('Input Concentration Units',
                                 options=['nM', 'µM'],
                                 captions=['Nanomolor', 'Micromolar'])
