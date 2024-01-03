@@ -34,7 +34,7 @@ class Calculator:
 
     def unit_convert(self, ic50, x_intersection=None, input_units=None):
         """
-        Converts ic50 to desired input units
+        Converts ic50 to desired input units for the plot_curve class
         :param ic50:
         :param x_intersection: Corresponds to the absolute ic50 value. This is calculated from the curve_fit
         :param input_units:
@@ -233,7 +233,7 @@ class Calculator:
             # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
             # If verbose, more info will be printed
             x_fit, input_units = CurveSettings().scale_units(drug_name=drug, xscale_unit=input_units,
-                                                xscale_ticks=None, verbose=verbose)
+                                                             xscale_ticks=None, verbose=verbose)
 
             # Calculate from parameters 4PL equation
             if reverse == 1:
@@ -269,7 +269,7 @@ class Calculator:
             })
         return values
 
-    # When data is reveresed, program is not obtaining correct column.
+    # When data is reversed, program is not obtaining correct column.
     def calc_logic(self, df, concentration=None, initial_guess=None, response=None, response_col=None):
         """
         Set logic to determine positive or negative sigmoid curve. This method is called by internally by the
@@ -332,6 +332,29 @@ class Calculator:
         values = self.absolute_calculation(name_col=name_col, concentration_col=concentration_col,
                                            response_col=response_col, input_units=input_units, verbose=verbose)
         df = pd.DataFrame(values)
+
+        return df
+
+    def calculate_pic50(self, name_col, concentration_col, response_col, input_units=None, verbose=None):
+        """
+        Convert IC50 into pIC50 values. Calculation is performed using the absolute_calculation. As such, two columns
+        will be appended - relative pIC50 and absolute pIC50. Conversion is performed by convert the IC50 values from nM
+        to M levels and then taking the negative log value of said number.
+
+        :param name_col: Name column from DataFrame
+        :param concentration_col: Concentration column from DataFrame
+        :param response_col: Response column from DataFrame
+        :param input_units: Concentration units for tested drug. By default, units given will be in nM.
+        :param verbose:  Output drug concentration units.
+
+        :return: DataFrame from calculate_absolute_ic50 along with the pIC50 values
+        """
+        values = self.absolute_calculation(name_col=name_col, concentration_col=concentration_col,
+                                           response_col=response_col, input_units=input_units, verbose=verbose)
+        df = pd.DataFrame(values)
+
+        df['relative pIC50'] = -np.log10(df['relative ic50 (nM)'] * 0.000000001)
+        df['absolute pIC50'] = -np.log10(df['absolute ic50 (nM)'] * 0.000000001)
 
         return df
 
