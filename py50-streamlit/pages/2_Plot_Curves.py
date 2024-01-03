@@ -168,9 +168,9 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             xscale_ticks_input = st.sidebar.text_input(label='Set X-Axis boundaries (i.e. the exponent)',
                                                        placeholder='separate number with comma')
             if conc_unit is 'µM':
-                st.write('Input drug concentration is in µM!')
+                st.write('Plot scale is in µM!')
             else:
-                st.write('Input drug concentration is converted into nM!')
+                st.write('Plot scale is in nM!')
 
             if xscale is True:
                 xscale = 'linear'
