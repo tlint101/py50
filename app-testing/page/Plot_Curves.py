@@ -6,7 +6,7 @@ from py50.plotcurve import PlotCurve
 from py50.plot_settings import CBMARKERS, CBPALETTE
 
 # Set page config
-st.set_page_config(page_title='py50: Plot Curves', page_icon='📈', layout='centered')
+# st.set_page_config(page_title='py50: Plot Curves', page_icon='📈', layout='centered')
 
 # Adjust hyperlink colorscheme
 links = """<style>
@@ -22,8 +22,8 @@ background-color: transparent;
 """
 st.markdown(links, unsafe_allow_html=True)
 
-# add logo
-st.sidebar.image('img/py50_logo_only.png', width=150)
+# # add logo
+# st.sidebar.image('img/py50_logo_only.png', width=150)
 
 # Page text
 datasets = 'https://github.com/tlint101/py50/tree/main/dataset'
@@ -168,9 +168,9 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
             xscale_ticks_input = st.sidebar.text_input(label='Set X-Axis boundaries (i.e. the exponent)',
                                                        placeholder='separate number with comma')
             if conc_unit is 'µM':
-                st.write('Input drug concentration is in µM!')
+                st.write('Plot scale is in µM!')
             else:
-                st.write('Input drug concentration is converted into nM!')
+                st.write('Plot scale is in nM!')
 
             if xscale is True:
                 xscale = 'linear'

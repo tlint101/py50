@@ -3,10 +3,10 @@ from streamlit_ketcher import st_ketcher
 from streamlit_extras.add_vertical_space import add_vertical_space
 
 # Set page config
-st.set_page_config(layout="wide")
+# st.set_page_config(layout="wide")
 
-# add logo
-st.sidebar.image('img/py50_logo_only.png', width=150)
+# # add logo
+# st.sidebar.image('img/py50_logo_only.png', width=150)
 
 # Page text
 datasets = 'https://github.com/tlint101/py50/tree/main/dataset'
