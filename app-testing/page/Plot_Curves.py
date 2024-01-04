@@ -41,6 +41,9 @@ uploaded_file = st.file_uploader('Upload .csv file')
 
 # Check if a CSV file has been uploaded
 if uploaded_file is not None:
+    # Section header
+    st.write('## Input Table')
+
     # Read the CSV file into a DataFrame
     drug_query = pd.read_csv(uploaded_file)
     st.dataframe(drug_query, hide_index=True)  # visualize dataframe in streamlit app
@@ -49,20 +52,24 @@ else:
     st.warning('Please upload a .csv file.')
 
 if uploaded_file is not None:  # nested in if/else to remove initial traceback error
+    # Section header
+    st.write('## Select Columns for Calculation')
+
     # Select columns for calculation
     col_header = drug_query.columns.to_list()
     drug_name = st.selectbox('Drug Name:', (col_header))
     drug_conc = st.selectbox('Drug Concentration:', (col_header))
     response = st.selectbox('Average Response column:', (col_header))
 
+    st.write('**Selected Columns**')
     df_calc = drug_query.filter(items=(drug_name, drug_conc, response), axis=1)
     st.dataframe(df_calc)
 
-    plot_data = PlotCurve(drug_query) # todo fix the broken traceback messages. an if else statement can go here?
+    plot_data = PlotCurve(drug_query)
 
     # figure type
     fig_type = st.radio(
-        'Select figure type',
+        '**Select figure type**',
         ['Single Plot', 'Multi-Curve Plot', 'Grid Plot'])
 
     # todo place each plot type in own python file for maintainability
@@ -83,7 +90,7 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
         st.sidebar.header("Single Plot Options:")
 
         # Label Options
-        label_options = st.sidebar.checkbox(label='Modify Labels')
+        label_options = st.sidebar.checkbox(label='Label Options')
         if label_options is True:
             # Plot title
             plot_title = st.sidebar.text_input(label='Plot Title', placeholder='Input Plot Title')
@@ -287,7 +294,15 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                                              figsize=(fig_width, fig_height),
                                              verbose=True)
         # Display figure
-        st.pyplot(figure)
+        # To reduce the size of the generated figure from stretching the width of the screen due to page layout set to
+        # wide, a column is inserted to 'constrain' the image.
+        # todo repeat this for the other images
+        col1, col2, = st.columns(2)
+        with col1:
+            st.pyplot(figure)
+        with col2:
+            st.header("")
+
 
         # Figure must be converted into a temporary file in memory
         buf = io.BytesIO()
@@ -501,7 +516,11 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                                             figsize=(fig_width, fig_height))
 
         # Display figure
-        st.pyplot(figure)
+        col1, col2, = st.columns(2)
+        with col1:
+            st.pyplot(figure)
+        with col2:
+            st.header("")
 
         # Figure must be converted into a temporary file in memory
         buf = io.BytesIO()
@@ -701,7 +720,11 @@ if uploaded_file is not None:  # nested in if/else to remove initial traceback e
                                            vline_color=vline_color,
                                            figsize=(fig_width, fig_height))
         # Display figure
-        st.pyplot(figure)
+        col1, col2, = st.columns(2)
+        with col1:
+            st.pyplot(figure)
+        with col2:
+            st.header("")
 
         # Figure must be converted into a temporary file in memory
         buf = io.BytesIO()

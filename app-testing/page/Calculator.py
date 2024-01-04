@@ -20,9 +20,10 @@ background-color: transparent;
 """
 st.markdown(links, unsafe_allow_html=True)
 
-# # add logo
-# st.sidebar.header("Calculate IC50")
-# st.sidebar.image('img/py50_logo_only.png', width=150)
+# Set up download button for csv files
+def download_button(df, file_name=None):
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button('Download table as CSV', data=csv, file_name=file_name, mime='text/csv')
 
 # Page text
 tutorial = 'https://github.com/tlint101/py50/blob/main/tutorials/002_absolute_ic50.ipynb'
@@ -37,13 +38,10 @@ st.write('For more information about Relative vs. Absolute IC50, please see the 
 st.write('Sample datasets can be found [here](%s)' % datasets)
 st.write('')
 
-
-# todo This is the update
 st.markdown('## Select an option to get started:')
 option = st.radio(
     '# Select an option to get started',
     ('Upload CSV File', 'Convert IC50 into pIC50'))
-
 
 if option == 'Upload CSV File':
     # Upload the CSV file
@@ -70,12 +68,18 @@ if option == 'Upload CSV File':
         ave_response = st.sidebar.selectbox('Average Response column:', (col_header))
 
         units = st.sidebar.radio('Input Concentration Units',
-                                    options=['nM', 'µM'],
-                                    captions=['Nanomolor', 'Micromolar'])
+                                 options=['nM', 'µM'],
+                                 captions=['Nanomolor', 'Micromolar'])
 
-        st.write('## Filtered Table')
-        df_calc = drug_query.filter(items=(drug_name, compound_conc, ave_response), axis=1)
-        # todo add option for decreasing order
+        # Set conditions before calculations
+        conditions = {drug_name, compound_conc, ave_response}
+        if len(conditions) != 3:
+            st.write('### :red[Select Drug, Concentration, and Response Columns!]')
+        else:
+            st.write('## Filtered Table')
+            df_calc = drug_query.filter(items=(drug_name, compound_conc, ave_response), axis=1)
+
+        # Output filtered table for calculation
         st.dataframe(df_calc)
 
         # Calculate IC50
@@ -87,34 +91,39 @@ if option == 'Upload CSV File':
                                                 input_units=units)
         st.markdown('## Calculated Results')
 
+        # Absolute IC50 Table
         st.dataframe(absolute, hide_index=True)
+        download_button(absolute, file_name='py50_ic50.csv')
 
         # output unit message
         st.markdown(f'Calculated Results are in {units}')
 
-        convert = st.checkbox('Convert to pIC50?')
+        convert = st.checkbox('Calculate values to pIC50?')
 
-        if convert:
-            calculation = data.calculate_pic50(name_col=drug_name,
-                                               concentration_col=compound_conc,
-                                               response_col=ave_response,
-                                               input_units=units)
-            st.dataframe(calculation, hide_index=True)
-
+        # todo update py50 and then test if conversion between nM and µM works
+        if convert is True:
+            conversion = data.calculate_pic50(name_col=drug_name,
+                                        concentration_col=compound_conc,
+                                        response_col=ave_response,
+                                        input_units=units)
+            # Output pIC50 table
+            st.dataframe(conversion, hide_index=True)
+            download_button(conversion, file_name='py50_pic50.csv')
     else:
         pass
 else:
     st.markdown('### Insert your IC50 Value (in nM):')
-    input_ic50 = st.number_input('', step=1e-6)
+    input_ic50 = st.number_input('Insert IC50 Value (in nM)', step=1e-6)
 
-    if input_ic50 is not None or input_ic50 == 0:
+    # Conditional if input is ≤ 0
+    if input_ic50 > 0:
         pic50 = -np.log10(input_ic50 * 0.000000001)
     else:
-        st.write('# Cannot convert 0 or negative value')
-        # todo error message not writing
+        st.write(':red[**Input cannot be 0 or a negative number!**]')
 
     # Generate a DataFrame from input
     data = pd.DataFrame({'IC50 (nM)': input_ic50, 'pIC50': pic50}, index=[0])
-    # todo add a download table button
 
+    # Output table
     st.dataframe(data)
+    download_button(data, file_name='py50_pic50.csv')

@@ -1,6 +1,6 @@
 # Services for multipage Streamlit app
 -
-  name: 'Home Page'
+  name: 'Home'
   description: 'Home Page'
   url: "Home.py"
 
