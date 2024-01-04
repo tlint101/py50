@@ -78,7 +78,8 @@ class PlotCurve:
                           vline_color='gray',
                           figsize=(6.4, 4.8),
                           output_filename=None,
-                          verbose=None):
+                          verbose=None,
+                          **kwargs):
         """
         Generate a dose-response curve for a single drug target. Because a data table can contain multiple drugs, user
         must specify specific target.
@@ -201,6 +202,12 @@ class PlotCurve:
         ax.set_ylabel(ylabel, fontsize=axis_fontsize)
         ax.set_title(plot_title, fontsize=plot_title_size)
 
+        # Set grid lines to False by default
+        plt.grid(kwargs.get('grid', False))
+
+        # Set tick for axis
+        ax.tick_params(axis='both', which='both', bottom=True, top=False, left=True, right=False)
+
         # Set y-axis limit
         # Y-axis limit will be limited to the largest response number and add 10 for spacing
         if ylimit is None:
@@ -291,7 +298,8 @@ class PlotCurve:
                          vline_color='gray',
                          figsize=(6.4, 4.8),
                          output_filename=None,
-                         verbose=None):
+                         verbose=None,
+                         **kwargs):
         """
         Generate a dose-response plot for multiple drug targets. Curves will be placed into a single plot.
 
@@ -420,8 +428,13 @@ class PlotCurve:
             ax.scatter(concentration_point, response_point, color=color, marker=mark)
             ax.set_title(plot_title)
             ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
+            # Set ticks for axis
+            ax.tick_params(axis='both', which='both', bottom=True, top=False, left=True, right=False)
             ax.set_xlabel(xlabel, fontsize=axis_fontsize)
             ax.set_ylabel(ylabel, fontsize=axis_fontsize)
+
+            # Set grid lines to False by default
+            plt.grid(kwargs.get('grid', False))
 
             # Append scatter plot handle to the legend
             legend_piece = {'marker': mark, 'name': name, 'line_color': color}
@@ -537,7 +550,8 @@ class PlotCurve:
                         vline_color='gray',
                         figsize=(8.4, 4.8),
                         output_filename=None,
-                        verbose=None):
+                        verbose=None,
+                        **kwargs):
         """
         Generate a dose-response curve for mutliple drugs. Each curve will be placed in its own plot which is then
         placed in a grid.
@@ -744,6 +758,13 @@ class PlotCurve:
                 # Set axis labels
                 axes[i, j].set_xlabel(xlabel)
                 axes[i, j].set_ylabel(ylabel)
+
+        # Remove grid lines and plot ticks for each subplot
+        for ax_row in axes:
+            for ax in ax_row:
+                ax.grid(kwargs.get('grid', False))
+                # Set tick for axis
+                ax.tick_params(axis='both', which='both', bottom=True, top=False, left=True, right=False)
 
         plt.tight_layout()
 
