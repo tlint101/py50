@@ -353,8 +353,12 @@ class Calculator:
                                            response_col=response_col, input_units=input_units, verbose=verbose)
         df = pd.DataFrame(values)
 
-        df['relative pIC50'] = -np.log10(df['relative ic50 (nM)'] * 0.000000001)
-        df['absolute pIC50'] = -np.log10(df['absolute ic50 (nM)'] * 0.000000001)
+        if input_units is None or input_units == 'nM':
+            df['relative pIC50'] = -np.log10(df['relative ic50 (nM)'] * 0.000000001)
+            df['absolute pIC50'] = -np.log10(df['absolute ic50 (nM)'] * 0.000000001)
+        elif input_units == 'µM':
+            df['relative pIC50'] = -np.log10(df['relative ic50 (µM)'] * 0.000001)
+            df['absolute pIC50'] = -np.log10(df['absolute ic50 (µM)'] * 0.000001)
 
         return df
 
