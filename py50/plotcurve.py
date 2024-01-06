@@ -741,10 +741,10 @@ class PlotCurve:
 
                         x_concentration = interpretation(y_intersection)
                         # Constrain box to 50% drug response
-                        ymax = (y_intersection - axes[i, j].get_ylim()[0]) / (
+                        ymax_box = (y_intersection - axes[i, j].get_ylim()[0]) / (
                                 axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0])
 
-                        axes[i, j].axvline(x=x_concentration, ymin=0, ymax=ymax, color=box_color, linestyle='--')
+                        axes[i, j].axvline(x=x_concentration, ymin=0, ymax=ymax_box, color=box_color, linestyle='--')
                         axes[i, j].hlines(y=y_intersection, xmin=0, xmax=x_concentration, colors=box_color,
                                           linestyles='--')
                         if verbose is True:
@@ -759,10 +759,10 @@ class PlotCurve:
                                                     x_fit_list[i * column_num + j])
 
                         # Constrain box to 50% drug response
-                        ymax = (y_intersection - axes[i, j].get_ylim()[0]) / (
+                        ymax_box = (y_intersection - axes[i, j].get_ylim()[0]) / (
                                 axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0])
 
-                        axes[i, j].axvline(x=x_concentration, ymin=0, ymax=ymax, color=box_color, linestyle='--')
+                        axes[i, j].axvline(x=x_concentration, ymin=0, ymax=ymax_box, color=box_color, linestyle='--')
                         axes[i, j].hlines(y=y_intersection, xmin=0, xmax=x_concentration, colors=box_color,
                                           linestyles='--')
                         if verbose is True:
