@@ -8,7 +8,6 @@ from py50.plot_settings import CBMARKERS, CBPALETTE, CurveSettings
 from py50.calculator import Calculator
 
 
-# todo Generate composite functions
 class PlotCurve:
     # Will accept input DataFrame and output said DataFrame for double checking.
     def __init__(self, df):
@@ -62,7 +61,8 @@ class PlotCurve:
                           conc_unit='nM',
                           xscale='log',
                           xscale_ticks=None,
-                          ylimit=None,
+                          ymax=None,
+                          ymin=None,
                           line_color='black',
                           line_width=1.5,
                           marker=None,
@@ -98,7 +98,8 @@ class PlotCurve:
         input. By default, it will assume input concentration will be in nM.
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
         :param xscale_ticks: Set the scale of the X-axis
-        :param ylimit: Give a set maximum limit for the Y-Axis
+        :param ymax: Give a set maximum limit for the Y-Axis
+        :param ymin: Give a set minimum limit for the Y-Axis
         :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name \
         of colors or colors in hex code.
         :param line_width: Set width of lines in plot.
@@ -210,16 +211,20 @@ class PlotCurve:
 
         # Set y-axis limit
         # Y-axis limit will be limited to the largest response number and add 10 for spacing
-        if ylimit is None:
-            max_y = max(response) + 10
+        if ymax is None:
+            max_value = max(response) + 10
         else:
-            max_y = ylimit
+            max_value = ymax
 
-        min_value = min(response)
-        if min_value < 0:
-            ax.set_ylim(min_value - 5, max_y)
+        if ymin is None:
+            min_value = min(response)
+            if min_value < 0:
+                min_value = min_value - 5
+            else:
+                min_value = 0
         else:
-            ax.set_ylim(0, max_y)
+            min_value = ymin
+        ax.set_ylim(min_value, max_value)
 
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
@@ -282,7 +287,8 @@ class PlotCurve:
                          conc_unit='nM',
                          xscale='log',
                          xscale_ticks=None,
-                         ylimit=None,
+                         ymax=None,
+                         ymin=None,
                          axis_fontsize=10,
                          line_color=CBPALETTE,
                          marker=CBMARKERS,
@@ -315,7 +321,8 @@ class PlotCurve:
         If xscale_unit is given as nM, no conversion will be performed.
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
         :param xscale_ticks: Set the scale of the X-axis
-        :param ylimit: Give a set maximum limit for the Y-Axis
+        :param ymax: Give a set maximum limit for the Y-Axis
+        :param ymin: Give a set minimum limit for the Y-Axis
         :param axis_fontsize: Modify axis label font size
         :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of \
         colors or colors in hex code.
@@ -339,7 +346,7 @@ class PlotCurve:
 
         :return: Figure
         """
-        global response, x_fit, y_fit, y_intersection, x_intersection, ymin, ymax, reverse, params
+        global response, x_fit, y_fit, y_intersection, x_intersection, reverse, params
         name_list = np.unique(self.df[name_col])
 
         concentration_list = []
@@ -442,17 +449,22 @@ class PlotCurve:
 
         # Set y-axis limit
         # Y-axis limit will be limited to the largest response number and add 10 for spacing
-        if ylimit is None:
+        if ymax is None:
             max_y = self.df[response_col].max()
             max_value = max_y + 10
         else:
-            max_value = ylimit
+            max_value = ymax
 
-        min_value = min(response)
-        if min_value < 0:
-            ax.set_ylim(min_value, max_value)
+        if ymin is None:
+            min_value = min(response)
+            if min_value < 0:
+                min_value = min_value
+            else:
+                ax.set_ylim(0, max_value)
         else:
-            ax.set_ylim(0, max_value)
+            min_value = ymin
+
+        ax.set_ylim(min_value, max_value)
 
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
@@ -538,7 +550,8 @@ class PlotCurve:
                         conc_unit='nM',
                         xscale='log',
                         xscale_ticks=None,
-                        ylimit=None,
+                        ymax=None,
+                        ymin=None,
                         line_color=CBPALETTE,
                         line_width=1.5,
                         box=False,
@@ -564,7 +577,8 @@ class PlotCurve:
         :param plot_title_size: Modify plot title font size
         :param xlabel: Title of the X-axis
         :param ylabel: Title of the Y-axis
-        :param ylimit: Give a set maximum limit for the Y-Axis
+        :param ymax: Give a set maximum limit for the Y-Axis
+        :param ymin: Give a set minimum limit for the Y-Axis
         :param conc_unit: Input will assume that the concentration will be in nM. \
         Thus, it will be automatically converted into µM. \
         If xscale_unit is given as nM, no conversion will be performed.
@@ -700,12 +714,15 @@ class PlotCurve:
 
                 # Set y-axis limit
                 # Y-axis limit will be limited to the largest response number and add 10 for spacing
-                if ylimit is None:
+                if ymax is None:
                     max_value = np.amax([np.amax(max_value) for max_value in response_list]) + 10
                 else:
-                    max_value = ylimit
+                    max_value = ymax
                 # Y-axis minimum to the lowest response - 10 for better plotting
-                ymin = np.amin([np.amin(max_value) for max_value in response_list]) - 10
+                if ymin is None:
+                    ymin = np.amin([np.amin(max_value) for max_value in response_list]) - 10
+                else:
+                    ymin = ymin
                 axes[i, j].set_ylim(ymin, max_value)
 
                 # Set subplot title

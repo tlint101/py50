@@ -28,7 +28,6 @@ class CurveSettings:
         :param xscale_ticks: Range to scale the line curve. This will also influence the X-axis length
         :param verbose: Ouput information about drug query and its concentration
         """
-        # todo condense this?
         if xscale_unit == 'nM' and xscale_ticks is None:
             x_fit = np.logspace(0, 5, 1000)
             if verbose is True:
