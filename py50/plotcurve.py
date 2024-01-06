@@ -281,6 +281,7 @@ class PlotCurve:
 
         return fig
 
+    # todo include conc_target from single_curve_plot
     def multi_curve_plot(self,
                          concentration_col,
                          response_col,
@@ -543,6 +544,7 @@ class PlotCurve:
 
         return fig
 
+    # todo include conc_target from single_curve_plot
     def grid_curve_plot(self,
                         concentration_col,
                         response_col,
