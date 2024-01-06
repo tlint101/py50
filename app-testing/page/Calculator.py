@@ -100,7 +100,6 @@ if option == 'Upload CSV File':
 
         convert = st.checkbox('Calculate values to pIC50?')
 
-        # todo update py50 and then test if conversion between nM and µM works
         if convert is True:
             conversion = data.calculate_pic50(name_col=drug_name,
                                         concentration_col=compound_conc,

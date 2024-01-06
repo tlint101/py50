@@ -15,6 +15,12 @@ st.write('This page will allow users to draw chemical structures of their molecu
          ' into a 2D image or vice versa.')
 add_vertical_space(1)
 
-molecule = st.text_input(label='', placeholder='Input Smiles String')
-smile_code = st_ketcher(molecule, height=800)
-st.markdown(f"Smile string: {smile_code}")
+col1, col2, = st.columns(2)
+with col1:
+    molecule = st.text_input(label='', placeholder='Input Smiles String')
+    smile_code = st_ketcher(molecule, height=600)
+    st.markdown(f"Smile string: {smile_code}")
+with col2:
+    st.header("")
+
+
