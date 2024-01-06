@@ -49,6 +49,8 @@ class PlotCurve:
         filtered_df = self.df[self.df.apply(lambda row: drug_name in str(row), axis=1)]
         return filtered_df
 
+    # todo rename function to curve_plot
+    # todo fix verbose issue - box info will also print
     def single_curve_plot(self,
                           concentration_col,
                           response_col,
@@ -92,10 +94,10 @@ class PlotCurve:
         :param xlabel: Title of the X-axis
         :param ylabel: Title of the Y-axis
         :param axis_fontsize: Modify axis label font size
-        :param conc_unit: Input unit of concentration. Can accept nanomolar (nM) and micromolar (uM or µM). If the units
-        are different, for example in the DataFrame units are in nM, but the units for the graph are µM, the units from
-        the DataFrame will be converted to match the conc_unit input. The final plot will scale based on the conc_unit
-        input. By default, it will assume input concentration will be in nM.
+        :param conc_unit: Input unit of concentration. Can accept nanomolar (nM) and micromolar (uM or µM). If the \
+        units are different, for example in the DataFrame units are in nM, but the units for the graph are µM, the \
+        units from the DataFrame will be converted to match the conc_unit input. The final plot will scale based on \
+        the conc_unit input. By default, it will assume input concentration will be in nM.
         :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
         :param xscale_ticks: Set the scale of the X-axis
         :param ymax: Give a set maximum limit for the Y-Axis
@@ -112,10 +114,10 @@ class PlotCurve:
         :param box_color: Set color of box. Default is gray.
         :param box_intercept: Set horizontal location of box. By default, it is set at 50% of the Y-axis.
         :param conc_target: Set vertical location of the box. By default, this is set to None. For example, if the \
-        box_intercept is set to 50%, then the x_concentration must be the Absolute IC50 value. If there is an input to x_concentration, \
-        it will override the box_intercept and the response data will move accordingly. Finally, the number must be in the \
-        same unit as the X-axis. i.e., if the axis is in µM, then the number for hte x_concentration should be in µM and \
-        vice versa.
+        box_intercept is set to 50%, then the x_concentration must be the Absolute IC50 value. If there is an input to \
+        x_concentration, it will override the box_intercept and the response data will move accordingly. Finally, the \
+        number must be in the same unit as the X-axis. i.e., if the axis is in µM, then the number for the \
+        x_concentration should be in µM and vice versa.
         :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is
         optional and set to 0 by default.
         :param hline_color: Set color of horizontal line. Default color is gray.
@@ -226,6 +228,9 @@ class PlotCurve:
             min_value = ymin
         ax.set_ylim(min_value, max_value)
 
+        # todo change box_intercept is None to box
+        # todo Only print the Box X and Y intersection if Box is True
+        # todo nest additional if/else statement for box_intercept to match input accordingly
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
         if box_intercept is None:
@@ -743,7 +748,8 @@ class PlotCurve:
                         axes[i, j].hlines(y=y_intersection, xmin=0, xmax=x_concentration, colors=box_color,
                                           linestyles='--')
                         if verbose is True:
-                            print(f'Box X intersection ({name_list[j]}): ', np.round(x_concentration, 3), f'{conc_unit}')
+                            print(f'Box X intersection ({name_list[j]}): ', np.round(x_concentration, 3),
+                                  f'{conc_unit}')
                             print(f'Box Y intersection ({name_list[j]}): ', np.round(y_intersection, 3), '%')
 
                     elif box_intercept is not None and isinstance(box_intercept, (int, float)) and reverse == 0:
@@ -760,7 +766,8 @@ class PlotCurve:
                         axes[i, j].hlines(y=y_intersection, xmin=0, xmax=x_concentration, colors=box_color,
                                           linestyles='--')
                         if verbose is True:
-                            print(f'Box X intersection ({name_list[j]}): ', np.round(x_concentration, 3), f'{conc_unit}')
+                            print(f'Box X intersection ({name_list[j]}): ', np.round(x_concentration, 3),
+                                  f'{conc_unit}')
                             print(f'Box Y intersection ({name_list[j]}): ', np.round(y_intersection, 3), '%')
                     elif box_intercept is None:
                         pass
@@ -794,6 +801,7 @@ class PlotCurve:
             plt.savefig(output_filename, dpi=300)
 
         return fig
+
 
 if __name__ == '__main__':
     import doctest
