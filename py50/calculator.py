@@ -35,6 +35,7 @@ class Calculator:
     def unit_convert(self, ic50, x_intersection=None, input_units=None):
         """
         Converts ic50 to desired input units for the plot_curve class
+
         :param ic50:
         :param x_intersection: Corresponds to the absolute ic50 value. This is calculated from the curve_fit
         :param input_units:
@@ -91,6 +92,7 @@ class Calculator:
         """
         Logic function to calculate unit concentration for Relative and Absolute IC50 calculation. Information will
         detail drug name and concentration unit. Units available are nanomolar (nM) or micromolar (µM or uM).
+
         :param drug: Input drug name.
         :param input_units: Input drug concentration. Units available are nanomolar (nM) or micromolar (uM or µM)
         :param verbose: Print out information regarding the concentration unit.
@@ -281,7 +283,7 @@ class Calculator:
         :param response: The response column from the input Dataframe.
         :param response_col: Name of the response column.
 
-        :return variables for further calculation. this includes: reverse, params, covariance
+        :return: variables for further calculation. This includes: reverse, params, covariance
         """
         global reverse, params, covariance
         if df[response_col].iloc[0] > df[response_col].iloc[-1]:  # Sigmoid curve 100% to 0%
