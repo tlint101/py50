@@ -121,8 +121,7 @@ class PlotCurve:
         :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is \
         optional and set to 0 by default.
         :param hline_color: Set color of horizontal line. Default color is gray.
-        :param vline: This line will stretch across the height of the plot. This is  optional and set to 0 by
-        default.
+        :param vline: This line will stretch across the height of the plot. This is  optional and set to 0 by default.
         :param vline_color: Set color of vertical line. Default color is gray.
         :param figsize: Set figure size.
         :param output_filename: File path for save location.
