@@ -118,7 +118,7 @@ class PlotCurve:
         x_concentration, it will override the box_intercept and the response data will move accordingly. Finally, the \
         number must be in the same unit as the X-axis. i.e., if the axis is in µM, then the number for the \
         x_concentration should be in µM and vice versa.
-        :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is
+        :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is \
         optional and set to 0 by default.
         :param hline_color: Set color of horizontal line. Default color is gray.
         :param vline: This line will stretch across the height of the plot. This is  optional and set to 0 by
@@ -341,7 +341,7 @@ class PlotCurve:
         :param box_target: Optional. Draw a box to highlight a specific location.
         :param box_color: Set color of box. Default color is gray.
         :param box_intercept: Set horizontal location of box. By default, it is set at Absolute IC50.
-        :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is
+        :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is \
         optional and set to 0 by default.
         :param hline_color: Set color of horizontal line. Default color is gray.
         :param vline: This line will stretch across the height of the plot. This is  optional and set to 0 by default.
@@ -598,7 +598,7 @@ class PlotCurve:
         and box_intercept MUST ALSO BE GIVEN.
         :param box_color: Set color of box. Default color is gray.
         :param box_intercept: Set horizontal location of box. By default, it is set at Absolute IC50.
-        :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is
+        :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is \
         optional and set to 0 by default.
         :param hline_color: Set color of horizontal line. Default color is gray.
         :param vline: This line will stretch across the height of the plot. This is  optional and set to 0 by default.
