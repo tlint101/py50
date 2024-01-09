@@ -288,12 +288,12 @@ class Calculator:
         global reverse, params, covariance
         if df[response_col].iloc[0] > df[response_col].iloc[-1]:  # Sigmoid curve 100% to 0%
             params, covariance, *_ = curve_fit(self.reverse_fourpl, concentration, response, p0=[initial_guess],
-                                               maxfev=10000)
+                                               maxfev=100000)
             reverse = 1  # Tag direction of sigmoid curve
 
         elif df[response_col].iloc[0] < df[response_col].iloc[-1]:  # sigmoid curve 0% to 100%
             params, covariance, *_ = curve_fit(self.fourpl, concentration, response, p0=[initial_guess],
-                                               maxfev=10000)
+                                               maxfev=100000)
             reverse = 0  # Tag direction of sigmoid curve
         return reverse, params, covariance
 
