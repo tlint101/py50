@@ -281,6 +281,7 @@ class PlotCurve:
         return fig
 
     # todo include conc_target from single_curve_plot
+    # todo include axis_fontsize as seen from other 2 plots
     def multi_curve_plot(self,
                          concentration_col,
                          response_col,
