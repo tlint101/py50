@@ -18,3 +18,8 @@
   name: 'Molecule Drawer'
   description: 'Draw Chemical Structures'
   url: "Molecule Drawer.py"
+
+-
+  name: 'Changelog'
+  description: 'Report Changes'
+  url: "Changelog.py"

@@ -20,12 +20,91 @@ background-color: transparent;
 """
 st.markdown(links, unsafe_allow_html=True)
 
+
 # Set up download button for csv files
 def download_button(df, file_name=None):
     csv = df.to_csv(index=False).encode('utf-8')
     st.download_button('Download table as CSV', data=csv, file_name=file_name, mime='text/csv')
 
-# Page text
+
+def calculator_program(df=None, paste=True):
+    '''
+    Program to run calculations. It must include nested if/else depending
+    on whether the input dataframe is pasted or a csv file.
+
+    :param df: Input dataframe
+    :return: editable dataframe
+    '''
+    st.sidebar.markdown(':green[**Calculator Options:**]')
+
+    # Logic based on paste or CSV input
+    if paste is True:
+        # Select columns for calculation
+        drug_query = df
+        col_header = drug_query.columns.to_list()
+        drug_name = st.selectbox('Drug Name:', (col_header))
+        compound_conc = st.selectbox('Drug Concentration:', (col_header), index=1)  # Index to auto select column
+        ave_response = st.selectbox('Average Response column:', (col_header), index=2)  # Index to auto select column
+    else:
+        drug_query = df
+        col_header = drug_query.columns.to_list()
+        drug_name = st.selectbox('Drug Name:', (col_header))
+        compound_conc = st.selectbox('Drug Concentration:', (col_header))
+        ave_response = st.selectbox('Average Response column:', (col_header))
+
+    # sidebar options
+    units = st.sidebar.radio('Input Concentration Units',
+                             options=['nM', 'µM'],
+                             captions=['Nanomolor', 'Micromolar'])
+
+    # Set conditions for calculations
+    conditions = {drug_name, compound_conc, ave_response}
+    if len(conditions) != 3:
+        st.write('### :red[Select Drug, Concentration, and Response Columns!]')
+    else:
+        st.write('## Filtered Table')
+        df_calc = drug_query.filter(items=(drug_name, compound_conc, ave_response), axis=1)
+        # Ensure columns are float
+        df_calc[compound_conc] = df_calc[compound_conc].astype(float)
+        df_calc[ave_response] = df_calc[ave_response].astype(float)
+
+        # Output filtered table for calculation
+        st.data_editor(df_calc, num_rows='dynamic')
+
+        # Calculate IC50
+        data = Calculator(df_calc)
+        # st.write(data.type)
+        # st.dataframe(data)
+
+        absolute = data.calculate_absolute_ic50(name_col=drug_name,
+                                                concentration_col=compound_conc,
+                                                response_col=ave_response,
+                                                input_units=units)
+        st.markdown('## Calculated Results')
+
+        # Absolute IC50 Table
+        st.data_editor(absolute, num_rows='dynamic')
+        download_button(absolute, file_name='py50_ic50.csv')
+
+        # output unit message
+        st.markdown(f'Calculated Results are in {units}')
+
+        convert = st.checkbox('Calculate values to pIC50?')
+
+        if convert is True:
+            st.markdown('## Calculated Results with pIC50')
+            conversion = data.calculate_pic50(name_col=drug_name,
+                                              concentration_col=compound_conc,
+                                              response_col=ave_response,
+                                              input_units=units)
+            # Output pIC50 table
+            st.data_editor(conversion, num_rows='dynamic')
+            download_button(conversion, file_name='py50_pic50.csv')
+
+
+'''
+Page layout begins below
+'''
 tutorial = 'https://github.com/tlint101/py50/blob/main/tutorials/002_absolute_ic50.ipynb'
 datasets = 'https://github.com/tlint101/py50/tree/main/dataset'
 st.markdown('# Calculate Relative and Absolute IC50')
@@ -40,8 +119,8 @@ st.write('')
 
 st.markdown('## Select an option to get started:')
 option = st.radio(
-    '# Select an option to get started',
-    ('Upload CSV File', 'Convert IC50 into pIC50'))
+    'Options are paste or .csv file upload',
+    ('Paste Data', 'Upload CSV File', 'IC50 to pIC50 Calculator'))
 
 if option == 'Upload CSV File':
     # Upload the CSV file
@@ -52,64 +131,29 @@ if option == 'Upload CSV File':
         # Read the CSV file into a DataFrame
         drug_query = pd.read_csv(uploaded_file)
         st.write('## Input Table')
-        st.dataframe(drug_query, hide_index=True)  # visualize dataframe in streamlit app
+        st.data_editor(drug_query, num_rows='dynamic')  # visualize dataframe in streamlit app
     else:
         # Display a message if no CSV file has been uploaded
         st.warning('Please upload a .csv file.')
 
     # Select columns for calculation
     if uploaded_file is not None:  # nested in if/else to remove initial traceback error
-        # add space between option
-        st.sidebar.markdown('')
-        st.sidebar.markdown('**Calculator Options:**')
-        col_header = drug_query.columns.to_list()
-        drug_name = st.sidebar.selectbox('Drug Name:', (col_header))
-        compound_conc = st.sidebar.selectbox('Drug Concentration:', (col_header))
-        ave_response = st.sidebar.selectbox('Average Response column:', (col_header))
+        calculator_program(df=drug_query, paste=False)
 
-        units = st.sidebar.radio('Input Concentration Units',
-                                 options=['nM', 'µM'],
-                                 captions=['Nanomolor', 'Micromolar'])
+# Editable DataFrame
+elif option == 'Paste Data':
+    st.markdown('### Paste Data in Table:')
+    # Make dummy dataframe
+    df = pd.DataFrame([{"Drug Name": '', 'Concentration': '', 'Response': ''}, ])
 
-        # Set conditions before calculations
-        conditions = {drug_name, compound_conc, ave_response}
-        if len(conditions) != 3:
-            st.write('### :red[Select Drug, Concentration, and Response Columns!]')
-        else:
-            st.write('## Filtered Table')
-            df_calc = drug_query.filter(items=(drug_name, compound_conc, ave_response), axis=1)
+    edited_df = st.data_editor(df, num_rows='dynamic')
 
-        # Output filtered table for calculation
-        st.dataframe(df_calc)
-
-        # Calculate IC50
-        data = Calculator(drug_query)
-
-        absolute = data.calculate_absolute_ic50(name_col=drug_name,
-                                                concentration_col=compound_conc,
-                                                response_col=ave_response,
-                                                input_units=units)
-        st.markdown('## Calculated Results')
-
-        # Absolute IC50 Table
-        st.dataframe(absolute, hide_index=True)
-        download_button(absolute, file_name='py50_ic50.csv')
-
-        # output unit message
-        st.markdown(f'Calculated Results are in {units}')
-
-        convert = st.checkbox('Calculate values to pIC50?')
-
-        if convert is True:
-            conversion = data.calculate_pic50(name_col=drug_name,
-                                        concentration_col=compound_conc,
-                                        response_col=ave_response,
-                                        input_units=units)
-            # Output pIC50 table
-            st.dataframe(conversion, hide_index=True)
-            download_button(conversion, file_name='py50_pic50.csv')
+    if (edited_df == '').all().all():
+        st.write('Table is currently empty')
     else:
-        pass
+        calculator_program(df=edited_df, paste=True)
+
+# pIC50 calculator
 else:
     st.markdown('### Insert your IC50 Value (in nM):')
     input_ic50 = st.number_input('Insert IC50 Value (in nM)', step=1e-6)
@@ -124,5 +168,5 @@ else:
     data = pd.DataFrame({'IC50 (nM)': input_ic50, 'pIC50': pic50}, index=[0])
 
     # Output table
-    st.dataframe(data)
+    st.data_editor(data, num_rows='dynamic')
     download_button(data, file_name='py50_pic50.csv')

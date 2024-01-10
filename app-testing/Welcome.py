@@ -1,14 +1,12 @@
 import os
 import streamlit as st
 from streamlit_activities_menu import get_available_activities, build_activities_menu
-# todo add pip install streamlit-activities-menu
 
 st.set_page_config(
     page_title="py50",
     page_icon="👋",
-    layout='wide',
+    layout='wide'
 )
-
 
 def run():
     working_directory = os.path.dirname(os.path.abspath(__file__))
