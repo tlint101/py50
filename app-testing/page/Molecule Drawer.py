@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_ketcher import st_ketcher
 from streamlit_extras.add_vertical_space import add_vertical_space
 
-# Set page config
+# # Set page config
 # st.set_page_config(layout="wide")
 
 # # add logo
@@ -22,5 +22,3 @@ with col1:
     st.markdown(f"Smile string: {smile_code}")
 with col2:
     st.header("")
-
-

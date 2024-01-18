@@ -23,14 +23,14 @@ st.markdown('# :red[**Changelog**]')
 
 st.markdown('## :rainbow[**2024.01.18**]')
 st.markdown('''
-##### :green[**Major Changes**]
+##### :green[**Major Changes**] 🎉
 - Updated py50 Web Application to [py50 v0.3.4](https://github.com/tlint101/py50/releases)
 - Added copy/paste feature for DataTables (Tables constrained by Drug Name, Concentration, Response)
 - Added pIC50 calculator
     - Option to scale IC50 columns into pIC50
     - Standalone pIC50 converter
         - optional output as .csv file
-##### :orange[**Minor Changes**]
+##### :orange[**Minor Changes**] 📋
 -Changed page selection into a selectbox
 - Added CSV button to DataTables for easier download
 - Increased image resolution for images downloaded using the "Download" button. Now 300 dpi by default.

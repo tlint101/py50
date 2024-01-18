@@ -73,8 +73,6 @@ def calculator_program(df=None, paste=True):
 
         # Calculate IC50
         data = Calculator(df_calc)
-        # st.write(data.type)
-        # st.dataframe(data)
 
         absolute = data.calculate_absolute_ic50(name_col=drug_name,
                                                 concentration_col=compound_conc,
@@ -165,8 +163,8 @@ else:
         st.write(':red[**Input cannot be 0 or a negative number!**]')
 
     # Generate a DataFrame from input
-    data = pd.DataFrame({'IC50 (nM)': input_ic50, 'pIC50': pic50}, index=[0])
+    data = pd.DataFrame([{'Notes': '', 'IC50 (nM)': input_ic50, 'pIC50': pic50}])
 
     # Output table
-    st.data_editor(data, num_rows='dynamic')
-    download_button(data, file_name='py50_pic50.csv')
+    edited_df = st.data_editor(data, num_rows='dynamic')
+    download_button(edited_df, file_name='py50_pic50.csv')
