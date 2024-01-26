@@ -20,7 +20,7 @@ st.write('# Welcome to py50!')
 
 github = 'https://github.com/tlint101/py50'
 documentation = 'https://py50.readthedocs.io/en/latest/?badge=latest'
-zenodo = 'https://zenodo.org/records/10183941'
+zenodo = 'https://zenodo.org/doi/10.5281/zenodo.10183912'
 
 st.markdown(
     """
