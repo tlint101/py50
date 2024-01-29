@@ -19,10 +19,11 @@ st.markdown(links, unsafe_allow_html=True)
 CHANGELOG BELOW
 """
 
-st.markdown('# :red[**Changelog**]')
+st.markdown("# :red[**Changelog**]")
 
-st.markdown('## :rainbow[**2024.01.18**]')
-st.markdown('''
+st.markdown("## :rainbow[**2024.01.18**]")
+st.markdown(
+    """
 ##### :green[**Major Changes**] 🎉
 - Updated py50 Web Application to [py50 v0.3.4](https://github.com/tlint101/py50/releases)
 - Added copy/paste feature for DataTables (Tables constrained by Drug Name, Concentration, Response)
@@ -45,4 +46,5 @@ st.markdown('''
 :orange[**General**]
 - Converted all DataTables into editable DataTables
 - Fixed pIC50 calculator to handle both nM or µM values 
-            ''')
+            """
+)
