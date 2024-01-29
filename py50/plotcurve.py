@@ -33,7 +33,7 @@ class PlotCurve:
         """
 
         if key not in self.df.columns:
-            raise ValueError('Column not found')
+            raise ValueError("Column not found")
         return self.df[key]
 
     # Filter input data based on Compound Name to generate single plot
@@ -51,37 +51,39 @@ class PlotCurve:
 
     # todo rename function to curve_plot
     # todo fix verbose issue - box info will also print
-    def single_curve_plot(self,
-                          concentration_col,
-                          response_col,
-                          drug_name=None,
-                          plot_title=None,
-                          plot_title_size=16,
-                          xlabel=None,
-                          ylabel=None,
-                          axis_fontsize=14,
-                          conc_unit='nM',
-                          xscale='log',
-                          xscale_ticks=None,
-                          ymax=None,
-                          ymin=None,
-                          line_color='black',
-                          line_width=1.5,
-                          marker=None,
-                          legend=False,
-                          legend_loc='best',
-                          box=False,
-                          box_color='gray',
-                          box_intercept=50,
-                          conc_target=None,
-                          hline=None,
-                          hline_color='gray',
-                          vline=None,
-                          vline_color='gray',
-                          figsize=(6.4, 4.8),
-                          output_filename=None,
-                          verbose=None,
-                          **kwargs):
+    def single_curve_plot(
+        self,
+        concentration_col,
+        response_col,
+        drug_name=None,
+        plot_title=None,
+        plot_title_size=16,
+        xlabel=None,
+        ylabel=None,
+        axis_fontsize=14,
+        conc_unit="nM",
+        xscale="log",
+        xscale_ticks=None,
+        ymax=None,
+        ymin=None,
+        line_color="black",
+        line_width=1.5,
+        marker=None,
+        legend=False,
+        legend_loc="best",
+        box=False,
+        box_color="gray",
+        box_intercept=50,
+        conc_target=None,
+        hline=None,
+        hline_color="gray",
+        vline=None,
+        vline_color="gray",
+        figsize=(6.4, 4.8),
+        output_filename=None,
+        verbose=None,
+        **kwargs,
+    ):
         """
         Generate a dose-response curve for a single drug target. Because a data table can contain multiple drugs, user
         must specify specific target.
@@ -137,16 +139,21 @@ class PlotCurve:
             if len(drug_query) > 0:
                 pass
             elif len(drug_query) == 0:
-                print('Drug not found!')
+                print("Drug not found!")
         else:
-            print('Drug not found!')
+            print("Drug not found!")
 
         # Create variables for inputs. Extract column from Dataframe
         concentration = drug_query[concentration_col]
         response = drug_query[response_col]
 
         # Set initial guess for 4PL equation
-        initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
+        initial_guess = [
+            max(response),
+            min(response),
+            1.0,
+            1.0,
+        ]  # Max, Min, ic50, and hill_slope
 
         # Initialize in Calculator class for calculating results for plotting
         calculator = Calculator(drug_query)
@@ -160,14 +167,22 @@ class PlotCurve:
         """
 
         # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
-        x_fit, xscale_unit = CurveSettings().scale_units(drug_name, conc_unit, xscale_ticks, verbose)
+        x_fit, xscale_unit = CurveSettings().scale_units(
+            drug_name, conc_unit, xscale_ticks, verbose
+        )
 
         # Function to scale the concentration by nM or µM
-        concentration = CurveSettings().conc_scale(xscale_unit, concentration, verbose=verbose)
+        concentration = CurveSettings().conc_scale(
+            xscale_unit, concentration, verbose=verbose
+        )
 
-        reverse, params, covariance = calculator.calc_logic(df=query, concentration=concentration,
-                                                            response_col=response_col, initial_guess=initial_guess,
-                                                            response=response)
+        reverse, params, covariance = calculator.calc_logic(
+            df=query,
+            concentration=concentration,
+            response_col=response_col,
+            initial_guess=initial_guess,
+            response=response,
+        )
         # Extract parameter values
         maximum, minimum, ic50, hill_slope = params
         # print(drug_name, ' IC50: ', ic50, 'µM') # For checking
@@ -177,22 +192,30 @@ class PlotCurve:
         if reverse == 1:
             y_fit = calculator.reverse_fourpl(x_fit, maximum, minimum, ic50, hill_slope)
             y_intersection = 50
-            interpretation = interp1d(y_fit, x_fit, kind='linear', fill_value="extrapolate")
-            x_intersection = np.round(interpretation(y_intersection), 3)  # give results and round to 3 sig figs
-            hill_slope = -1 * hill_slope  # ensure hill_slope is negative # may not be needed if fixed
+            interpretation = interp1d(
+                y_fit, x_fit, kind="linear", fill_value="extrapolate"
+            )
+            x_intersection = np.round(
+                interpretation(y_intersection), 3
+            )  # give results and round to 3 sig figs
+            hill_slope = (
+                -1 * hill_slope
+            )  # ensure hill_slope is negative # may not be needed if fixed
         else:
             y_fit = calculator.fourpl(x_fit, *params)
             y_intersection = 50
             x_intersection = np.interp(y_intersection, y_fit, x_fit)
 
         # Confirm ic50 unit output
-        ic50, x_intersection, final_unit = calculator.unit_convert(ic50, x_intersection, conc_unit)
+        ic50, x_intersection, final_unit = calculator.unit_convert(
+            ic50, x_intersection, conc_unit
+        )
 
         # Boolean check for marker
         if marker is not None:
             marker = marker
         else:
-            marker = 'o'
+            marker = "o"
 
         # Create the plot
         fig, ax = plt.subplots(figsize=figsize)
@@ -205,10 +228,12 @@ class PlotCurve:
         ax.set_title(plot_title, fontsize=plot_title_size)
 
         # Set grid lines to False by default
-        plt.grid(kwargs.get('grid', False))
+        plt.grid(kwargs.get("grid", False))
 
         # Set tick for axis
-        ax.tick_params(axis='both', which='both', bottom=True, top=False, left=True, right=False)
+        ax.tick_params(
+            axis="both", which="both", bottom=True, top=False, left=True, right=False
+        )
 
         # Set y-axis limit
         # Y-axis limit will be limited to the largest response number and add 10 for spacing
@@ -233,85 +258,107 @@ class PlotCurve:
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
         if box_intercept is None:
-            print('Input Inhibition % target')
+            print("Input Inhibition % target")
         elif box_intercept and conc_target is None and reverse == 1:
             y_intersection = box_intercept
-            interpretation = interp1d(y_fit, x_fit, kind='linear', fill_value="extrapolate")
+            interpretation = interp1d(
+                y_fit, x_fit, kind="linear", fill_value="extrapolate"
+            )
             x_intersection = interpretation(y_intersection)
             if verbose is True:
-                print('Box X intersection: ', np.round(x_intersection, 3), f'{final_unit}')
-                print('Box Y intersection: ', np.round(y_intersection, 3), '%')
+                print(
+                    "Box X intersection: ", np.round(x_intersection, 3), f"{final_unit}"
+                )
+                print("Box Y intersection: ", np.round(y_intersection, 3), "%")
 
         elif box_intercept and conc_target is None and reverse == 0:
             y_intersection = box_intercept
             x_intersection = np.interp(y_intersection, y_fit, x_fit)
             if verbose is True:
-                print('Box X intersection: ', np.round(x_intersection, 3), f'{final_unit}')
-                print('Box Y intersection: ', np.round(y_intersection, 3), '%')
+                print(
+                    "Box X intersection: ", np.round(x_intersection, 3), f"{final_unit}"
+                )
+                print("Box Y intersection: ", np.round(y_intersection, 3), "%")
 
         if conc_target is not None:
             x_intersection = conc_target
             y_intersection = np.interp(x_intersection, x_fit, y_fit)
             if verbose is True:
-                print('Box X intersection: ', np.round(x_intersection, 3), f'{final_unit}')
-                print('Box Y intersection: ', np.round(y_intersection, 3), '%')
+                print(
+                    "Box X intersection: ", np.round(x_intersection, 3), f"{final_unit}"
+                )
+                print("Box Y intersection: ", np.round(y_intersection, 3), "%")
 
         # Calculate yaxis scale for box highlight
-        CurveSettings().yaxis_scale(box=box, reverse=reverse, y_intersection=y_intersection,
-                                    x_intersection=x_intersection,
-                                    box_color=box_color)
+        CurveSettings().yaxis_scale(
+            box=box,
+            reverse=reverse,
+            y_intersection=y_intersection,
+            x_intersection=x_intersection,
+            box_color=box_color,
+        )
 
         # Arguments for hline and vline
         if hline is not None:
-            plt.axhline(y=hline, color=hline_color, linestyle='--')
+            plt.axhline(y=hline, color=hline_color, linestyle="--")
         if vline is not None:
-            plt.axvline(x=vline, color=vline_color, linestyle='--')
+            plt.axvline(x=vline, color=vline_color, linestyle="--")
 
         # Figure legend
         if legend:
-            ax.legend(handles=[plt.Line2D([0], [0], color=line_color, marker=marker, label=drug_name), ],
-                      loc=legend_loc)
+            ax.legend(
+                handles=[
+                    plt.Line2D(
+                        [0], [0], color=line_color, marker=marker, label=drug_name
+                    ),
+                ],
+                loc=legend_loc,
+            )
 
         # Save the plot to a file
         if output_filename == None:
             pass
         else:
-            plt.savefig(output_filename, dpi=300)  # Save the plot to a file with the specified filename
+            plt.savefig(
+                output_filename, dpi=300
+            )  # Save the plot to a file with the specified filename
 
         return fig
 
     # todo include conc_target from single_curve_plot
     # todo include axis_fontsize as seen from other 2 plots
-    def multi_curve_plot(self,
-                         concentration_col,
-                         response_col,
-                         name_col,
-                         plot_title=None,
-                         plot_title_size=12,
-                         xlabel=None,
-                         ylabel=None,
-                         conc_unit='nM',
-                         xscale='log',
-                         xscale_ticks=None,
-                         ymax=None,
-                         ymin=None,
-                         axis_fontsize=10,
-                         line_color=CBPALETTE,
-                         marker=CBMARKERS,
-                         line_width=1.5,
-                         legend=False,
-                         legend_loc='best',
-                         box_target=None,
-                         box_color='gray',
-                         box_intercept=50,
-                         hline=None,
-                         hline_color='gray',
-                         vline=None,
-                         vline_color='gray',
-                         figsize=(6.4, 4.8),
-                         output_filename=None,
-                         verbose=None,
-                         **kwargs):
+    def multi_curve_plot(
+        self,
+        concentration_col,
+        response_col,
+        name_col,
+        plot_title=None,
+        plot_title_size=12,
+        xlabel=None,
+        ylabel=None,
+        conc_unit="nM",
+        xscale="log",
+        xscale_ticks=None,
+        ymax=None,
+        ymin=None,
+        axis_fontsize=10,
+        line_color=CBPALETTE,
+        marker=CBMARKERS,
+        line_width=1.5,
+        legend=False,
+        legend_loc="best",
+        box_target=None,
+        box_color="gray",
+        box_intercept=50,
+        hline=None,
+        hline_color="gray",
+        vline=None,
+        vline_color="gray",
+        figsize=(6.4, 4.8),
+        output_filename=None,
+        verbose=None,
+        **kwargs,
+    ):
         """
         Generate a dose-response plot for multiple drug targets. Curves will be placed into a single plot.
 
@@ -367,7 +414,12 @@ class PlotCurve:
             response = drug_query[response_col]
 
             # Set initial guess for 4PL equation
-            initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
+            initial_guess = [
+                max(response),
+                min(response),
+                1.0,
+                1.0,
+            ]  # Max, Min, ic50, and hill_slope
 
             # Initialize in Calculator class for calculating results for plotting
             calculator = Calculator(drug_query)
@@ -382,25 +434,41 @@ class PlotCurve:
             """
 
             # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
-            x_fit, xscale_unit = CurveSettings().scale_units(drug, conc_unit, xscale_ticks, verbose)
+            x_fit, xscale_unit = CurveSettings().scale_units(
+                drug, conc_unit, xscale_ticks, verbose
+            )
 
             # Function to scale the concentration by nM or µM
-            concentration = CurveSettings().conc_scale(xscale_unit, concentration, verbose=verbose)
+            concentration = CurveSettings().conc_scale(
+                xscale_unit, concentration, verbose=verbose
+            )
 
-            reverse, params, covariance = calculator.calc_logic(df=query, concentration=concentration,
-                                                                response_col=response_col, initial_guess=initial_guess,
-                                                                response=response)
+            reverse, params, covariance = calculator.calc_logic(
+                df=query,
+                concentration=concentration,
+                response_col=response_col,
+                initial_guess=initial_guess,
+                response=response,
+            )
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
             # print(drug, ' IC50: ', ic50, 'nM') # For checking
 
             # Calculate from parameters 4PL equation
             if reverse == 1:
-                y_fit = calculator.reverse_fourpl(x_fit, maximum, minimum, ic50, hill_slope)
+                y_fit = calculator.reverse_fourpl(
+                    x_fit, maximum, minimum, ic50, hill_slope
+                )
                 y_intersection = 50
-                interpretation = interp1d(y_fit, x_fit, kind='linear', fill_value="extrapolate")
-                x_intersection = np.round(interpretation(y_intersection), 3)  # give results and round to 3 sig figs
-                hill_slope = -1 * hill_slope  # ensure hill_slope is negative # may not be needed if fixed
+                interpretation = interp1d(
+                    y_fit, x_fit, kind="linear", fill_value="extrapolate"
+                )
+                x_intersection = np.round(
+                    interpretation(y_intersection), 3
+                )  # give results and round to 3 sig figs
+                hill_slope = (
+                    -1 * hill_slope
+                )  # ensure hill_slope is negative # may not be needed if fixed
                 y_fit_list.append(y_fit)
 
             else:
@@ -434,23 +502,47 @@ class PlotCurve:
             marker = marker
 
         # Plotting the data for each line
-        legend_handles = []  # Store data for each line as a dictionary inside a list for the legend
-        for i, (y_fit_point, concentration_point, response_point, name, color, mark) in enumerate(
-                zip(y_fit_list, concentration_list, response_list, name_list, line_color, marker)):
+        legend_handles = (
+            []
+        )  # Store data for each line as a dictionary inside a list for the legend
+        for i, (
+            y_fit_point,
+            concentration_point,
+            response_point,
+            name,
+            color,
+            mark,
+        ) in enumerate(
+            zip(
+                y_fit_list,
+                concentration_list,
+                response_list,
+                name_list,
+                line_color,
+                marker,
+            )
+        ):
             plt.plot(x_fit, y_fit_point, color=color, label=name, linewidth=line_width)
             ax.scatter(concentration_point, response_point, color=color, marker=mark)
             ax.set_title(plot_title)
             ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
             # Set ticks for axis
-            ax.tick_params(axis='both', which='both', bottom=True, top=False, left=True, right=False)
+            ax.tick_params(
+                axis="both",
+                which="both",
+                bottom=True,
+                top=False,
+                left=True,
+                right=False,
+            )
             ax.set_xlabel(xlabel, fontsize=axis_fontsize)
             ax.set_ylabel(ylabel, fontsize=axis_fontsize)
 
             # Set grid lines to False by default
-            plt.grid(kwargs.get('grid', False))
+            plt.grid(kwargs.get("grid", False))
 
             # Append scatter plot handle to the legend
-            legend_piece = {'marker': mark, 'name': name, 'line_color': color}
+            legend_piece = {"marker": mark, "name": name, "line_color": color}
             legend_handles.append(legend_piece)
 
         # Set y-axis limit
@@ -487,51 +579,96 @@ class PlotCurve:
                     if name_index.size > 0:
                         name_index = name_index[0]
                         # match data to drug using y_fit_list[name_index]
-                        interpretation = interp1d(y_fit_list[name_index], x_fit, kind='linear',
-                                                  fill_value="extrapolate")
+                        interpretation = interp1d(
+                            y_fit_list[name_index],
+                            x_fit,
+                            kind="linear",
+                            fill_value="extrapolate",
+                        )
                         x_intersection = interpretation(y_intersection)
                     ymin = 0  # Starts at the bottom of the plot
                     ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
-                            plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0])
+                        plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
+                    )
                     if verbose is True:
-                        print(f'Box will target {box_target}')
-                        print('Box X intersection: ', np.round(x_intersection, 3), f'{conc_unit}')
-                        print('Box Y intersection: ', np.round(y_intersection, 3), '%')
+                        print(f"Box will target {box_target}")
+                        print(
+                            "Box X intersection: ",
+                            np.round(x_intersection, 3),
+                            f"{conc_unit}",
+                        )
+                        print("Box Y intersection: ", np.round(y_intersection, 3), "%")
                     # Converted x_intersection from a numpy array into a float
-                    plt.axvline(x=x_intersection, ymin=ymin, ymax=ymax, color=box_color, linestyle='--')
-                    plt.hlines(y=y_intersection, xmin=0, xmax=x_intersection, colors=box_color, linestyles='--')
+                    plt.axvline(
+                        x=x_intersection,
+                        ymin=ymin,
+                        ymax=ymax,
+                        color=box_color,
+                        linestyle="--",
+                    )
+                    plt.hlines(
+                        y=y_intersection,
+                        xmin=0,
+                        xmax=x_intersection,
+                        colors=box_color,
+                        linestyles="--",
+                    )
             elif isinstance(box_target, str) and reverse == 0:
                 if box_target in name_list:
                     name_index = np.where(name_list == box_target)[0]
                     if name_index.size > 0:
                         name_index = name_index[0]
-                        x_intersection = np.interp(y_intersection, y_fit_list[name_index], x_fit)
+                        x_intersection = np.interp(
+                            y_intersection, y_fit_list[name_index], x_fit
+                        )
                     ymin = 0  # Starts at the bottom of the plot
                     ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
-                            plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0])
+                        plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
+                    )
                     if verbose is True:
-                        print(f'Box will target {box_target}')
-                        print('Box X intersection: ', np.round(x_intersection, 3), f'{conc_unit}')
-                        print('Box Y intersection: ', np.round(y_intersection, 3), '%')
+                        print(f"Box will target {box_target}")
+                        print(
+                            "Box X intersection: ",
+                            np.round(x_intersection, 3),
+                            f"{conc_unit}",
+                        )
+                        print("Box Y intersection: ", np.round(y_intersection, 3), "%")
                     # Converted x_intersection from a numpy array into a float
-                    plt.axvline(x=x_intersection, ymin=ymin, ymax=ymax, color=box_color, linestyle='--')
-                    plt.hlines(y=y_intersection, xmin=0, xmax=x_intersection, colors=box_color, linestyles='--')
+                    plt.axvline(
+                        x=x_intersection,
+                        ymin=ymin,
+                        ymax=ymax,
+                        color=box_color,
+                        linestyle="--",
+                    )
+                    plt.hlines(
+                        y=y_intersection,
+                        xmin=0,
+                        xmax=x_intersection,
+                        colors=box_color,
+                        linestyles="--",
+                    )
             else:
-                print('Drug name does not match box target!')
+                print("Drug name does not match box target!")
 
         # Arguments for hline and vline
         if hline is not None:
-            plt.axhline(y=hline, color=hline_color, linestyle='--')
+            plt.axhline(y=hline, color=hline_color, linestyle="--")
         if vline is not None:
-            plt.axvline(x=vline, color=vline_color, linestyle='--')
+            plt.axvline(x=vline, color=vline_color, linestyle="--")
 
         # Figure legend
         # Extract elements (Line, Scatterplot, and color) from figures and append into a list for generating legend
         if legend:
             legend_elements = []
             for data in legend_handles:
-                legend_element = mlines.Line2D([0], [0], color=data['line_color'], marker=data['marker'],
-                                               label=data['name'])
+                legend_element = mlines.Line2D(
+                    [0],
+                    [0],
+                    color=data["line_color"],
+                    marker=data["marker"],
+                    label=data["name"],
+                )
                 legend_elements.append(legend_element)
             ax.legend(handles=legend_elements, loc=legend_loc)
 
@@ -545,33 +682,35 @@ class PlotCurve:
         return fig
 
     # todo include conc_target from single_curve_plot
-    def grid_curve_plot(self,
-                        concentration_col,
-                        response_col,
-                        name_col,
-                        column_num=2,
-                        plot_title=None,
-                        plot_title_size=20,
-                        xlabel=None,
-                        ylabel=None,
-                        conc_unit='nM',
-                        xscale='log',
-                        xscale_ticks=None,
-                        ymax=None,
-                        ymin=None,
-                        line_color=CBPALETTE,
-                        line_width=1.5,
-                        box=False,
-                        box_color='gray',
-                        box_intercept=50,
-                        hline=None,
-                        hline_color='gray',
-                        vline=None,
-                        vline_color='gray',
-                        figsize=(8.4, 4.8),
-                        output_filename=None,
-                        verbose=None,
-                        **kwargs):
+    def grid_curve_plot(
+        self,
+        concentration_col,
+        response_col,
+        name_col,
+        column_num=2,
+        plot_title=None,
+        plot_title_size=20,
+        xlabel=None,
+        ylabel=None,
+        conc_unit="nM",
+        xscale="log",
+        xscale_ticks=None,
+        ymax=None,
+        ymin=None,
+        line_color=CBPALETTE,
+        line_width=1.5,
+        box=False,
+        box_color="gray",
+        box_intercept=50,
+        hline=None,
+        hline_color="gray",
+        vline=None,
+        vline_color="gray",
+        figsize=(8.4, 4.8),
+        output_filename=None,
+        verbose=None,
+        **kwargs,
+    ):
         """
         Generate a dose-response curve for mutliple drugs. Each curve will be placed in its own plot which is then
         placed in a grid.
@@ -627,7 +766,12 @@ class PlotCurve:
             response = drug_query[response_col]
 
             # Set initial guess for 4PL equation
-            initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
+            initial_guess = [
+                max(response),
+                min(response),
+                1.0,
+                1.0,
+            ]  # Max, Min, ic50, and hill_slope
 
             # Initialize in Calculator class for calculating results for plotting
             calculator = Calculator(drug_query)
@@ -642,26 +786,42 @@ class PlotCurve:
             """
 
             # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
-            x_fit, xscale_unit = CurveSettings().scale_units(drug, conc_unit, xscale_ticks, verbose)
+            x_fit, xscale_unit = CurveSettings().scale_units(
+                drug, conc_unit, xscale_ticks, verbose
+            )
             x_fit_list.append(x_fit)
 
             # Function to scale the concentration by nM or µM
-            concentration = CurveSettings().conc_scale(xscale_unit, concentration, verbose=verbose)
+            concentration = CurveSettings().conc_scale(
+                xscale_unit, concentration, verbose=verbose
+            )
 
-            reverse, params, covariance = calculator.calc_logic(df=query, concentration=concentration,
-                                                                response_col=response_col, initial_guess=initial_guess,
-                                                                response=response)
+            reverse, params, covariance = calculator.calc_logic(
+                df=query,
+                concentration=concentration,
+                response_col=response_col,
+                initial_guess=initial_guess,
+                response=response,
+            )
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
             # print(drug, ' IC50: ', ic50, 'nM') # For checking
 
             # Calculate from parameters 4PL equation
             if reverse == 1:
-                y_fit = calculator.reverse_fourpl(x_fit, maximum, minimum, ic50, hill_slope)
+                y_fit = calculator.reverse_fourpl(
+                    x_fit, maximum, minimum, ic50, hill_slope
+                )
                 y_intersection = 50
-                interpretation = interp1d(y_fit, x_fit, kind='linear', fill_value="extrapolate")
-                x_intersection = np.round(interpretation(y_intersection), 3)  # give results and round to 3 sig figs
-                hill_slope = -1 * hill_slope  # ensure hill_slope is negative # may not be needed if fixed
+                interpretation = interp1d(
+                    y_fit, x_fit, kind="linear", fill_value="extrapolate"
+                )
+                x_intersection = np.round(
+                    interpretation(y_intersection), 3
+                )  # give results and round to 3 sig figs
+                hill_slope = (
+                    -1 * hill_slope
+                )  # ensure hill_slope is negative # may not be needed if fixed
                 y_fit_list.append(y_fit)
             else:
                 y_fit = calculator.fourpl(x_fit, *params)
@@ -687,7 +847,9 @@ class PlotCurve:
             elif isinstance(line_color, list) and len(line_color) != len(name_list):
                 # Extend the list of colors to match the length of names
                 extended_colors = line_color * ((len(name_list) // len(line_color)) + 1)
-                line_color = extended_colors[:len(name_list)]  # Trim the extended list to the same length as names
+                line_color = extended_colors[
+                    : len(name_list)
+                ]  # Trim the extended list to the same length as names
 
             # If user only gives a string of 1 color, duplicate color name to match length of drug names
             elif len(line_color) is not len(name_list):
@@ -708,13 +870,21 @@ class PlotCurve:
         for i in range(row_num):
             for j in range(column_num):
                 # Line plot
-                axes[i, j].plot(x_fit_list[i * column_num + j], y_fit_list[i * column_num + j], label='Line Plot',
-                                color=line_color[i * column_num + j], linewidth=line_width)
+                axes[i, j].plot(
+                    x_fit_list[i * column_num + j],
+                    y_fit_list[i * column_num + j],
+                    label="Line Plot",
+                    color=line_color[i * column_num + j],
+                    linewidth=line_width,
+                )
 
                 # Scatter plot
-                axes[i, j].scatter(concentration_list[i * column_num + j], response_list[i * column_num + j],
-                                   label='Scatter Plot',
-                                   color=line_color[i * column_num + j])
+                axes[i, j].scatter(
+                    concentration_list[i * column_num + j],
+                    response_list[i * column_num + j],
+                    label="Scatter Plot",
+                    color=line_color[i * column_num + j],
+                )
 
                 # Set x-axis scale
                 axes[i, j].set_xscale(xscale)
@@ -722,12 +892,18 @@ class PlotCurve:
                 # Set y-axis limit
                 # Y-axis limit will be limited to the largest response number and add 10 for spacing
                 if ymax is None:
-                    max_value = np.amax([np.amax(max_value) for max_value in response_list]) + 10
+                    max_value = (
+                        np.amax([np.amax(max_value) for max_value in response_list])
+                        + 10
+                    )
                 else:
                     max_value = ymax
                 # Y-axis minimum to the lowest response - 10 for better plotting
                 if ymin is None:
-                    ymin = np.amin([np.amin(max_value) for max_value in response_list]) - 10
+                    ymin = (
+                        np.amin([np.amin(max_value) for max_value in response_list])
+                        - 10
+                    )
                 else:
                     ymin = ymin
                 axes[i, j].set_ylim(ymin, max_value)
@@ -738,48 +914,97 @@ class PlotCurve:
                 if box is True:
                     if isinstance(box_intercept, (int, float)) and reverse == 1:
                         y_intersection = box_intercept
-                        interpretation = interp1d(y_fit_list[i * column_num + j], x_fit_list[i * column_num + j],
-                                                  kind='linear', fill_value="extrapolate")
+                        interpretation = interp1d(
+                            y_fit_list[i * column_num + j],
+                            x_fit_list[i * column_num + j],
+                            kind="linear",
+                            fill_value="extrapolate",
+                        )
 
                         x_concentration = interpretation(y_intersection)
                         # Constrain box to 50% drug response
                         ymax_box = (y_intersection - axes[i, j].get_ylim()[0]) / (
-                                axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0])
+                            axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
+                        )
 
-                        axes[i, j].axvline(x=x_concentration, ymin=0, ymax=ymax_box, color=box_color, linestyle='--')
-                        axes[i, j].hlines(y=y_intersection, xmin=0, xmax=x_concentration, colors=box_color,
-                                          linestyles='--')
+                        axes[i, j].axvline(
+                            x=x_concentration,
+                            ymin=0,
+                            ymax=ymax_box,
+                            color=box_color,
+                            linestyle="--",
+                        )
+                        axes[i, j].hlines(
+                            y=y_intersection,
+                            xmin=0,
+                            xmax=x_concentration,
+                            colors=box_color,
+                            linestyles="--",
+                        )
                         if verbose is True:
-                            print(f'Box X intersection ({name_list[j]}): ', np.round(x_concentration, 3),
-                                  f'{conc_unit}')
-                            print(f'Box Y intersection ({name_list[j]}): ', np.round(y_intersection, 3), '%')
+                            print(
+                                f"Box X intersection ({name_list[j]}): ",
+                                np.round(x_concentration, 3),
+                                f"{conc_unit}",
+                            )
+                            print(
+                                f"Box Y intersection ({name_list[j]}): ",
+                                np.round(y_intersection, 3),
+                                "%",
+                            )
 
-                    elif box_intercept is not None and isinstance(box_intercept, (int, float)) and reverse == 0:
+                    elif (
+                        box_intercept is not None
+                        and isinstance(box_intercept, (int, float))
+                        and reverse == 0
+                    ):
                         y_intersection = box_intercept
 
-                        x_concentration = np.interp(y_intersection, y_fit_list[i * column_num + j],
-                                                    x_fit_list[i * column_num + j])
+                        x_concentration = np.interp(
+                            y_intersection,
+                            y_fit_list[i * column_num + j],
+                            x_fit_list[i * column_num + j],
+                        )
 
                         # Constrain box to 50% drug response
                         ymax_box = (y_intersection - axes[i, j].get_ylim()[0]) / (
-                                axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0])
+                            axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
+                        )
 
-                        axes[i, j].axvline(x=x_concentration, ymin=0, ymax=ymax_box, color=box_color, linestyle='--')
-                        axes[i, j].hlines(y=y_intersection, xmin=0, xmax=x_concentration, colors=box_color,
-                                          linestyles='--')
+                        axes[i, j].axvline(
+                            x=x_concentration,
+                            ymin=0,
+                            ymax=ymax_box,
+                            color=box_color,
+                            linestyle="--",
+                        )
+                        axes[i, j].hlines(
+                            y=y_intersection,
+                            xmin=0,
+                            xmax=x_concentration,
+                            colors=box_color,
+                            linestyles="--",
+                        )
                         if verbose is True:
-                            print(f'Box X intersection ({name_list[j]}): ', np.round(x_concentration, 3),
-                                  f'{conc_unit}')
-                            print(f'Box Y intersection ({name_list[j]}): ', np.round(y_intersection, 3), '%')
+                            print(
+                                f"Box X intersection ({name_list[j]}): ",
+                                np.round(x_concentration, 3),
+                                f"{conc_unit}",
+                            )
+                            print(
+                                f"Box Y intersection ({name_list[j]}): ",
+                                np.round(y_intersection, 3),
+                                "%",
+                            )
                     elif box_intercept is None:
                         pass
 
                 # Arguments for hline and vline
                 if hline is not None:
-                    axes[i, j].axhline(y=hline, color=hline_color, linestyle='--')
+                    axes[i, j].axhline(y=hline, color=hline_color, linestyle="--")
 
                 if vline is not None:
-                    axes[i, j].axvline(x=vline, color=vline_color, linestyle='--')
+                    axes[i, j].axvline(x=vline, color=vline_color, linestyle="--")
 
                 # Set axis labels
                 axes[i, j].set_xlabel(xlabel)
@@ -788,9 +1013,16 @@ class PlotCurve:
         # Remove grid lines and plot ticks for each subplot
         for ax_row in axes:
             for ax in ax_row:
-                ax.grid(kwargs.get('grid', False))
+                ax.grid(kwargs.get("grid", False))
                 # Set tick for axis
-                ax.tick_params(axis='both', which='both', bottom=True, top=False, left=True, right=False)
+                ax.tick_params(
+                    axis="both",
+                    which="both",
+                    bottom=True,
+                    top=False,
+                    left=True,
+                    right=False,
+                )
 
         plt.tight_layout()
 
@@ -805,7 +1037,7 @@ class PlotCurve:
         return fig
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()

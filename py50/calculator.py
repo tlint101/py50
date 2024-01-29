@@ -29,7 +29,7 @@ class Calculator:
         :return: DataFrame
         """
         if key not in self.df.columns:
-            raise ValueError('Column not found')
+            raise ValueError("Column not found")
         return self.df[key]
 
     def unit_convert(self, ic50, x_intersection=None, input_units=None):
@@ -42,18 +42,18 @@ class Calculator:
         :return:
         """
         # convert ic50 by input units
-        if input_units == 'nM':
+        if input_units == "nM":
             return ic50, x_intersection, input_units
-        elif input_units == 'µM' or input_units == 'uM':
+        elif input_units == "µM" or input_units == "uM":
             ic50 = ic50 / 1000
             if x_intersection is not None:
                 x_intersection = x_intersection / 1000
             return ic50, x_intersection, input_units
         elif input_units is None:
-            input_units = 'nM'
+            input_units = "nM"
             return ic50, x_intersection, input_units
         else:
-            print('Need nM (Nanomolar) or µM (Micromolar) concentrations!')
+            print("Need nM (Nanomolar) or µM (Micromolar) concentrations!")
 
     # Define the 4-parameter logistic (4PL) equation
     @staticmethod
@@ -70,7 +70,9 @@ class Calculator:
 
         :return: equation
         """
-        return minimum + (maximum - minimum) / (1 + (concentration / ic50) ** hill_slope)
+        return minimum + (maximum - minimum) / (
+            1 + (concentration / ic50) ** hill_slope
+        )
 
     @staticmethod
     def reverse_fourpl(concentration, minimum, maximum, ic50, hill_slope):
@@ -86,7 +88,9 @@ class Calculator:
 
         :return: equation
         """
-        return minimum + (maximum - minimum) / (1 + (concentration / ic50) ** -hill_slope)
+        return minimum + (maximum - minimum) / (
+            1 + (concentration / ic50) ** -hill_slope
+        )
 
     def verbose_calculation(self, drug, input_units, verbose):
         """
@@ -103,16 +107,18 @@ class Calculator:
         if verbose is True:
             # Logic to append concentration units to output DataFrame
             if input_units is None:
-                conc_unit = 'nM'
-            elif input_units == 'uM' or input_units == 'µM':
-                conc_unit = 'µM'
+                conc_unit = "nM"
+            elif input_units == "uM" or input_units == "µM":
+                conc_unit = "µM"
             else:
                 conc_unit = input_units
-            print(f'{drug} concentration is in {conc_unit}!')
+            print(f"{drug} concentration is in {conc_unit}!")
 
     # This method will be used to reduce the functions in the calculating methods below.
     # This will loop through each drug item.
-    def relative_calculation(self, name_col, concentration_col, response_col, input_units, verbose=None):
+    def relative_calculation(
+        self, name_col, concentration_col, response_col, input_units, verbose=None
+    ):
         """
         Calculate relative IC50 values for a given drug. Output will be a dictionary that will be converted into a
         pandas dataframe using the calculate_ic50() function.
@@ -141,7 +147,12 @@ class Calculator:
             response = drug_query[response_col]
 
             # Set initial guess for 4PL equation
-            initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
+            initial_guess = [
+                max(response),
+                min(response),
+                1.0,
+                1.0,
+            ]  # Max, Min, ic50, and hill_slope
 
             # set a new coy of the DataFrame to avoid warnings
             query = drug_query.copy()
@@ -151,9 +162,13 @@ class Calculator:
             # std_dev = np.sqrt(np.diag(covariance))
 
             # tag response col to determine direction of fourpl equation and fit to 4PL equation
-            reverse, params, covariance = self.calc_logic(df=query, concentration=concentration,
-                                                          response_col=response_col, initial_guess=initial_guess,
-                                                          response=response)
+            reverse, params, covariance = self.calc_logic(
+                df=query,
+                concentration=concentration,
+                response_col=response_col,
+                initial_guess=initial_guess,
+                response=response,
+            )
 
             # If verbose, output info
             self.verbose_calculation(drug, input_units, verbose)
@@ -164,27 +179,33 @@ class Calculator:
 
             # Confirm ic50 unit output
             # x_intersection is not needed for relative ic50
-            ic50, x_intersection, input_units = self.unit_convert(ic50, x_intersection=None, input_units=input_units)
+            ic50, x_intersection, input_units = self.unit_convert(
+                ic50, x_intersection=None, input_units=input_units
+            )
 
             # Logic to append concentration units to output DataFrame
             if input_units is None:
-                conc_unit = 'nM'
-            elif input_units == 'nM':
-                conc_unit = 'nM'
-            elif input_units == 'uM' or input_units == 'µM':
-                conc_unit = 'µM'
+                conc_unit = "nM"
+            elif input_units == "nM":
+                conc_unit = "nM"
+            elif input_units == "uM" or input_units == "µM":
+                conc_unit = "µM"
 
             # Generate DataFrame from parameters
-            values.append({
-                'compound_name': drug,
-                'maximum': maximum,
-                'minimum': minimum,
-                f'ic50 ({conc_unit})': ic50,
-                'hill_slope': hill_slope
-            })
+            values.append(
+                {
+                    "compound_name": drug,
+                    "maximum": maximum,
+                    "minimum": minimum,
+                    f"ic50 ({conc_unit})": ic50,
+                    "hill_slope": hill_slope,
+                }
+            )
         return values
 
-    def absolute_calculation(self, name_col, concentration_col, response_col, input_units, verbose=None):
+    def absolute_calculation(
+        self, name_col, concentration_col, response_col, input_units, verbose=None
+    ):
         """
         Calculate relative IC50 values for a given drug. Output will be a dictionary that will be converted into a
         pandas dataframe using the calculate_absolute_ic50() function.
@@ -215,15 +236,24 @@ class Calculator:
             response = drug_query[response_col]
 
             # Set initial guess for 4PL equation
-            initial_guess = [max(response), min(response), 1.0, 1.0]  # Max, Min, ic50, and hill_slope
+            initial_guess = [
+                max(response),
+                min(response),
+                1.0,
+                1.0,
+            ]  # Max, Min, ic50, and hill_slope
 
             # set a new coy of the DataFrame to avoid warnings
             query = drug_query.copy()
             query.sort_values(by=concentration_col, ascending=True, inplace=True)
 
-            reverse, params, covariance = self.calc_logic(df=query, concentration=concentration,
-                                                          response_col=response_col, initial_guess=initial_guess,
-                                                          response=response)
+            reverse, params, covariance = self.calc_logic(
+                df=query,
+                concentration=concentration,
+                response_col=response_col,
+                initial_guess=initial_guess,
+                response=response,
+            )
 
             # If verbose, output info
             # self.verbose_calculation(drug, input_units, verbose)
@@ -234,45 +264,66 @@ class Calculator:
 
             # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
             # If verbose, more info will be printed
-            x_fit, input_units = CurveSettings().scale_units(drug_name=drug, xscale_unit=input_units,
-                                                             xscale_ticks=None, verbose=verbose)
+            x_fit, input_units = CurveSettings().scale_units(
+                drug_name=drug,
+                xscale_unit=input_units,
+                xscale_ticks=None,
+                verbose=verbose,
+            )
 
             # Calculate from parameters 4PL equation
             if reverse == 1:
                 y_fit = self.reverse_fourpl(x_fit, maximum, minimum, ic50, hill_slope)
                 y_intersection = 50
-                interpretation = interp1d(y_fit, x_fit, kind='linear', fill_value="extrapolate")
-                x_intersection = np.round(interpretation(y_intersection), 3)  # give results and round to 3 sig figs
-                hill_slope = -1 * hill_slope  # ensure hill_slope is negative # may not be needed if fixed
+                interpretation = interp1d(
+                    y_fit, x_fit, kind="linear", fill_value="extrapolate"
+                )
+                x_intersection = np.round(
+                    interpretation(y_intersection), 3
+                )  # give results and round to 3 sig figs
+                hill_slope = (
+                    -1 * hill_slope
+                )  # ensure hill_slope is negative # may not be needed if fixed
             else:
                 y_fit = self.fourpl(x_fit, *params)
                 y_intersection = 50
                 x_intersection = np.interp(y_intersection, y_fit, x_fit)
 
             # Confirm ic50 unit output
-            ic50, x_intersection, input_units = self.unit_convert(ic50, x_intersection, input_units)
+            ic50, x_intersection, input_units = self.unit_convert(
+                ic50, x_intersection, input_units
+            )
 
             # Logic to append concentration units to output DataFrame
             if input_units is None:
-                conc_unit = 'nM'
-            elif input_units == 'nM':
-                conc_unit = 'nM'
-            elif input_units == 'uM' or input_units == 'µM':
-                conc_unit = 'µM'
+                conc_unit = "nM"
+            elif input_units == "nM":
+                conc_unit = "nM"
+            elif input_units == "uM" or input_units == "µM":
+                conc_unit = "µM"
 
             # Generate DataFrame from parameters
-            values.append({
-                'compound_name': drug,
-                'maximum': maximum,
-                'minimum': minimum,
-                f'relative ic50 ({conc_unit})': ic50,
-                f'absolute ic50 ({conc_unit})': x_intersection,
-                'hill_slope': hill_slope
-            })
+            values.append(
+                {
+                    "compound_name": drug,
+                    "maximum": maximum,
+                    "minimum": minimum,
+                    f"relative ic50 ({conc_unit})": ic50,
+                    f"absolute ic50 ({conc_unit})": x_intersection,
+                    "hill_slope": hill_slope,
+                }
+            )
         return values
 
     # When data is reversed, program is not obtaining correct column.
-    def calc_logic(self, df, concentration=None, initial_guess=None, response=None, response_col=None):
+    def calc_logic(
+        self,
+        df,
+        concentration=None,
+        initial_guess=None,
+        response=None,
+        response_col=None,
+    ):
         """
         Set logic to determine positive or negative sigmoid curve. This method is called by internally by the
         absolute_calculation() method.
@@ -286,18 +337,30 @@ class Calculator:
         :return: variables for further calculation. This includes: reverse, params, covariance
         """
         global reverse, params, covariance
-        if df[response_col].iloc[0] > df[response_col].iloc[-1]:  # Sigmoid curve 100% to 0%
-            params, covariance, *_ = curve_fit(self.reverse_fourpl, concentration, response, p0=[initial_guess],
-                                               maxfev=100000)
+        if (
+            df[response_col].iloc[0] > df[response_col].iloc[-1]
+        ):  # Sigmoid curve 100% to 0%
+            params, covariance, *_ = curve_fit(
+                self.reverse_fourpl,
+                concentration,
+                response,
+                p0=[initial_guess],
+                maxfev=100000,
+            )
             reverse = 1  # Tag direction of sigmoid curve
 
-        elif df[response_col].iloc[0] < df[response_col].iloc[-1]:  # sigmoid curve 0% to 100%
-            params, covariance, *_ = curve_fit(self.fourpl, concentration, response, p0=[initial_guess],
-                                               maxfev=100000)
+        elif (
+            df[response_col].iloc[0] < df[response_col].iloc[-1]
+        ):  # sigmoid curve 0% to 100%
+            params, covariance, *_ = curve_fit(
+                self.fourpl, concentration, response, p0=[initial_guess], maxfev=100000
+            )
             reverse = 0  # Tag direction of sigmoid curve
         return reverse, params, covariance
 
-    def calculate_ic50(self, name_col, concentration_col, response_col, input_units=None, verbose=None):
+    def calculate_ic50(
+        self, name_col, concentration_col, response_col, input_units=None, verbose=None
+    ):
         """
         Calculations previously performed in relative_calculation(). The dictionary results are converted into into a
         pandas DataFrame
@@ -312,12 +375,16 @@ class Calculator:
         """
 
         # Set variables from funtion and convert name_col to np array
-        values = self.relative_calculation(name_col, concentration_col, response_col, input_units, verbose)
+        values = self.relative_calculation(
+            name_col, concentration_col, response_col, input_units, verbose
+        )
 
         df = pd.DataFrame(values)
         return df
 
-    def calculate_absolute_ic50(self, name_col, concentration_col, response_col, input_units=None, verbose=None):
+    def calculate_absolute_ic50(
+        self, name_col, concentration_col, response_col, input_units=None, verbose=None
+    ):
         """
         Calculations previously performed in absolute_calculation(). The dictionary results are converted into into a
         pandas DataFrame
@@ -331,13 +398,20 @@ class Calculator:
         :return: DataFrame generated from the list from the absolute_calculation method
         """
 
-        values = self.absolute_calculation(name_col=name_col, concentration_col=concentration_col,
-                                           response_col=response_col, input_units=input_units, verbose=verbose)
+        values = self.absolute_calculation(
+            name_col=name_col,
+            concentration_col=concentration_col,
+            response_col=response_col,
+            input_units=input_units,
+            verbose=verbose,
+        )
         df = pd.DataFrame(values)
 
         return df
 
-    def calculate_pic50(self, name_col, concentration_col, response_col, input_units=None, verbose=None):
+    def calculate_pic50(
+        self, name_col, concentration_col, response_col, input_units=None, verbose=None
+    ):
         """
         Convert IC50 into pIC50 values. Calculation is performed using the absolute_calculation. As such, two columns
         will be appended - relative pIC50 and absolute pIC50. Conversion is performed by convert the IC50 values from nM
@@ -351,21 +425,26 @@ class Calculator:
 
         :return: DataFrame from calculate_absolute_ic50 along with the pIC50 values
         """
-        values = self.absolute_calculation(name_col=name_col, concentration_col=concentration_col,
-                                           response_col=response_col, input_units=input_units, verbose=verbose)
+        values = self.absolute_calculation(
+            name_col=name_col,
+            concentration_col=concentration_col,
+            response_col=response_col,
+            input_units=input_units,
+            verbose=verbose,
+        )
         df = pd.DataFrame(values)
 
-        if input_units is None or input_units == 'nM':
-            df['relative pIC50'] = -np.log10(df['relative ic50 (nM)'] * 0.000000001)
-            df['absolute pIC50'] = -np.log10(df['absolute ic50 (nM)'] * 0.000000001)
-        elif input_units == 'µM':
-            df['relative pIC50'] = -np.log10(df['relative ic50 (µM)'] * 0.000001)
-            df['absolute pIC50'] = -np.log10(df['absolute ic50 (µM)'] * 0.000001)
+        if input_units is None or input_units == "nM":
+            df["relative pIC50"] = -np.log10(df["relative ic50 (nM)"] * 0.000000001)
+            df["absolute pIC50"] = -np.log10(df["absolute ic50 (nM)"] * 0.000000001)
+        elif input_units == "µM":
+            df["relative pIC50"] = -np.log10(df["relative ic50 (µM)"] * 0.000001)
+            df["absolute pIC50"] = -np.log10(df["absolute ic50 (µM)"] * 0.000001)
 
         return df
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
