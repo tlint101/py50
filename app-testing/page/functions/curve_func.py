@@ -227,7 +227,6 @@ class Plot_Logic:
 
         return legend_loc
 
-    # todo move download_button as a util function
     def download_button(self, fig, file_name):
         # Figure must be converted into a temporary file in memory
         buf = io.BytesIO()
