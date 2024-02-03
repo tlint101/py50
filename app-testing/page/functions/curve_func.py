@@ -1,3 +1,7 @@
+"""
+Logic for curve fitting
+"""
+
 import streamlit as st
 import io
 from matplotlib import pyplot as plt
