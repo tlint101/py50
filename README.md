@@ -11,11 +11,11 @@
 
 
 ## Summary
-The project was created to laboratory use. I found many of my classmates/coworkers were 
+The project was created for laboratory use. I found many of my classmates/coworkers were 
 using a program that I found to be unfriendly to generate dose-response curves. I found
 a few other repositories that can also generate dose-response curves in python, however,
 they did not meet my requirements:
-1. Use Pandas for the Data so that it can be plugged into a typical Jupyter Notebook or Python scripts
+1. Use Pandas for the Data so that it can be plugged into a Jupyter Notebook or Python scripts
 2. Adaptable to user needs
 3. Easy to use (hopefully!)
 
@@ -26,10 +26,10 @@ where min is the minimum response value, max is the maximum response value, Y is
 is the concentration.  
 
 
-This project meets our needs. And hopefully it can meet the needs of others.
+This project meets my and my lab mates' needs. Hopefully it can meet the needs of others.
 
 ## Installation
-The package can be installed using the following:
+
 
 ```
 pip install py50
@@ -59,9 +59,9 @@ I am interested in maintaining this for the foreseeable future. As such, I have 
 things on my "To-Do" list. I will get around to them when I can. In no particular
 order:
 
-- Code for averaging and creating error bars on plot
-- Code to generate EC50 plots
-- Code to generate LD50 plots
-- Housekeeping (I need to better understand Class composition!)
+- [ ] 🧹Housekeeping 🧹
+- [ ] Code for averaging and creating error bars on plot
+- [ ] Include scripts for statistics and plotting
+- [X] Refactor code for maintainability (I think I understand classes!)
 
 Thanks for your interest! 
