@@ -10,9 +10,8 @@ from py50.plot_settings import CBMARKERS, CBPALETTE
 
 
 class Plot_Logic:
-    def __init__(self):
-        pass
 
+    @staticmethod
     def label_plot_options(
         self,
         label_options,
@@ -66,7 +65,8 @@ class Plot_Logic:
             }
             return options
 
-    def label_options_true(self, label_options):
+    @staticmethod
+    def label_options_true(label_options):
         """
         Function to for label_options input
         """
@@ -107,7 +107,8 @@ class Plot_Logic:
             ymin,
         )
 
-    def line_options(self, line_color_option, line_color, line_width, marker):
+    @staticmethod
+    def line_options(line_color_option, line_color, line_width, marker):
         """
         Function for line options
         """
@@ -127,6 +128,7 @@ class Plot_Logic:
 
             return line_color, line_width, marker
 
+    @staticmethod
     def xscale_options(self, xoptions):
         """
         Function for xscale options
@@ -155,6 +157,7 @@ class Plot_Logic:
 
         return conc_unit, xscale, xscale_ticks
 
+    @staticmethod
     def hline_vline_logic(self, hline, hline_color, vline, vline_color):
         """
         Logic for the hline and vline highlights
@@ -195,7 +198,8 @@ class Plot_Logic:
 
         return hline, hline_color, vline, vline_color
 
-    def legend_logic(self, legend):
+    @staticmethod
+    def legend_logic(legend):
         """
         Logic function for determining the legend location.
         Legend input will be checked with acceptable list from matplotlib.
@@ -231,7 +235,8 @@ class Plot_Logic:
 
         return legend_loc
 
-    def download_button(self, fig, file_name):
+    @staticmethod
+    def download_button(fig, file_name):
         # Figure must be converted into a temporary file in memory
         buf = io.BytesIO()
         # plt.savefig(buf, format='png', dpi=300)
@@ -243,7 +248,8 @@ class Plot_Logic:
             "Download Figure", data=buf.read(), file_name=file_name, mime="image/png"
         )
 
-    def plot_program(self, df=None, paste=True):
+    @staticmethod
+    def plot_program(df=None, paste=True):
         """
         Code for plotting. there are if/else statements nested within depending on the 3 types of plots
         """
