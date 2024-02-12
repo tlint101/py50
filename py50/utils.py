@@ -2,7 +2,9 @@
 The following script holds plot logic for the indicated tests. This was created to reduce the "look" of the stats file
 for maintainability.
 """
+
 import seaborn as sns
+
 
 def star_value(p_value):
     """
