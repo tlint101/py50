@@ -20,7 +20,6 @@ class Stats:
     def __init__(self):
         pass
 
-    # todo add kwargs options for all dataframes to feed into pg
     @staticmethod
     def get_t_test(df, paired=True, stars=False, decimals=4, **kwargs):
         """
@@ -79,7 +78,6 @@ class Stats:
         result_df = pg.anova(data=df, dv=dv, between=between, **kwargs)
         return result_df
 
-    # todo check if **kwarg needed. Only need to add the option within the pg. function
     @staticmethod
     def get_tukey(df, dv=None, between=None, **kwargs):
         """
