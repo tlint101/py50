@@ -119,6 +119,10 @@ class Stats:
         result_df = pg.mixed_anova(data=df, dv=dv, within=within, subject=subject, **kwargs)
         return result_df
 
+    @staticmethod
+    def get_t_test(df, paired=False, **kwargs):
+        result_df = pg.ttest(paired=paired, **kwargs)
+        return result_df
 
 class Plots:
 
@@ -146,7 +150,6 @@ class Plots:
         :return:
         """
 
-        # pairs = list(combinations(df[group_col].unique(), 2))
         groups = df[group_col].unique()
 
         # set default color palette
@@ -163,6 +166,7 @@ class Plots:
             else:
                 raise NameError("Must include test as: 'tukey', 'gameshowell', 'ttest'")
 
+            # get pairs of groups (x-axis)
             pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
             # add annotations
@@ -179,7 +183,6 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
-    # todo Include plots for ttest. This requires different inputs in pg
     @staticmethod
     def ttest_bar_plot(
         df,
@@ -189,9 +192,9 @@ class Plots:
         test=None,
         return_df=None,
         palette=None,
+        **kwargs
     ):
 
-        pairs = list(combinations(df[group_col].unique(), 2))
         groups = df[group_col].unique()
 
         # set default color palette
@@ -203,7 +206,7 @@ class Plots:
             # Run tests based on test parameter input
             if test is not None:
                 pvalue, test_df = _get_test(
-                    test=test, df=df, x_axis=x_axis, y_axis=y_axis
+                    test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
                 )
             else:
                 raise NameError("Must include test as: 'tukey', 'gameshowell', 'ttest'")
@@ -235,20 +238,17 @@ def _get_test(test, df=None, x_axis=None, y_axis=None, **kwargs):
     :param kwargs:
     :return:
     """
-    # todo expand the kwargs for other tests. May need to refactor this afterwards
     if test == "tukey":
-        effsize = kwargs.get("effsize")
-        if effsize is None:
-            effsize = "hedges"
-        test_df = Stats.get_tukey(df, dv=y_axis, between=x_axis, effsize=effsize)
+        test_df = Stats.get_tukey(df, dv=y_axis, between=x_axis, **kwargs)
         pvalue = [utils.star_value(value) for value in test_df["p-tukey"].tolist()]
     elif test == "gameshowell":
-        test_df = Stats.get_gameshowell(df, dv=y_axis, between=x_axis)
+        test_df = Stats.get_gameshowell(df, dv=y_axis, between=x_axis, **kwargs)
         pvalue = [utils.star_value(value) for value in test_df["pval"].tolist()]
     elif test == "ptest":
-        test_df = Stats.get_ttest(df, dv=y_axis, between=x_axis)
+        test_df = Stats.get_ttest(df, dv=y_axis, between=x_axis, **kwargs)
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
-
+    elif test == "ttest":
+        test_df = Stats.get_t_test(df, paired=False, **kwargs) # todo determine how to select column to return as list
     return (
         pvalue,
         test_df,
