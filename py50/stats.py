@@ -2,7 +2,6 @@
 Script to calculate statistics.
 """
 
-from itertools import combinations
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pingouin as pg
@@ -87,7 +86,15 @@ class Stats:
         :param between:
         :return:
         """
-        result_df = pg.pairwise_tukey(data=df, dv=dv, between=between, **kwargs)
+        recognized_kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if k in pg.pairwise_tukey.__code__.co_varnames
+        }
+
+        result_df = pg.pairwise_tukey(
+            data=df, dv=dv, between=between, **recognized_kwargs
+        )
         return result_df
 
     @staticmethod
@@ -111,18 +118,24 @@ class Stats:
 
     @staticmethod
     def get_rm_anova(df, dv=None, within=None, subject=None, **kwargs):
-        result_df = pg.rm_anova(data=df, dv=dv, within=within, subject=subject, **kwargs)
+        result_df = pg.rm_anova(
+            data=df, dv=dv, within=within, subject=subject, **kwargs
+        )
         return result_df
 
     @staticmethod
     def get_mixed_anova(df, dv=None, within=None, subject=None, **kwargs):
-        result_df = pg.mixed_anova(data=df, dv=dv, within=within, subject=subject, **kwargs)
+        result_df = pg.mixed_anova(
+            data=df, dv=dv, within=within, subject=subject, **kwargs
+        )
         return result_df
 
+    # todo pg.ttest may not be needed for now?
     @staticmethod
     def get_t_test(df, paired=False, **kwargs):
         result_df = pg.ttest(paired=paired, **kwargs)
         return result_df
+
 
 class Plots:
 
@@ -164,10 +177,15 @@ class Plots:
                     test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
                 )
             else:
-                raise NameError("Must include test as: 'tukey', 'gameshowell', 'ttest'")
+                raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
 
+            # todo add kwarg option for pair order
             # get pairs of groups (x-axis)
-            pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+            pair_plot = kwargs.get("pair_plot")
+            # print(pair_plot)
+            if pair_plot is None:
+                pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+            # print(pair_plot)
 
             # add annotations
             annotator = Annotator(
@@ -175,16 +193,18 @@ class Plots:
             )
             annotator.set_custom_annotations(pvalue)
             annotator.annotate()
+
             if savepath:
                 plt.savefig(savepath, dpi=300, bbox_inches="tight")
+
         except ValueError:
-            print("Input test type! Use 'tukey', 'gameshowell', or 'ttest'")
+            print("Input test type! i.e. 'tukey', 'gameshowell', or 'ttest'")
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
-    def ttest_bar_plot(
+    def bar_plot(
         df,
         x_axis=None,
         y_axis=None,
@@ -192,15 +212,29 @@ class Plots:
         test=None,
         return_df=None,
         palette=None,
+        savepath=None,
         **kwargs
     ):
+        """
+
+        :param df:
+        :param x_axis:
+        :param y_axis:
+        :param group_col:
+        :param test:
+        :param return_df: Will return dataframe of calculated results
+        :param palette:
+        :return:
+        """
 
         groups = df[group_col].unique()
 
         # set default color palette
         if palette is not None:
             palette = utils.palette(palette)
-        ax = sns.boxplot(data=df, x=x_axis, y=y_axis, order=groups, palette=palette)
+        ax = sns.barplot(
+            data=df, x=x_axis, y=y_axis, order=groups, palette=palette, **kwargs
+        )
 
         try:
             # Run tests based on test parameter input
@@ -209,9 +243,15 @@ class Plots:
                     test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
                 )
             else:
-                raise NameError("Must include test as: 'tukey', 'gameshowell', 'ttest'")
+                raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
 
-            pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+            # todo add kwarg option for pair order
+            # get pairs of groups (x-axis)
+            pair_plot = kwargs.get("pair_plot")
+            # print(pair_plot)
+            if pair_plot is None:
+                pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+            # print(pair_plot)
 
             # add annotations
             annotator = Annotator(
@@ -219,11 +259,151 @@ class Plots:
             )
             annotator.set_custom_annotations(pvalue)
             annotator.annotate()
+
+            if savepath:
+                plt.savefig(savepath, dpi=300, bbox_inches="tight")
+
         except ValueError:
-            print("Input test type! Use 'tukey', 'gameshowell', or 'ttest'")
+            print("Input test type! i.e. 'tukey', 'gameshowell', or 'ttest'")
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
+
+    @staticmethod
+    def violin_plot(
+        df,
+        x_axis=None,
+        y_axis=None,
+        group_col=None,
+        test=None,
+        return_df=None,
+        palette=None,
+        savepath=None,
+        **kwargs
+    ):
+        """
+
+        :param df:
+        :param x_axis:
+        :param y_axis:
+        :param group_col:
+        :param test:
+        :param return_df: Will return dataframe of calculated results
+        :param palette:
+        :return:
+        """
+
+        groups = df[group_col].unique()
+
+        # set default color palette
+        if palette is not None:
+            palette = utils.palette(palette)
+        ax = sns.violinplot(
+            data=df, x=x_axis, y=y_axis, order=groups, palette=palette, **kwargs
+        )
+
+        try:
+            # Run tests based on test parameter input
+            if test is not None:
+                pvalue, test_df = _get_test(
+                    test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
+                )
+            else:
+                raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
+
+            # todo add kwarg option for pair order
+            # get pairs of groups (x-axis)
+            pair_plot = kwargs.get("pair_plot")
+            # print(pair_plot)
+            if pair_plot is None:
+                pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+            # print(pair_plot)
+
+            # add annotations
+            annotator = Annotator(
+                ax, pair_plot, data=df, x=x_axis, y=y_axis, verbose=False
+            )
+            annotator.set_custom_annotations(pvalue)
+            annotator.annotate()
+
+            if savepath:
+                plt.savefig(savepath, dpi=300, bbox_inches="tight")
+
+        except ValueError:
+            print("Input test type! i.e. 'tukey', 'gameshowell', or 'ttest'")
+
+        if return_df:
+            return test_df  # return calculated df. Change name for more description
+
+    def swarmplot(
+        df,
+        x_axis=None,
+        y_axis=None,
+        group_col=None,
+        test=None,
+        return_df=None,
+        palette=None,
+        savepath=None,
+        **kwargs
+    ):
+        """
+
+        :param df:
+        :param x_axis:
+        :param y_axis:
+        :param group_col:
+        :param test:
+        :param return_df: Will return dataframe of calculated results
+        :param palette:
+        :return:
+        """
+
+        groups = df[group_col].unique()
+
+        # set default color palette
+        if palette is not None:
+            palette = utils.palette(palette)
+        ax = sns.swarmplot(
+            data=df, x=x_axis, y=y_axis, order=groups, palette=palette, **kwargs
+        )
+
+        try:
+            # Run tests based on test parameter input
+            if test is not None:
+                pvalue, test_df = _get_test(
+                    test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
+                )
+            else:
+                raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
+
+            # todo add kwarg option for pair order
+            # get pairs of groups (x-axis)
+            pair_plot = kwargs.get("pair_plot")
+            # print(pair_plot)
+            if pair_plot is None:
+                pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+            # print(pair_plot)
+
+            # add annotations
+            annotator = Annotator(
+                ax, pair_plot, data=df, x=x_axis, y=y_axis, verbose=False
+            )
+            annotator.set_custom_annotations(pvalue)
+            annotator.annotate()
+
+            if savepath:
+                plt.savefig(savepath, dpi=300, bbox_inches="tight")
+
+        except ValueError:
+            print("Input test type! i.e. 'tukey', 'gameshowell', or 'ttest'")
+
+        if return_df:
+            return test_df  # return calculated df. Change name for more description
+
+    @staticmethod
+    def ttest_bar_plot():
+        # Fucntion will mirror above. Need to format shape to fit Statannotation
+        pass
 
 
 def _get_test(test, df=None, x_axis=None, y_axis=None, **kwargs):
@@ -238,6 +418,7 @@ def _get_test(test, df=None, x_axis=None, y_axis=None, **kwargs):
     :param kwargs:
     :return:
     """
+    # todo add function to sort pairs by user input from the plot kwarg
     if test == "tukey":
         test_df = Stats.get_tukey(df, dv=y_axis, between=x_axis, **kwargs)
         pvalue = [utils.star_value(value) for value in test_df["p-tukey"].tolist()]
@@ -245,14 +426,16 @@ def _get_test(test, df=None, x_axis=None, y_axis=None, **kwargs):
         test_df = Stats.get_gameshowell(df, dv=y_axis, between=x_axis, **kwargs)
         pvalue = [utils.star_value(value) for value in test_df["pval"].tolist()]
     elif test == "ptest":
-        test_df = Stats.get_ttest(df, dv=y_axis, between=x_axis, **kwargs)
+        ptest_kwargs = {
+            key: value
+            for key, value in kwargs.items()
+            if key in pg.pairwise_tests.__code__.co_varnames
+        }
+        test_df = Stats.get_p_test(df, dv=y_axis, between=x_axis, **ptest_kwargs)
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
-    elif test == "ttest":
-        test_df = Stats.get_t_test(df, paired=False, **kwargs) # todo determine how to select column to return as list
-    return (
-        pvalue,
-        test_df,
-    )  # need to return both the pvalue as a list and the calculated df
+    # elif test == "ttest":
+    #     test_df = Stats.get_t_test(df, paired=False, x=None, y=None, **kwargs) # todo determine how to select column to return as list
+    return (pvalue, test_df)
 
 
 if __name__ == "__main__":
