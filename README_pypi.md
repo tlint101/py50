@@ -7,7 +7,7 @@ pip install py50
 ```
 
 ## Summary
-The project was created to laboratory use. I found many of my classmates/coworkers were 
+The project was created for laboratory use. I found many of my classmates/coworkers were 
 using a program that I found to be unfriendly to generate dose-response curves. I found
 a few other repositories that can also generate dose-response curves in python, however,
 they did not meet my requirements:
