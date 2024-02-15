@@ -4,6 +4,7 @@ Script to calculate statistics.
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+import scikit_posthocs as sp
 import pingouin as pg
 from statannotations.Annotator import Annotator
 from py50 import utils
@@ -335,6 +336,7 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
+    @staticmethod
     def swarmplot(
         df,
         x_axis=None,
@@ -360,6 +362,7 @@ class Plots:
 
         groups = df[group_col].unique()
 
+        # todo TypeError: swarmplot() got multiple values for argument 'x_axis'
         # set default color palette
         if palette is not None:
             palette = utils.palette(palette)
@@ -399,6 +402,19 @@ class Plots:
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
+
+    @staticmethod
+    def posthoc_plot(df, test=None, val_col=None, group_col=None, **kwargs):
+
+        tests = {'tukey':  sp.posthoc_tukey(df, val_col=val_col, group_col=group_col)
+
+        }
+        cmap = kwargs.get("cmap")
+        if cmap:
+            cmap = cmap
+        test_df = tests.get(test)
+        # test_df = sp.posthoc_tukey(df, val_col=val_col, group_col=group_col)
+        return test_df
 
     @staticmethod
     def ttest_bar_plot():
