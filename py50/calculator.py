@@ -150,7 +150,7 @@ class Calculator:
             initial_guess = [
                 max(response),
                 min(response),
-                1.0,
+                0.5 * (max(response) + min(response)),
                 1.0,
             ]  # Max, Min, ic50, and hill_slope
 
