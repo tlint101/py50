@@ -13,33 +13,18 @@ from py50 import utils
 
 class Stats:
     """
-    Class contains wrappers for pingouin module. These are statistical outputs for a given input. The functions are in
-    a format needed for plotting in class Plots(), however they can also be used individually to output single DataFrame
-    with statistical calculations for a given dataset.
+    Class contains wrappers for pingouin module. The functions output data as a Pandas DataFrame. This is in a format
+    needed for plotting with functions in class Plots(), however they can also be used individually to output single
+    DataFrame for output as a csv or xlsx file using pandas.
     """
 
     def __init__(self):
         pass
 
     @staticmethod
-    def get_t_test(df, paired=True, stars=False, decimals=4, **kwargs):
-        """
-        Calculate pairwise t-test.
-        :param df:
-        :param paired:
-        :param stars:
-        :param decimals:
-        :param kwargs:
-        :return:
-        """
-        result_df = pg.ptests(
-            data=df, paired=paired, stars=stars, decimals=decimals, **kwargs
-        )
-        return result_df
-
-    @staticmethod
     def get_normality(df, dv=None, group=None, **kwargs):
         """
+        Test data normality
 
         :param df:
         :param dv:
@@ -54,6 +39,7 @@ class Stats:
     @staticmethod
     def get_homoscedasticity(df, dv=None, group=None, **kwargs):
         """
+        Test for data variance.
 
         :param df:
         :param dv:
@@ -63,6 +49,27 @@ class Stats:
         """
 
         result_df = pg.homoscedasticity(data=df, dv=dv, group=group, **kwargs)
+        return result_df
+
+    """
+    Parametric posts below
+    """
+
+    @staticmethod
+    def get_t_test(df, paired=True, stars=False, decimals=4, **kwargs):
+        """
+        Calculate pairwise t-test.
+
+        :param df:
+        :param paired:
+        :param stars:
+        :param decimals:
+        :param kwargs:
+        :return:
+        """
+        result_df = pg.ptests(
+            data=df, paired=paired, stars=stars, decimals=decimals, **kwargs
+        )
         return result_df
 
     @staticmethod
@@ -78,6 +85,11 @@ class Stats:
 
         result_df = pg.anova(data=df, dv=dv, between=between, **kwargs)
         return result_df
+
+    # todo add welch anova
+    @staticmethod
+    def get_welch_anova():
+        pass
 
     @staticmethod
     def get_tukey(df, dv=None, between=None, **kwargs):
@@ -105,6 +117,13 @@ class Stats:
         return result_df
 
     @staticmethod
+    def get_rm_anova(df, dv=None, within=None, subject=None, **kwargs):
+        result_df = pg.rm_anova(
+            data=df, dv=dv, within=within, subject=subject, **kwargs
+        )
+        return result_df
+
+    @staticmethod
     def get_p_test(df, dv=None, between=None, **kwargs):
         """
         Calculate pairwise_tests
@@ -119,24 +138,52 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_rm_anova(df, dv=None, within=None, subject=None, **kwargs):
-        result_df = pg.rm_anova(
-            data=df, dv=dv, within=within, subject=subject, **kwargs
-        )
-        return result_df
-
-    @staticmethod
     def get_mixed_anova(df, dv=None, within=None, subject=None, **kwargs):
         result_df = pg.mixed_anova(
             data=df, dv=dv, within=within, subject=subject, **kwargs
         )
         return result_df
 
-    # todo pg.ttest may not be needed for now?
+    """
+    non-parametric tests below
+    """
     @staticmethod
-    def get_t_test(df, paired=False, **kwargs):
-        result_df = pg.ttest(paired=paired, **kwargs)
+    def get_wilcoxon(df, x=None, y=None, alternative='two-sided', **kwargs):
+        result_df = pg.mwu(x=df[x], y=df[y], alternative=alternative, **kwargs)
         return result_df
+
+
+    @staticmethod
+    def p_matrix(df, x_axis=None, y_axis=None, test=None, **kwargs):
+        """
+        Convert dataframe results into a matrix
+        :param df:
+        :param x_axis:
+        :param y_axis:
+        :param test:
+        :param kwargs:
+        :return:
+        """
+        # Run tests based on test parameter input
+        if test is not None:
+            pvalue, test_df = _get_test(
+                test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
+            )
+        else:
+            raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
+
+        groups = sorted(set(test_df["A"]) | set(test_df["B"]))
+        matrix_df = pd.DataFrame(index=groups, columns=groups)
+
+        # Fill the matrix with p-values
+        for i, row in test_df.iterrows():
+            matrix_df.loc[row["A"], row["B"]] = row["p-tukey"]
+            matrix_df.loc[row["B"], row["A"]] = row["p-tukey"]
+
+        # Fill NaN cells with NS (Not Significant)
+        matrix_df.fillna(1, inplace=True)
+
+        return matrix_df
 
 
 class Plots:
@@ -406,54 +453,18 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
-    # todo add documentation for p_matrix
-    # todo move logic into the utils?
     @staticmethod
-    def p_matrix(
-        df,
-        x_axis=None,
-        y_axis=None,
-        test=None,
-        **kwargs
-    ):
-        # Run tests based on test parameter input
-        if test is not None:
-            pvalue, test_df = _get_test(
-                test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
-            )
-        else:
-            raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
+    def plot_p_matrix(matrix_df, **kwargs):
+        """
+        Wrapper function for scikit_posthoc heatmap.
+        :return:
+        """
+        matrix_fig = sp.sign_plot(matrix_df, **kwargs)
+        plt.show()
 
-        groups = sorted(set(test_df["A"]) | set(test_df["B"]))
-        matrix_df = pd.DataFrame(index=groups, columns=groups)
+        return matrix_fig
 
-        # Fill the matrix with p-values
-        for i, row in test_df.iterrows():
-            matrix_df.loc[row["A"], row["B"]] = row["p-tukey"]
-            matrix_df.loc[row["B"], row["A"]] = row["p-tukey"]
-
-        # Fill NaN cells with NS (Not Significant)
-        matrix_df.fillna(1, inplace=True)
-
-        return matrix_df
-
-    @staticmethod
-    def plot_sig_matrix():
-        return None
-
-    @staticmethod
-    def posthoc_plot(df, test=None, val_col=None, group_col=None, **kwargs):
-
-        tests = {'tukey':  sp.posthoc_tukey(df, val_col=val_col, group_col=group_col)
-
-        }
-        cmap = kwargs.get("cmap")
-        if cmap:
-            cmap = cmap
-        test_df = tests.get(test)
-        test_df = sp.posthoc_tukey(df, val_col=val_col, group_col=group_col)
-        return test_df
-
+    # todo bar plot
     @staticmethod
     def ttest_bar_plot():
         # Fucntion will mirror above. Need to format shape to fit Statannotation
