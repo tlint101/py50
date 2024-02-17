@@ -3,6 +3,7 @@ The following script holds plot logic for the indicated tests. This was created 
 for maintainability.
 """
 
+from itertools import combinations
 import seaborn as sns
 
 
@@ -31,6 +32,22 @@ def palette(list=None):
     else:
         colors = sns.color_palette()
     return colors
+
+
+# todo may remove
+def get_pairs(df, group_col=None, value_col=None, pairs = 2):
+    """Input DataFrame and generate pairs for each category column"""
+
+    # Generate pairs of categories
+    pairs = list(combinations(df[group_col], pairs))
+
+    # Remove duplicates
+    sorted_pairs = [tuple(sorted(pair)) for pair in pairs]
+
+    # Remove duplicates
+    unique_pairs = list(set(sorted_pairs))
+
+    return unique_pairs
 
 
 def tukey_plot_logic(test_value):
