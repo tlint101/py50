@@ -2,6 +2,7 @@
 Script to calculate statistics.
 """
 
+import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scikit_posthocs as sp
@@ -244,7 +245,9 @@ class Plots:
                     test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
                 )
             else:
-                raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
+                raise NameError(
+                    "Must include test as: 'tukey', 'gameshowell', 'ptest'"
+                )  # todo modify by adding other tests
 
             # todo add kwarg option for pair order
             # get pairs of groups (x-axis)
@@ -403,6 +406,41 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
+    # todo add documentation for p_matrix
+    # todo move logic into the utils?
+    @staticmethod
+    def p_matrix(
+        df,
+        x_axis=None,
+        y_axis=None,
+        test=None,
+        **kwargs
+    ):
+        # Run tests based on test parameter input
+        if test is not None:
+            pvalue, test_df = _get_test(
+                test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
+            )
+        else:
+            raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
+
+        groups = sorted(set(test_df["A"]) | set(test_df["B"]))
+        matrix_df = pd.DataFrame(index=groups, columns=groups)
+
+        # Fill the matrix with p-values
+        for i, row in test_df.iterrows():
+            matrix_df.loc[row["A"], row["B"]] = row["p-tukey"]
+            matrix_df.loc[row["B"], row["A"]] = row["p-tukey"]
+
+        # Fill NaN cells with NS (Not Significant)
+        matrix_df.fillna(1, inplace=True)
+
+        return matrix_df
+
+    @staticmethod
+    def plot_sig_matrix():
+        return None
+
     @staticmethod
     def posthoc_plot(df, test=None, val_col=None, group_col=None, **kwargs):
 
@@ -413,7 +451,7 @@ class Plots:
         if cmap:
             cmap = cmap
         test_df = tests.get(test)
-        # test_df = sp.posthoc_tukey(df, val_col=val_col, group_col=group_col)
+        test_df = sp.posthoc_tukey(df, val_col=val_col, group_col=group_col)
         return test_df
 
     @staticmethod
