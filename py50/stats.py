@@ -147,14 +147,56 @@ class Stats:
     """
     non-parametric tests below
     """
+
     @staticmethod
-    def get_wilcoxon(df, x=None, y=None, alternative='two-sided', **kwargs):
-        result_df = pg.mwu(x=df[x], y=df[y], alternative=alternative, **kwargs)
+    def get_wilcoxon(df, group_col=None, value_col=None):
+        """
+        Calculate wilcoxon
+        :param df:
+        :param group_col:
+        :param value_col:
+        :return:
+        """
+        # Get unique pairs from group
+        group = df[group_col].unique()
+
+        # Empty list to store results
+        results_list = []
+
+        # Perform Wilcoxon signed-rank test for each pair
+        for i in range(len(group)):
+            for j in range(i + 1, len(group)):
+                group1 = group[i]
+                group2 = group[j]
+                value1 = df[df[group_col] == group1][value_col]
+                value2 = df[df[group_col] == group2][value_col]
+
+                # Ensure same length for each condition
+                min_length = min(len(value1), len(value2))
+                value1 = value1[:min_length]
+                value2 = value2[:min_length]
+
+                # Perform Wilcoxon signed-rank test
+                result = pg.wilcoxon(value1, value2)
+
+                # Store the results in the list
+                key = f"{group1}-{group2}"
+                results_list.append(
+                    {
+                        "Comparison": key,
+                        "W-val": result["W-val"].iloc[0],
+                        "p-val": result["p-val"].iloc[0],
+                        "RBC": result["RBC"].iloc[0],
+                        "CLES": result["CLES"].iloc[0],
+                    }
+                )
+        # Convert the list of dictionaries to a DataFrame
+        result_df = pd.DataFrame(results_list)
+
         return result_df
 
-
     @staticmethod
-    def p_matrix(df, x_axis=None, y_axis=None, test=None, **kwargs):
+    def get_p_matrix(df, x_axis=None, y_axis=None, test=None, **kwargs):
         """
         Convert dataframe results into a matrix
         :param df:
@@ -198,7 +240,7 @@ class Plots:
         return_df=None,
         palette=None,
         savepath=None,
-        **kwargs
+        **kwargs,
     ):
         """
 
@@ -262,7 +304,7 @@ class Plots:
         return_df=None,
         palette=None,
         savepath=None,
-        **kwargs
+        **kwargs,
     ):
         """
 
@@ -330,7 +372,7 @@ class Plots:
         return_df=None,
         palette=None,
         savepath=None,
-        **kwargs
+        **kwargs,
     ):
         """
 
@@ -396,7 +438,7 @@ class Plots:
         return_df=None,
         palette=None,
         savepath=None,
-        **kwargs
+        **kwargs,
     ):
         """
 
