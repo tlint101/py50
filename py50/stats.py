@@ -244,34 +244,24 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_p_matrix(df, x_axis=None, y_axis=None, test=None, **kwargs):
+    def get_p_matrix(df, test=None, group_col1=None, group_col2=None):
         """
-        Convert dataframe results into a matrix
+        Convert dataframe results into a matrix. Group columns must be indicated. Group 2 is optionaly and depends on test
+        used (i.e. pairwise vs Mann-Whitney U)
         :param df:
-        :param x_axis:
-        :param y_axis:
+        :param group1:
+        :param group2:
         :param test:
         :param kwargs:
         :return:
         """
         # Run tests based on test parameter input
-        if test is not None:
-            pvalue, test_df = _get_test(
-                test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
-            )
+        if test == 'tukey':
+            matrix_df = utils.multi_group(df, group_col1, group_col2, test)
+        elif test == 'mannu' or test == 'wilcoxon':
+            matrix_df = utils.single_group(df=df, group_col=group_col1, test=test)
         else:
-            raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
-
-        groups = sorted(set(test_df["A"]) | set(test_df["B"]))
-        matrix_df = pd.DataFrame(index=groups, columns=groups)
-
-        # Fill the matrix with p-values
-        for i, row in test_df.iterrows():
-            matrix_df.loc[row["A"], row["B"]] = row["p-tukey"]
-            matrix_df.loc[row["B"], row["A"]] = row["p-tukey"]
-
-        # Fill NaN cells with NS (Not Significant)
-        matrix_df.fillna(1, inplace=True)
+            raise NameError("Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc")
 
         return matrix_df
 
@@ -316,7 +306,7 @@ class Plots:
                     test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
                 )
             else:
-                raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
+                raise NameError("Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc'")
 
             # todo add kwarg option for pair order
             # get pairs of groups (x-axis)
@@ -383,7 +373,7 @@ class Plots:
                 )
             else:
                 raise NameError(
-                    "Must include test as: 'tukey', 'gameshowell', 'ptest'"
+                    "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
                 )  # todo modify by adding other tests
 
             # todo add kwarg option for pair order
@@ -450,7 +440,7 @@ class Plots:
                     test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
                 )
             else:
-                raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
+                raise NameError("Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc")
 
             # todo add kwarg option for pair order
             # get pairs of groups (x-axis)
@@ -517,7 +507,7 @@ class Plots:
                     test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
                 )
             else:
-                raise NameError("Must include test as: 'tukey', 'gameshowell', 'ptest'")
+                raise NameError("Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc")
 
             # todo add kwarg option for pair order
             # get pairs of groups (x-axis)
