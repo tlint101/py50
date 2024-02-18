@@ -496,12 +496,22 @@ class Plots:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
-    def plot_p_matrix(matrix_df, **kwargs):
+    def p_matrix(matrix_df, cmap=True, **kwargs):
         """
         Wrapper function for scikit_posthoc heatmap.
         :return:
         """
-        matrix_fig = sp.sign_plot(matrix_df, **kwargs)
+        if cmap:
+            cmap = [
+                "#FFFFFF",
+                "#E69F00",
+                "#56B4E9",
+                "#009E73",
+                "#F0E442",
+            ]
+            matrix_fig = sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
+        else:
+            matrix_fig = sp.sign_plot(matrix_df, **kwargs)
         plt.show()
 
         return matrix_fig
