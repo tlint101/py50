@@ -124,7 +124,7 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_p_test(df, dv=None, between=None, **kwargs):
+    def get_pairwise_test(df, dv=None, between=None, **kwargs):
         """
         Calculate pairwise_tests
         :param df:
@@ -195,7 +195,6 @@ class Stats:
 
         return result_df
 
-
     @staticmethod
     def get_mannu(df, group_col=None, value_col=None):
         """
@@ -244,6 +243,22 @@ class Stats:
         return result_df
 
     @staticmethod
+    def get_kruskal(df, dv=None, between=None, detailed=False):
+        """
+        Calculate Mann-Whitney U Test
+        :param df:
+        :param group_col:
+        :param value_col:
+        :return:
+        """
+        result_df = pg.pairwise_gameshowell(data=df, dv=dv, between=between, detailed=detailed)
+        return result_df
+
+    """
+    Output P-Values as a matrix in Pandas DataFrame
+    """
+
+    @staticmethod
     def get_p_matrix(df, test=None, group_col1=None, group_col2=None):
         """
         Convert dataframe results into a matrix. Group columns must be indicated. Group 2 is optionaly and depends on test
@@ -256,12 +271,14 @@ class Stats:
         :return:
         """
         # Run tests based on test parameter input
-        if test == 'tukey':
+        if test == "tukey":
             matrix_df = utils.multi_group(df, group_col1, group_col2, test)
-        elif test == 'mannu' or test == 'wilcoxon':
+        elif test == "mannu" or test == "wilcoxon":
             matrix_df = utils.single_group(df=df, group_col=group_col1, test=test)
         else:
-            raise NameError("Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc")
+            raise NameError(
+                "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
+            )
 
         return matrix_df
 
@@ -306,7 +323,9 @@ class Plots:
                     test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
                 )
             else:
-                raise NameError("Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc'")
+                raise NameError(
+                    "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc'"
+                )
 
             # todo add kwarg option for pair order
             # get pairs of groups (x-axis)
@@ -440,7 +459,9 @@ class Plots:
                     test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
                 )
             else:
-                raise NameError("Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc")
+                raise NameError(
+                    "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
+                )
 
             # todo add kwarg option for pair order
             # get pairs of groups (x-axis)
@@ -507,7 +528,9 @@ class Plots:
                     test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
                 )
             else:
-                raise NameError("Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc")
+                raise NameError(
+                    "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
+                )
 
             # todo add kwarg option for pair order
             # get pairs of groups (x-axis)
@@ -586,7 +609,7 @@ def _get_test(test, df=None, x_axis=None, y_axis=None, **kwargs):
             for key, value in kwargs.items()
             if key in pg.pairwise_tests.__code__.co_varnames
         }
-        test_df = Stats.get_p_test(df, dv=y_axis, between=x_axis, **ptest_kwargs)
+        test_df = Stats.get_pairwise_test(df, dv=y_axis, between=x_axis, **ptest_kwargs)
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
     # elif test == "ttest":
     #     test_df = Stats.get_t_test(df, paired=False, x=None, y=None, **kwargs) # todo determine how to select column to return as list
