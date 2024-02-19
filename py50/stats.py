@@ -12,6 +12,7 @@ from py50 import utils
 
 sns.set_style("ticks")
 
+
 class Stats:
     """
     Class contains wrappers for pingouin module. The functions output data as a Pandas DataFrame. This is in a format
@@ -252,9 +253,7 @@ class Stats:
         :param value_col:
         :return:
         """
-        result_df = pg.pairwise_gameshowell(
-            data=df, dv=dv, between=between, detailed=detailed
-        )
+        result_df = pg.kruskal(data=df, dv=dv, between=between, detailed=detailed)
         return result_df
 
     """
@@ -264,8 +263,9 @@ class Stats:
     @staticmethod
     def get_p_matrix(df, test=None, group_col1=None, group_col2=None):
         """
-        Convert dataframe results into a matrix. Group columns must be indicated. Group 2 is optionaly and depends on test
-        used (i.e. pairwise vs Mann-Whitney U)
+        Convert dataframe results into a matrix. Group columns must be indicated. Group 2 is optional and depends on test
+        used (i.e. pairwise vs Mann-Whitney U). Final DataFrame output can be used with the Plots.p_matrix() function to
+        generate a heatmap of p-values.
         :param df:
         :param group1:
         :param group2:
@@ -291,12 +291,11 @@ class Plots:
     @staticmethod
     def box_plot(
         df,
-        x_axis=None,
-        y_axis=None,
-        group_col=None,
         test=None,
-        return_df=None,
+        group_col=None,
+        value_col=None,
         palette=None,
+        orient="v",
         savepath=None,
         **kwargs,
     ):
@@ -311,48 +310,75 @@ class Plots:
         :param palette:
         :return:
         """
+        # todo add kwarg option for pair order
 
-        groups = df[group_col].unique()
+        # Run tests based on test parameter input
+        if test is not None:
+            pvalue, test_df, pairs = _get_test(
+                test=test,
+                df=df,
+                group_col=group_col,
+                value_col=value_col,
+                **kwargs,
+            )
+        else:
+            raise NameError(
+                "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
+            )
 
         # set default color palette
         if palette is not None:
             palette = utils.palette(palette)
-        ax = sns.boxplot(data=df, x=x_axis, y=y_axis, order=groups, palette=palette)
-
-        try:
-            # Run tests based on test parameter input
-            if test is not None:
-                pvalue, test_df = _get_test(
-                    test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
-                )
-            else:
-                raise NameError(
-                    "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc'"
-                )
-
-            # todo add kwarg option for pair order
-            # get pairs of groups (x-axis)
-            pair_plot = kwargs.get("pair_plot")
-            # print(pair_plot)
-            if pair_plot is None:
-                pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
-            # print(pair_plot)
-
-            # add annotations
-            annotator = Annotator(
-                ax, pair_plot, data=df, x=x_axis, y=y_axis, verbose=False
+        # set orientation for plot and Annotator
+        if orient == "v":
+            ax = sns.boxplot(
+                data=df,
+                x=group_col,
+                y=value_col,
+                order=df[group_col].unique(),
+                palette=palette,
+                **kwargs,
             )
-            annotator.set_custom_annotations(pvalue)
-            annotator.annotate()
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=group_col,
+                y=value_col,
+                verbose=False,
+                orient="v",
+            )
+        elif orient == "h":
+            ax = sns.boxplot(
+                data=df,
+                x=value_col,
+                y=group_col,
+                order=df[group_col].unique(),
+                palette=palette,
+                **kwargs,
+            )
+            # flip x and y annotations for horizontal orientation
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=value_col,
+                y=group_col,
+                verbose=False,
+                orient="h",
+            )
+        else:
+            raise ValueError("Orientation must be 'v' or 'h'!")
 
-            if savepath:
-                plt.savefig(savepath, dpi=300, bbox_inches="tight")
+        # Set custom annotations and annotate
+        annotator.set_custom_annotations(pvalue)
+        annotator.annotate()
 
-        except ValueError:
-            print("Input test type! i.e. 'tukey', 'gameshowell', or 'ttest'")
+        if savepath:
+            plt.savefig(savepath, dpi=300, bbox_inches="tight")
 
-        if return_df:
-            return test_df  # return calculated df. Change name for more description
+        # if return_df:
+        #     return test_df  # return calculated df. Change name for more description
 
     @staticmethod
     def bar_plot(
@@ -560,22 +586,16 @@ class Plots:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
-    def p_matrix(matrix_df, cmap=True, **kwargs):
+    def p_matrix(matrix_df, cmap=None, **kwargs):
         """
         Wrapper function for scikit_posthoc heatmap.
         :return:
         """
-        if cmap:
-            cmap = [
-                "#FFFFFF",
-                "#E69F00",
-                "#56B4E9",
-                "#009E73",
-                "#F0E442",
-            ]
+        if cmap is None:
+            cmap = ["1", "#fb6a4a", "#08306b", "#4292c6", "#c6dbef"]
             matrix_fig = sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
         else:
-            matrix_fig = sp.sign_plot(matrix_df, **kwargs)
+            matrix_fig = sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
 
         return matrix_fig
 
@@ -602,14 +622,16 @@ class Plots:
         if type == "histplot":
             fig = sns.histplot(data=df, x=val_col, kde=True, **kwargs)
         elif type == "qqplot":
-            fig = pg.qqplot(df[val_col], dist='norm', **kwargs)
+            fig = pg.qqplot(df[val_col], dist="norm", **kwargs)
         else:
-            raise ValueError("For test parameter, only 'histplot' or 'qqplot' available")
+            raise ValueError(
+                "For test parameter, only 'histplot' or 'qqplot' available"
+            )
 
         return fig
 
 
-def _get_test(test, df=None, x_axis=None, y_axis=None, **kwargs):
+def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
     """
     Function to utilize a specific statistical test. This will output the results in a dataframe and also the pvalues as
     a list. This function is primarily used for the plot functions in the stats.Plots() class.
@@ -621,24 +643,55 @@ def _get_test(test, df=None, x_axis=None, y_axis=None, **kwargs):
     :param kwargs:
     :return:
     """
+
     # todo add function to sort pairs by user input from the plot kwarg
     if test == "tukey":
-        test_df = Stats.get_tukey(df, dv=y_axis, between=x_axis, **kwargs)
+        test_df = Stats.get_tukey(df, dv=value_col, between=group_col, **kwargs)
         pvalue = [utils.star_value(value) for value in test_df["p-tukey"].tolist()]
+        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+
     elif test == "gameshowell":
-        test_df = Stats.get_gameshowell(df, dv=y_axis, between=x_axis, **kwargs)
+        test_df = Stats.get_gameshowell(df, dv=value_col, between=group_col, **kwargs)
         pvalue = [utils.star_value(value) for value in test_df["pval"].tolist()]
-    elif test == "ptest":
+        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+
+    elif test == "ptest": # todo update ptest
         ptest_kwargs = {
             key: value
             for key, value in kwargs.items()
             if key in pg.pairwise_tests.__code__.co_varnames
         }
-        test_df = Stats.get_pairwise_test(df, dv=y_axis, between=x_axis, **ptest_kwargs)
+        test_df = Stats.get_pairwise_test(
+            df, dv=value_col, between=group_col, **ptest_kwargs
+        )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
+    elif test == "wilcoxon":
+        test_df = Stats.get_wilcoxon(df, group_col=group_col, value_col=value_col)
+        pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
+        # Obtain pairs and split them from Wilcox result DF for passing into Annotator
+        pairs = []
+        for item in test_df["Comparison"].tolist():
+            parts = item.split("-")
+            pairs.append((parts[0], parts[1]))
+
+    elif test == "mannu":
+        test_df = Stats.get_mannu(df, group_col=group_col, value_col=value_col)
+        pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
+        # Obtain pairs and split them from Wilcox result DF for passing into Annotator
+        pairs = []
+        for item in test_df["Comparison"].tolist():
+            parts = item.split("-")
+            pairs.append((parts[0], parts[1]))
+
+    elif test == "kruskal": # kurskal does not give posthoc. modify
+        test_df = Stats.get_kruskal(df, dv=value_col, between=group_col, detailed=False)
+        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
+    else:
+        raise ValueError("Test not recognized!")
+
     # elif test == "ttest":
     #     test_df = Stats.get_t_test(df, paired=False, x=None, y=None, **kwargs) # todo determine how to select column to return as list
-    return (pvalue, test_df)
+    return (pvalue, test_df, pairs)
 
 
 if __name__ == "__main__":
