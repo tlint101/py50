@@ -10,6 +10,7 @@ import pingouin as pg
 from statannotations.Annotator import Annotator
 from py50 import utils
 
+sns.set_style("ticks")
 
 class Stats:
     """
@@ -251,7 +252,9 @@ class Stats:
         :param value_col:
         :return:
         """
-        result_df = pg.pairwise_gameshowell(data=df, dv=dv, between=between, detailed=detailed)
+        result_df = pg.pairwise_gameshowell(
+            data=df, dv=dv, between=between, detailed=detailed
+        )
         return result_df
 
     """
@@ -582,6 +585,29 @@ class Plots:
     def ttest_bar_plot():
         # Fucntion will mirror above. Need to format shape to fit Statannotation
         pass
+
+    """
+    Functions to plot data distribution
+    """
+
+    @staticmethod
+    def distribution(df, val_col=None, type="histplot", **kwargs):
+        """
+
+        :param df:
+        :param val_col:
+        :param type:
+        :param kwargs: key-word arguments for seaborn or matplotlib plotting. Arguments depend on test type.
+        :return:
+        """
+        if type == "histplot":
+            fig = sns.histplot(data=df, x=val_col, kde=True, **kwargs)
+        elif type == "qqplot":
+            fig = pg.qqplot(df[val_col], dist='norm', **kwargs)
+        else:
+            raise ValueError("For test parameter, only 'histplot' or 'qqplot' available")
+
+        return fig
 
 
 def _get_test(test, df=None, x_axis=None, y_axis=None, **kwargs):
