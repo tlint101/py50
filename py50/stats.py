@@ -576,14 +576,13 @@ class Plots:
             matrix_fig = sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
         else:
             matrix_fig = sp.sign_plot(matrix_df, **kwargs)
-        plt.show()
 
         return matrix_fig
 
     # todo bar plot
     @staticmethod
     def ttest_bar_plot():
-        # Fucntion will mirror above. Need to format shape to fit Statannotation
+        # Function will mirror above. Need to format shape to fit Statannotation
         pass
 
     """
