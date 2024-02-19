@@ -21,6 +21,14 @@ CHANGELOG BELOW
 
 st.markdown("# :red[**Changelog**]")
 
+st.markdown("## :rainbow[**2024.02.16**]")
+st.markdown(
+    """
+##### :green[**Major Changes**] 🎉
+- Updated py50 Web Application to [py50 v0.3.6](https://github.com/tlint101/py50/releases)
+            """
+)
+
 st.markdown("## :rainbow[**2024.01.18**]")
 st.markdown(
     """
