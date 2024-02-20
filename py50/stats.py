@@ -353,8 +353,11 @@ class Plots:
         :return:
         """
         # todo add kwarg option for pair order
+        # separate kwargs for sns and sns
+        valid_sns = utils.get_kwargs(sns.boxplot)
+
         pairs, palette, pvalue, sns_kwargs, test_df = _plot_variables(
-            df, group_col, kwargs, pair_order, palette, test, value_col
+            df, group_col, kwargs, pair_order, palette, test, value_col, valid_sns
         )
 
         # set orientation for plot and Annotator
@@ -432,9 +435,11 @@ class Plots:
         :param palette:
         :return:
         """
-        # todo add kwarg option for pair order
+        # separate kwargs for sns and sns
+        valid_sns = utils.get_kwargs(sns.barplot)
+
         pairs, palette, pvalue, sns_kwargs, test_df = _plot_variables(
-            df, group_col, kwargs, pair_order, palette, test, value_col
+            df, group_col, kwargs, pair_order, palette, test, value_col, valid_sns
         )
 
         # set orientation for plot and Annotator
@@ -491,13 +496,14 @@ class Plots:
     @staticmethod
     def violin_plot(
         df,
-        x_axis=None,
-        y_axis=None,
-        group_col=None,
         test=None,
-        return_df=None,
+        group_col=None,
+        value_col=None,
         palette=None,
+        orient="v",
+        pair_order=None,
         savepath=None,
+        return_df=None,
         **kwargs,
     ):
         """
@@ -511,47 +517,60 @@ class Plots:
         :param palette:
         :return:
         """
+        # separate kwargs for sns and sns
+        valid_sns = utils.get_kwargs(sns.violinplot)
 
-        groups = df[group_col].unique()
-
-        # set default color palette
-        if palette is not None:
-            palette = utils.palette(palette)
-        ax = sns.violinplot(
-            data=df, x=x_axis, y=y_axis, order=groups, palette=palette, **kwargs
+        pairs, palette, pvalue, sns_kwargs, test_df = _plot_variables(
+            df, group_col, kwargs, pair_order, palette, test, value_col, valid_sns
         )
 
-        try:
-            # Run tests based on test parameter input
-            if test is not None:
-                pvalue, test_df = _get_test(
-                    test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
-                )
-            else:
-                raise NameError(
-                    "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
-                )
-
-            # todo add kwarg option for pair order
-            # get pairs of groups (x-axis)
-            pair_plot = kwargs.get("pair_plot")
-            # print(pair_plot)
-            if pair_plot is None:
-                pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
-            # print(pair_plot)
-
-            # add annotations
-            annotator = Annotator(
-                ax, pair_plot, data=df, x=x_axis, y=y_axis, verbose=False
+        # set orientation for plot and Annotator
+        if orient == "v":
+            ax = sns.violinplot(
+                data=df,
+                x=group_col,
+                y=value_col,
+                order=df[group_col].unique(),
+                palette=palette,
+                **sns_kwargs,
             )
-            annotator.set_custom_annotations(pvalue)
-            annotator.annotate()
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=group_col,
+                y=value_col,
+                verbose=False,
+                orient="v",
+            )
+        elif orient == "h":
+            ax = sns.violinplot(
+                data=df,
+                x=value_col,
+                y=group_col,
+                order=df[group_col].unique(),
+                palette=palette,
+                **sns_kwargs,
+            )
+            # flip x and y annotations for horizontal orientation
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=value_col,
+                y=group_col,
+                verbose=False,
+                orient="h",
+            )
+        else:
+            raise ValueError("Orientation must be 'v' or 'h'!")
 
-            if savepath:
-                plt.savefig(savepath, dpi=300, bbox_inches="tight")
+        # Set custom annotations and annotate
+        annotator.set_custom_annotations(pvalue)
+        annotator.annotate()
 
-        except ValueError:
-            print("Input test type! i.e. 'tukey', 'gameshowell', or 'ttest'")
+        if savepath:
+            plt.savefig(savepath, dpi=300, bbox_inches="tight")
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
@@ -559,13 +578,14 @@ class Plots:
     @staticmethod
     def swarmplot(
         df,
-        x_axis=None,
-        y_axis=None,
-        group_col=None,
         test=None,
-        return_df=None,
+        group_col=None,
+        value_col=None,
         palette=None,
+        orient="v",
+        pair_order=None,
         savepath=None,
+        return_df=None,
         **kwargs,
     ):
         """
@@ -579,48 +599,60 @@ class Plots:
         :param palette:
         :return:
         """
+        # separate kwargs for sns and sns
+        valid_sns = utils.get_kwargs(sns.swarmplot)
 
-        groups = df[group_col].unique()
-
-        # todo TypeError: swarmplot() got multiple values for argument 'x_axis'
-        # set default color palette
-        if palette is not None:
-            palette = utils.palette(palette)
-        ax = sns.swarmplot(
-            data=df, x=x_axis, y=y_axis, order=groups, palette=palette, **kwargs
+        pairs, palette, pvalue, sns_kwargs, test_df = _plot_variables(
+            df, group_col, kwargs, pair_order, palette, test, value_col, valid_sns
         )
 
-        try:
-            # Run tests based on test parameter input
-            if test is not None:
-                pvalue, test_df = _get_test(
-                    test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
-                )
-            else:
-                raise NameError(
-                    "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
-                )
-
-            # todo add kwarg option for pair order
-            # get pairs of groups (x-axis)
-            pair_plot = kwargs.get("pair_plot")
-            # print(pair_plot)
-            if pair_plot is None:
-                pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
-            # print(pair_plot)
-
-            # add annotations
-            annotator = Annotator(
-                ax, pair_plot, data=df, x=x_axis, y=y_axis, verbose=False
+        # set orientation for plot and Annotator
+        if orient == "v":
+            ax = sns.swarmplot(
+                data=df,
+                x=group_col,
+                y=value_col,
+                order=df[group_col].unique(),
+                palette=palette,
+                **sns_kwargs,
             )
-            annotator.set_custom_annotations(pvalue)
-            annotator.annotate()
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=group_col,
+                y=value_col,
+                verbose=False,
+                orient="v",
+            )
+        elif orient == "h":
+            ax = sns.swarmplot(
+                data=df,
+                x=value_col,
+                y=group_col,
+                order=df[group_col].unique(),
+                palette=palette,
+                **sns_kwargs,
+            )
+            # flip x and y annotations for horizontal orientation
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=value_col,
+                y=group_col,
+                verbose=False,
+                orient="h",
+            )
+        else:
+            raise ValueError("Orientation must be 'v' or 'h'!")
 
-            if savepath:
-                plt.savefig(savepath, dpi=300, bbox_inches="tight")
+        # Set custom annotations and annotate
+        annotator.set_custom_annotations(pvalue)
+        annotator.annotate()
 
-        except ValueError:
-            print("Input test type! i.e. 'tukey', 'gameshowell', or 'ttest'")
+        if savepath:
+            plt.savefig(savepath, dpi=300, bbox_inches="tight")
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
@@ -762,7 +794,9 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
     return pvalue, test_df, pairs
 
 
-def _plot_variables(df, group_col, kwargs, pair_order, palette, test, value_col):
+def _plot_variables(
+    df, group_col, kwargs, pair_order, palette, test, value_col, valid_sns
+):
     """
     Output plot variables for use inside plots in Plots() class
     :param df:
@@ -774,8 +808,7 @@ def _plot_variables(df, group_col, kwargs, pair_order, palette, test, value_col)
     :param value_col:
     :return:
     """
-    # separate kwargs for sns and sns
-    valid_sns = utils.get_kwargs(sns.barplot)
+    # get kwarg for sns plot
     sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
 
     # Run tests based on test parameter input
