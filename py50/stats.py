@@ -57,20 +57,28 @@ class Stats:
     Parametric posts below
     """
 
-    @staticmethod
-    def get_t_test(df, paired=True, stars=False, decimals=4, **kwargs):
-        """
-        Calculate pairwise t-test.
+    # @staticmethod
+    # def get_t_test(df, paired=True, stars=False, decimals=4, **kwargs):
+    #     """
+    #     Calculate pairwise t-test.
+    #
+    #     :param df:
+    #     :param paired:
+    #     :param stars:
+    #     :param decimals:
+    #     :param kwargs:
+    #     :return:
+    #     """
+    #     result_df = pg.ptests(
+    #         data=df, paired=paired, stars=stars, decimals=decimals, **kwargs
+    #     )
+    #     return result_df
 
-        :param df:
-        :param paired:
-        :param stars:
-        :param decimals:
-        :param kwargs:
-        :return:
-        """
-        result_df = pg.ptests(
-            data=df, paired=paired, stars=stars, decimals=decimals, **kwargs
+    @staticmethod
+    def get_t_test(df, dv=None, between=None, within=None, **kwargs):
+
+        result_df = pg.pairwise_tests(
+            data=df, dv=dv, between=between, within=within, **kwargs
         )
         return result_df
 
@@ -102,15 +110,7 @@ class Stats:
         :param between:
         :return:
         """
-        recognized_kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if k in pg.pairwise_tukey.__code__.co_varnames
-        }
-
-        result_df = pg.pairwise_tukey(
-            data=df, dv=dv, between=between, **recognized_kwargs
-        )
+        result_df = pg.pairwise_tukey(data=df, dv=dv, between=between, **kwargs)
         return result_df
 
     @staticmethod
@@ -151,7 +151,7 @@ class Stats:
     """
 
     @staticmethod
-    def get_wilcoxon(df, group_col=None, value_col=None):
+    def get_wilcoxon(df, group_col=None, value_col=None, **kwargs):
         """
         Calculate wilcoxon
         :param df:
@@ -179,7 +179,7 @@ class Stats:
                 value2 = value2[:min_length]
 
                 # Perform Wilcoxon signed-rank test
-                result = pg.wilcoxon(value1, value2)
+                result = pg.wilcoxon(value1, value2, **kwargs)
 
                 # Store the results in the list
                 key = f"{group1}-{group2}"
@@ -198,7 +198,7 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_mannu(df, group_col=None, value_col=None):
+    def get_mannu(df, group_col=None, value_col=None, **kwargs):
         """
         Calculate Mann-Whitney U Test
         :param df:
@@ -226,7 +226,7 @@ class Stats:
                 value2 = value2[:min_length]
 
                 # Perform Wilcoxon signed-rank test
-                result = pg.mwu(value1, value2)
+                result = pg.mwu(value1, value2, **kwargs)
 
                 # Store the results in the list
                 key = f"{group1}-{group2}"
@@ -254,6 +254,31 @@ class Stats:
         :return:
         """
         result_df = pg.kruskal(data=df, dv=dv, between=between, detailed=detailed)
+        return result_df
+
+    @staticmethod
+    def get_nonpara_test(
+        df, dv=None, between=None, within=None, parametric=True, **kwargs
+    ):
+        """
+        Posthoc test for nonparametric statistics. Used after Kruskal test.
+        :param df:
+        :param dv:
+        :param between:
+        :param within:
+        :param parametric:
+        :param kwargs:
+        :return:
+        """
+
+        result_df = pg.pairwise_tests(
+            data=df,
+            dv=dv,
+            between=between,
+            within=within,
+            parametric=parametric,
+            **kwargs,
+        )
         return result_df
 
     """
@@ -289,6 +314,21 @@ class Stats:
 class Plots:
 
     @staticmethod
+    def list_test(list=True):
+        """
+        List all tests available for plotting
+        :param list:
+        :return:
+        """
+        if list:
+            print(
+                "List of tests available for plotting: 'tukey', 'gameshowell', 'ttest', 'wilcoxon', 'mannu', "
+                "'kruskal'"
+            )
+        else:
+            print("Not Allowed To Give List!")
+
+    @staticmethod
     def box_plot(
         df,
         test=None,
@@ -296,7 +336,9 @@ class Plots:
         value_col=None,
         palette=None,
         orient="v",
+        pair_order=None,
         savepath=None,
+        return_df=None,
         **kwargs,
     ):
         """
@@ -311,24 +353,10 @@ class Plots:
         :return:
         """
         # todo add kwarg option for pair order
+        pairs, palette, pvalue, sns_kwargs, test_df = _plot_variables(
+            df, group_col, kwargs, pair_order, palette, test, value_col
+        )
 
-        # Run tests based on test parameter input
-        if test is not None:
-            pvalue, test_df, pairs = _get_test(
-                test=test,
-                df=df,
-                group_col=group_col,
-                value_col=value_col,
-                **kwargs,
-            )
-        else:
-            raise NameError(
-                "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
-            )
-
-        # set default color palette
-        if palette is not None:
-            palette = utils.palette(palette)
         # set orientation for plot and Annotator
         if orient == "v":
             ax = sns.boxplot(
@@ -337,7 +365,7 @@ class Plots:
                 y=value_col,
                 order=df[group_col].unique(),
                 palette=palette,
-                **kwargs,
+                **sns_kwargs,
             )
             annotator = Annotator(
                 ax,
@@ -355,7 +383,7 @@ class Plots:
                 y=group_col,
                 order=df[group_col].unique(),
                 palette=palette,
-                **kwargs,
+                **sns_kwargs,
             )
             # flip x and y annotations for horizontal orientation
             annotator = Annotator(
@@ -377,19 +405,20 @@ class Plots:
         if savepath:
             plt.savefig(savepath, dpi=300, bbox_inches="tight")
 
-        # if return_df:
-        #     return test_df  # return calculated df. Change name for more description
+        if return_df:
+            return test_df  # return calculated df. Change name for more description
 
     @staticmethod
     def bar_plot(
         df,
-        x_axis=None,
-        y_axis=None,
-        group_col=None,
         test=None,
-        return_df=None,
+        group_col=None,
+        value_col=None,
         palette=None,
+        orient="v",
+        pair_order=None,
         savepath=None,
+        return_df=None,
         **kwargs,
     ):
         """
@@ -403,47 +432,58 @@ class Plots:
         :param palette:
         :return:
         """
-
-        groups = df[group_col].unique()
-
-        # set default color palette
-        if palette is not None:
-            palette = utils.palette(palette)
-        ax = sns.barplot(
-            data=df, x=x_axis, y=y_axis, order=groups, palette=palette, **kwargs
+        # todo add kwarg option for pair order
+        pairs, palette, pvalue, sns_kwargs, test_df = _plot_variables(
+            df, group_col, kwargs, pair_order, palette, test, value_col
         )
 
-        try:
-            # Run tests based on test parameter input
-            if test is not None:
-                pvalue, test_df = _get_test(
-                    test=test, df=df, x_axis=x_axis, y_axis=y_axis, **kwargs
-                )
-            else:
-                raise NameError(
-                    "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
-                )  # todo modify by adding other tests
-
-            # todo add kwarg option for pair order
-            # get pairs of groups (x-axis)
-            pair_plot = kwargs.get("pair_plot")
-            # print(pair_plot)
-            if pair_plot is None:
-                pair_plot = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
-            # print(pair_plot)
-
-            # add annotations
-            annotator = Annotator(
-                ax, pair_plot, data=df, x=x_axis, y=y_axis, verbose=False
+        # set orientation for plot and Annotator
+        if orient == "v":
+            ax = sns.barplot(
+                data=df,
+                x=group_col,
+                y=value_col,
+                order=df[group_col].unique(),
+                palette=palette,
+                **sns_kwargs,
             )
-            annotator.set_custom_annotations(pvalue)
-            annotator.annotate()
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=group_col,
+                y=value_col,
+                verbose=False,
+                orient="v",
+            )
+        elif orient == "h":
+            ax = sns.barplot(
+                data=df,
+                x=value_col,
+                y=group_col,
+                order=df[group_col].unique(),
+                palette=palette,
+                **sns_kwargs,
+            )
+            # flip x and y annotations for horizontal orientation
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=value_col,
+                y=group_col,
+                verbose=False,
+                orient="h",
+            )
+        else:
+            raise ValueError("Orientation must be 'v' or 'h'!")
 
-            if savepath:
-                plt.savefig(savepath, dpi=300, bbox_inches="tight")
+        # Set custom annotations and annotate
+        annotator.set_custom_annotations(pvalue)
+        annotator.annotate()
 
-        except ValueError:
-            print("Input test type! i.e. 'tukey', 'gameshowell', or 'ttest'")
+        if savepath:
+            plt.savefig(savepath, dpi=300, bbox_inches="tight")
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
@@ -646,27 +686,47 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
 
     # todo add function to sort pairs by user input from the plot kwarg
     if test == "tukey":
-        test_df = Stats.get_tukey(df, dv=value_col, between=group_col, **kwargs)
+        # get kwargs
+        valid_pg = utils.get_kwargs(pg.pairwise_tukey)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        test_df = Stats.get_tukey(df, dv=value_col, between=group_col, **pg_kwargs)
         pvalue = [utils.star_value(value) for value in test_df["p-tukey"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
     elif test == "gameshowell":
-        test_df = Stats.get_gameshowell(df, dv=value_col, between=group_col, **kwargs)
+        # get kwargs
+        valid_pg = utils.get_kwargs(pg.pairwise_gameshowell())
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        test_df = Stats.get_gameshowell(
+            df, dv=value_col, between=group_col, **pg_kwargs
+        )
         pvalue = [utils.star_value(value) for value in test_df["pval"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
-    elif test == "ptest": # todo update ptest
-        ptest_kwargs = {
-            key: value
-            for key, value in kwargs.items()
-            if key in pg.pairwise_tests.__code__.co_varnames
-        }
+    elif test == "ttest":  # todo update ptest
+        # get kwargs
+        valid_pg = utils.get_kwargs(pg.pairwise_tests)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
         test_df = Stats.get_pairwise_test(
-            df, dv=value_col, between=group_col, **ptest_kwargs
+            df, dv=value_col, between=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
+
     elif test == "wilcoxon":
-        test_df = Stats.get_wilcoxon(df, group_col=group_col, value_col=value_col)
+        # get kwargs
+        valid_pg = utils.get_kwargs(pg.wilcoxon)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        test_df = Stats.get_wilcoxon(
+            df, group_col=group_col, value_col=value_col, **pg_kwargs
+        )
         pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
         pairs = []
@@ -675,7 +735,14 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
             pairs.append((parts[0], parts[1]))
 
     elif test == "mannu":
-        test_df = Stats.get_mannu(df, group_col=group_col, value_col=value_col)
+        # get kwargs
+        valid_pg = utils.get_kwargs(pg.mwu)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        test_df = Stats.get_mannu(
+            df, group_col=group_col, value_col=value_col, **pg_kwargs
+        )
         pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
         pairs = []
@@ -683,7 +750,7 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
             parts = item.split("-")
             pairs.append((parts[0], parts[1]))
 
-    elif test == "kruskal": # kurskal does not give posthoc. modify
+    elif test == "kruskal":  # kurskal does not give posthoc. modify
         test_df = Stats.get_kruskal(df, dv=value_col, between=group_col, detailed=False)
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
     else:
@@ -691,7 +758,49 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
 
     # elif test == "ttest":
     #     test_df = Stats.get_t_test(df, paired=False, x=None, y=None, **kwargs) # todo determine how to select column to return as list
-    return (pvalue, test_df, pairs)
+
+    return pvalue, test_df, pairs
+
+
+def _plot_variables(df, group_col, kwargs, pair_order, palette, test, value_col):
+    """
+    Output plot variables for use inside plots in Plots() class
+    :param df:
+    :param group_col:
+    :param kwargs:
+    :param pair_order:
+    :param palette:
+    :param test:
+    :param value_col:
+    :return:
+    """
+    # separate kwargs for sns and sns
+    valid_sns = utils.get_kwargs(sns.barplot)
+    sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
+
+    # Run tests based on test parameter input
+    if test is not None:
+        pvalue, test_df, pairs = _get_test(
+            test=test,
+            df=df,
+            group_col=group_col,
+            value_col=value_col,
+            **kwargs,
+        )
+    else:
+        raise NameError(
+            "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
+        )
+
+    # set default color palette
+    if palette:
+        palette = palette(palette)
+
+    # set custom pair order
+    if pair_order:
+        pairs = pair_order
+
+    return pairs, palette, pvalue, sns_kwargs, test_df
 
 
 if __name__ == "__main__":
