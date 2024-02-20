@@ -658,18 +658,21 @@ class Plots:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
-    def p_matrix(matrix_df, cmap=None, **kwargs):
+    def p_matrix(matrix_df, cmap=None, title=None, title_size=14, **kwargs):
         """
         Wrapper function for scikit_posthoc heatmap.
         :return:
         """
+        if title:
+            plt.title(title, fontsize=title_size)
+
         if cmap is None:
             cmap = ["1", "#fb6a4a", "#08306b", "#4292c6", "#c6dbef"]
-            matrix_fig = sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
+            sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
         else:
-            matrix_fig = sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
+            sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
 
-        return matrix_fig
+        return plt
 
     # todo bar plot
     @staticmethod
