@@ -3,6 +3,7 @@ The following script holds plot logic for the indicated tests. This was created 
 for maintainability.
 """
 
+import inspect
 from itertools import combinations
 import pandas as pd
 import seaborn as sns
@@ -84,7 +85,7 @@ def multi_group(df, group_col1=None, group_col2=None, test=None):
     :return:
     """
     global p_col
-    if test == 'tukey':
+    if test == "tukey":
         p_col = "p-tukey"
     groups = sorted(set(df[group_col1]) | set(df[group_col2]))
     matrix_df = pd.DataFrame(index=groups, columns=groups)
@@ -126,6 +127,13 @@ def single_group(df, group_col=None, test=None):
     matrix_df.fillna(1, inplace=True)
 
     return matrix_df
+
+
+def get_kwargs(func):
+    """To obtain kwargs for a given submodule. Usage is the following:
+    sns_kwargs = get_kwargs(sns.boxplot)
+    """
+    return inspect.signature(func).parameters.keys()
 
 
 if __name__ == "__main__":
