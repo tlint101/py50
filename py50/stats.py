@@ -657,6 +657,89 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
+    # todo doublecheck if lineplot works
+    @staticmethod
+    def lineplot(
+        df,
+        test=None,
+        group_col=None,
+        value_col=None,
+        palette=None,
+        orient="v",
+        pair_order=None,
+        savepath=None,
+        return_df=None,
+        **kwargs,
+    ):
+        """
+
+        :param df:
+        :param x_axis:
+        :param y_axis:
+        :param group_col:
+        :param test:
+        :param return_df: Will return dataframe of calculated results
+        :param palette:
+        :return:
+        """
+        # separate kwargs for sns and sns
+        valid_sns = utils.get_kwargs(sns.lineplot)
+
+        pairs, palette, pvalue, sns_kwargs, test_df = _plot_variables(
+            df, group_col, kwargs, pair_order, palette, test, value_col, valid_sns
+        )
+
+        # set orientation for plot and Annotator
+        if orient == "v":
+            ax = sns.lineplot(
+                data=df,
+                x=group_col,
+                y=value_col,
+                # order=df[group_col].unique(),
+                palette=palette,
+                **sns_kwargs,
+            )
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=group_col,
+                y=value_col,
+                verbose=False,
+                orient="v",
+            )
+        elif orient == "h":
+            ax = sns.lineplot(
+                data=df,
+                x=value_col,
+                y=group_col,
+                order=df[group_col].unique(),
+                palette=palette,
+                **sns_kwargs,
+            )
+            # flip x and y annotations for horizontal orientation
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=value_col,
+                y=group_col,
+                verbose=False,
+                orient="h",
+            )
+        else:
+            raise ValueError("Orientation must be 'v' or 'h'!")
+
+        # Set custom annotations and annotate
+        annotator.set_custom_annotations(pvalue)
+        annotator.annotate()
+
+        if savepath:
+            plt.savefig(savepath, dpi=300, bbox_inches="tight")
+
+        if return_df:
+            return test_df  # return calculated df. Change name for more description
+
     @staticmethod
     def p_matrix(matrix_df, cmap=None, title=None, title_size=14, **kwargs):
         """
