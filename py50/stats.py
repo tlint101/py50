@@ -85,6 +85,7 @@ class Stats:
     @staticmethod
     def get_anova(df, dv=None, between=None, **kwargs):
         """
+        Classic ANOVA
 
         :param df:
         :param dv:
@@ -120,6 +121,7 @@ class Stats:
 
     @staticmethod
     def get_rm_anova(df, dv=None, within=None, subject=None, **kwargs):
+        "Repeated measures anova"
         result_df = pg.rm_anova(
             data=df, dv=dv, within=within, subject=subject, **kwargs
         )
@@ -367,6 +369,16 @@ class Plots:
         valid_sns = utils.get_kwargs(sns.boxplot)
         valid_annot = utils.get_kwargs(Annotator)
 
+        # Set kwargs dictionary for line annotations
+        annotate_kwargs = {}
+        if "line_offset_to_group" in kwargs and "line_offset" in kwargs:
+            # Get kwargs from input
+            line_offset_to_group = kwargs["line_offset_to_group"]
+            line_offset = kwargs["line_offset"]
+            # Add to dictionary
+            annotate_kwargs["line_offset_to_group"] = line_offset_to_group
+            annotate_kwargs["line_offset"] = line_offset
+
         # Get plot variables
         pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
@@ -424,6 +436,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="h",
+                **annot_kwargs,
             )
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
@@ -432,7 +445,7 @@ class Plots:
         if pvalue_order:
             pvalue = pvalue_order
         annotator.set_custom_annotations(pvalue)
-        annotator.annotate()
+        annotator.annotate(**annotate_kwargs)
 
         if savepath:
             plt.savefig(savepath, dpi=300, bbox_inches="tight")
@@ -440,6 +453,7 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
+    # todo update below plot with annot_kwargs
     @staticmethod
     def bar_plot(
         df,
@@ -786,7 +800,6 @@ class Plots:
 
         return plt
 
-    # todo bar plot
     @staticmethod
     def ttest_bar_plot():
         # Function will mirror above. Need to format shape to fit Statannotation
@@ -831,7 +844,6 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
     :return:
     """
 
-    # todo add function to sort pairs by user input from the plot kwarg
     global pairs
     if test == "tukey":
         # get kwargs
@@ -855,7 +867,19 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
         pvalue = [utils.star_value(value) for value in test_df["pval"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
-    elif test == "ttest-within":  # todo look up difference between and within
+    elif test == "ttest-within":
+        # get kwargs
+        valid_pg = utils.get_kwargs(pg.pairwise_tests)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        test_df = Stats.get_pairwise_test(
+            df, dv=value_col, within=group_col, **pg_kwargs
+        )
+        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+
+    elif test == "ttest-between":
         # get kwargs
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
@@ -863,6 +887,20 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
         # run test
         test_df = Stats.get_pairwise_test(
             df, dv=value_col, between=group_col, **pg_kwargs
+        )
+        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+
+    # todo find example to test ttest-mixed
+    # requires BOTH between and within groups
+    elif test == "ttest-mixed":
+        # get kwargs
+        valid_pg = utils.get_kwargs(pg.pairwise_tests)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        test_df = Stats.get_pairwise_test(
+            df, dv=value_col, between=group_col, within=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
