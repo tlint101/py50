@@ -304,6 +304,7 @@ class Stats:
         :return:
         """
         # Run tests based on test parameter input
+        # todo add options for additional test
         if test == "tukey":
             matrix_df = utils.multi_group(df, group_col1, group_col2, test)
         elif test == "mannu" or test == "wilcoxon":
@@ -318,6 +319,13 @@ class Stats:
 
 class Plots:
 
+    # # Initializer for future use
+    # def __init__(self, df):
+    #     if not isinstance(df, pd.DataFrame):
+    #         raise ValueError("Input must be a DataFrame")
+    #     self.df = df
+
+    # todo update list output
     @staticmethod
     def list_test(list=True):
         """
@@ -327,11 +335,11 @@ class Plots:
         """
         if list:
             print(
-                "List of tests available for plotting: 'tukey', 'gameshowell', 'ttest', 'wilcoxon', 'mannu', "
+                "List of tests available for plotting: 'tukey', 'gameshowell', 'ttest-within', 'ttest-between', 'ttest-mixed', 'wilcoxon', 'mannu', 'para-ttest "
                 "'kruskal'"
             )
         else:
-            print("Not Allowed To Give List!")
+            print("Input Test Not Valid!")
 
     @staticmethod
     def box_plot(
@@ -344,25 +352,21 @@ class Plots:
         pvalue_order=None,
         palette=None,
         orient="v",
-        savepath=None,
         return_df=None,
         **kwargs,
     ):
         """
 
-        :param group_order: Order the groups for plotting.
-        :param pvalue_order: Order the pvalue labels. This order must match the pair orders given.
-        :param savepath:
-        :param pair_order: Order of pairs. This will modify the way the plot will be annotated.
-        :param orient:
-        :param value_col:
-        :param df:
-        :param x_axis:
-        :param y_axis:
-        :param group_col:
-        :param test:
-        :param return_df: Will return dataframe of calculated results
-        :param palette:
+        :param df: Input DataFrame.
+        :param test: Name of test to use for calculations.
+        :param group_col: Column containing groups.
+        :param value_col: Column containing values. This is the dependent variable.
+        :param group_order: List. Order the groups for in the plot.
+        :param pair_order: List. Order of group pairs. This will modify the way the plot will be annotated.
+        :param pvalue_order: List. Order the pvalue labels. This order must match the pairorder.
+        :param palette: List. Palette used for the plot. Can be given as common color name or in hex code.
+        :param orient: Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
+        :param return_df: Boolean to return dataframe of calculated results.
         :return:
         """
         # separate kwargs for sns and sns
@@ -446,9 +450,6 @@ class Plots:
             pvalue = pvalue_order
         annotator.set_custom_annotations(pvalue)
         annotator.annotate(**annotate_kwargs)
-
-        if savepath:
-            plt.savefig(savepath, dpi=300, bbox_inches="tight")
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
@@ -937,7 +938,7 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
             parts = item.split("-")
             pairs.append((parts[0], parts[1]))
 
-    elif test == "paratest":
+    elif test == "para-ttest":
         # get kwargs
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
