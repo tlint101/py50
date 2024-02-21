@@ -180,8 +180,8 @@ class Stats:
 
                 # Ensure same length for each condition
                 min_length = min(len(value1), len(value2))
-                value1 = value1[:min_length]
-                value2 = value2[:min_length]
+                value1 = value1.iloc[:min_length]
+                value2 = value2.iloc[:min_length]
 
                 # Perform Wilcoxon signed-rank test
                 result = pg.wilcoxon(value1, value2, **kwargs)
@@ -227,8 +227,8 @@ class Stats:
 
                 # Ensure same length for each condition
                 min_length = min(len(value1), len(value2))
-                value1 = value1[:min_length]
-                value2 = value2[:min_length]
+                value1 = value1.iloc[:min_length]
+                value2 = value2.iloc[:min_length]
 
                 # Perform Wilcoxon signed-rank test
                 result = pg.mwu(value1, value2, **kwargs)
@@ -371,6 +371,7 @@ class Plots:
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxplot)
         valid_annot = utils.get_kwargs(Annotator)
+        print(valid_annot)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -383,7 +384,7 @@ class Plots:
             annotate_kwargs["line_offset"] = line_offset
 
         # Get plot variables
-        pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
+        pairss, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
             kwargs,
@@ -398,6 +399,11 @@ class Plots:
         # Set order for groups on plot
         if group_order:
             group_order = group_order
+
+        if 'pair_hue' in kwargs:
+            pairs = kwargs.get("pair_hue")
+            print(pairs)
+
 
         # set orientation for plot and Annotator
         if orient == "v":
