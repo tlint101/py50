@@ -74,13 +74,13 @@ class Stats:
     #     )
     #     return result_df
 
-    @staticmethod
-    def get_t_test(df, dv=None, between=None, within=None, **kwargs):
-
-        result_df = pg.pairwise_tests(
-            data=df, dv=dv, between=between, within=within, **kwargs
-        )
-        return result_df
+    # @staticmethod
+    # def get_t_test(df, dv=None, between=None, within=None, **kwargs):
+    #
+    #     result_df = pg.pairwise_tests(
+    #         data=df, dv=dv, between=between, within=within, **kwargs
+    #     )
+    #     return result_df
 
     @staticmethod
     def get_anova(df, dv=None, between=None, **kwargs):
@@ -126,9 +126,10 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_pairwise_test(df, dv=None, between=None, **kwargs):
+    def get_pairwise_test(df, dv=None, between=None, within=None, **kwargs):
         """
         Calculate pairwise_tests
+        :param within:
         :param df:
         :param dv:
         :param between:
@@ -136,7 +137,9 @@ class Stats:
         :param kwargs:
         :return:
         """
-        result_df = pg.pairwise_tests(data=df, dv=dv, between=between, **kwargs)
+        result_df = pg.pairwise_tests(
+            data=df, dv=dv, between=between, within=within, **kwargs
+        )
         return result_df
 
     @staticmethod
@@ -334,15 +337,23 @@ class Plots:
         test=None,
         group_col=None,
         value_col=None,
+        group_order=None,
+        pair_order=None,
+        pvalue_order=None,
         palette=None,
         orient="v",
-        pair_order=None,
         savepath=None,
         return_df=None,
         **kwargs,
     ):
         """
 
+        :param group_order: Order the groups for plotting.
+        :param pvalue_order: Order the pvalue labels. This order must match the pair orders given.
+        :param savepath:
+        :param pair_order: Order of pairs. This will modify the way the plot will be annotated.
+        :param orient:
+        :param value_col:
         :param df:
         :param x_axis:
         :param y_axis:
@@ -352,13 +363,26 @@ class Plots:
         :param palette:
         :return:
         """
-        # todo add kwarg option for pair order
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxplot)
+        valid_annot = utils.get_kwargs(Annotator)
 
-        pairs, palette, pvalue, sns_kwargs, test_df = _plot_variables(
-            df, group_col, kwargs, pair_order, palette, test, value_col, valid_sns
+        # Get plot variables
+        pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
+            df,
+            group_col,
+            kwargs,
+            pair_order,
+            palette,
+            test,
+            value_col,
+            valid_sns,
+            valid_annot,
         )
+
+        # Set order for groups on plot
+        if group_order:
+            group_order = group_order
 
         # set orientation for plot and Annotator
         if orient == "v":
@@ -366,7 +390,7 @@ class Plots:
                 data=df,
                 x=group_col,
                 y=value_col,
-                order=df[group_col].unique(),
+                order=group_order,
                 palette=palette,
                 **sns_kwargs,
             )
@@ -376,15 +400,17 @@ class Plots:
                 data=df,
                 x=group_col,
                 y=value_col,
+                order=group_order,
                 verbose=False,
                 orient="v",
+                **annot_kwargs,
             )
         elif orient == "h":
             ax = sns.boxplot(
                 data=df,
                 x=value_col,
                 y=group_col,
-                order=df[group_col].unique(),
+                order=group_order,
                 palette=palette,
                 **sns_kwargs,
             )
@@ -395,6 +421,7 @@ class Plots:
                 data=df,
                 x=value_col,
                 y=group_col,
+                order=group_order,
                 verbose=False,
                 orient="h",
             )
@@ -402,6 +429,8 @@ class Plots:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
         # Set custom annotations and annotate
+        if pvalue_order:
+            pvalue = pvalue_order
         annotator.set_custom_annotations(pvalue)
         annotator.annotate()
 
@@ -803,6 +832,7 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
     """
 
     # todo add function to sort pairs by user input from the plot kwarg
+    global pairs
     if test == "tukey":
         # get kwargs
         valid_pg = utils.get_kwargs(pg.pairwise_tukey)
@@ -825,7 +855,7 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
         pvalue = [utils.star_value(value) for value in test_df["pval"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
-    elif test == "ttest":  # todo update ptest
+    elif test == "ttest-within":  # todo look up difference between and within
         # get kwargs
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
@@ -835,6 +865,7 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
             df, dv=value_col, between=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
     elif test == "wilcoxon":
         # get kwargs
@@ -868,6 +899,9 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
             parts = item.split("-")
             pairs.append((parts[0], parts[1]))
 
+    elif test == "paratest":
+        raise ValueError("Add things here!")
+
     elif test == "kruskal":  # kurskal does not give posthoc. modify
         test_df = Stats.get_kruskal(df, dv=value_col, between=group_col, detailed=False)
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
@@ -881,7 +915,7 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
 
 
 def _plot_variables(
-    df, group_col, kwargs, pair_order, palette, test, value_col, valid_sns
+    df, group_col, kwargs, pair_order, palette, test, value_col, valid_sns, valid_annot
 ):
     """
     Output plot variables for use inside plots in Plots() class
@@ -896,6 +930,7 @@ def _plot_variables(
     """
     # get kwarg for sns plot
     sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
+    annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
     # Run tests based on test parameter input
     if test is not None:
@@ -919,7 +954,7 @@ def _plot_variables(
     if pair_order:
         pairs = pair_order
 
-    return pairs, palette, pvalue, sns_kwargs, test_df
+    return pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df
 
 
 if __name__ == "__main__":
