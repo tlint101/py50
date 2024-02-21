@@ -938,7 +938,16 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
             pairs.append((parts[0], parts[1]))
 
     elif test == "paratest":
-        raise ValueError("Add things here!")
+        # get kwargs
+        valid_pg = utils.get_kwargs(pg.pairwise_tests)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        test_df = Stats.get_nonpara_test(
+            df, dv=value_col, between=group_col, **pg_kwargs
+        )
+        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
     elif test == "kruskal":  # kurskal does not give posthoc. modify
         test_df = Stats.get_kruskal(df, dv=value_col, between=group_col, detailed=False)
