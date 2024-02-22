@@ -59,9 +59,11 @@ I am interested in maintaining this for the foreseeable future. As such, I have 
 things on my "To-Do" list. I will get around to them when I can. In no particular
 order:
 
-- [ ] 🧹Housekeeping 🧹
 - [ ] Code for averaging and creating error bars on plot
-- [ ] Include scripts for statistics and plotting
+- [ ] Include scripts for statistics 
+- [ ] Include scripts for plotting and annotating with values from statistics calculations
+- [ ] Update statistic calculations for Streamlit app
+- [ ] Update plot functions for Streamlit app
 - [X] Refactor code for maintainability (I think I understand classes!)
 
 Thanks for your interest! 
