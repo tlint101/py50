@@ -231,7 +231,7 @@ class Stats:
                 value2 = value2.iloc[:min_length]
 
                 # Perform Wilcoxon signed-rank test
-                result = pg.mwu(x=value1, y=value2, correction=True)
+                result = pg.mwu(x=value1, y=value2)
 
                 # Store the results in the list
                 key = f"{group1}-{group2}"
@@ -248,6 +248,60 @@ class Stats:
         result_df = pd.DataFrame(results_list)
 
         return result_df
+
+    @staticmethod
+    def get_mannu_test(df, group_col=None, value_col=None, subgroup=None, **kwargs):
+        if subgroup:
+            # Convert 'Name' and 'Status' columns to string
+            df[group_col] = df[group_col].astype(str)
+            df[subgroup] = df[subgroup].astype(str)
+            df["subgroup"] = df[group_col] + "-" + df[subgroup]
+
+            subgroup_list = df["subgroup"].unique().tolist()
+            subgroup_df = df[df["subgroup"].isin(subgroup_list)].copy()
+
+            for item in subgroup_list:
+                group_df = subgroup_df[subgroup_df[subgroup] == item]
+
+                # Get unique pairs from group
+                group = subgroup_df["subgroup"].unique()
+
+            # Empty list to store results
+            results_list = []
+            for i in range(len(group)):
+                for j in range(i + 1, len(group)):
+                    group1 = group[i]
+                    group2 = group[j]
+                    value1 = df[df["subgroup"] == group1][value_col]
+                    value2 = df[df["subgroup"] == group2][value_col]
+                    # Ensure same length for each condition
+                    min_length = min(len(value1), len(value2))
+                    value1 = value1.iloc[:min_length]
+                    value2 = value2.iloc[:min_length]
+                    # Perform Wilcoxon signed-rank test
+                    result = pg.mwu(x=value1, y=value2, **kwargs)
+                    # Store the results in the list
+                    key = f"{group1}-{group2}"
+                    results_list.append(
+                        {
+                            "A": group1,
+                            "B": group2,
+                            "U-val": result["U-val"].iloc[0],
+                            "p-val": result["p-val"].iloc[0],
+                            "RBC": result["RBC"].iloc[0],
+                            "CLES": result["CLES"].iloc[0],
+                        }
+                    )
+            # Convert the list of dictionaries to a DataFrame
+            result_df = pd.DataFrame(results_list)
+
+            # Split values into and separate by comma
+            result_df["A"] = result_df["A"].apply(lambda x: tuple(x.split("-")))
+            result_df["B"] = result_df["B"].apply(lambda x: tuple(x.split("-")))
+
+            return result_df
+        else:
+            pass
 
     @staticmethod
     def get_kruskal(df, dv=None, between=None, detailed=False):
@@ -343,91 +397,13 @@ class Plots:
             print("Input Test Not Valid!")
 
     @staticmethod
-    def get_mannu_test(df, group_col=None, value_col=None, subgroup=None, **kwargs):
-        if subgroup:
-            # Convert 'Name' and 'Status' columns to string
-            df[group_col] = df[group_col].astype(str)
-            df[subgroup] = df[subgroup].astype(str)
-            df["subgroup"] = df[group_col] + "-" + df[subgroup]
-
-            subgroup_list = df["subgroup"].unique().tolist()
-            subgroup_df = df[df["subgroup"].isin(subgroup_list)].copy()
-
-            for item in subgroup_list:
-                group_df = subgroup_df[subgroup_df[subgroup] == item]
-
-                # Get unique pairs from group
-                group = subgroup_df["subgroup"].unique()
-
-            # Empty list to store results
-            results_list = []
-            for i in range(len(group)):
-                for j in range(i + 1, len(group)):
-                    group1 = group[i]
-                    group2 = group[j]
-                    value1 = df[df["subgroup"] == group1][value_col]
-                    value2 = df[df["subgroup"] == group2][value_col]
-                    # Ensure same length for each condition
-                    min_length = min(len(value1), len(value2))
-                    value1 = value1.iloc[:min_length]
-                    value2 = value2.iloc[:min_length]
-                    # Perform Wilcoxon signed-rank test
-                    result = pg.mwu(x=value1, y=value2, **kwargs)
-                    # Store the results in the list
-                    key = f"{group1}-{group2}"
-                    results_list.append(
-                        {
-                            "A": group1,
-                            "B": group2,
-                            "U-val": result["U-val"].iloc[0],
-                            "p-val": result["p-val"].iloc[0],
-                            "RBC": result["RBC"].iloc[0],
-                            "CLES": result["CLES"].iloc[0],
-                        }
-                    )
-            # Convert the list of dictionaries to a DataFrame
-            result_df = pd.DataFrame(results_list)
-
-            # Split values into and separate by comma
-            result_df["A"] = result_df["A"].apply(lambda x: tuple(x.split("-")))
-            result_df["B"] = result_df["B"].apply(lambda x: tuple(x.split("-")))
-
-        return result_df
-
-    @staticmethod
-    def _get_pair_hue(df, test, hue=None):
-        """Generate pairs by group_col and hue"""
-
-        # Convert filter_values to a set of tuples. Both directions are generated for checking df pairs.
-        forward_set = {tuple(x) for x in hue}
-        reverse_set = {(y, x) for (x, y) in forward_set}
-
-        # Combine columns A and B into a single column of tuples
-        df["AB"] = list(zip(df["A"], df["B"]))
-
-        # Filtering DataFrame based on filter values
-        filtered_df = (
-            df[df["AB"].isin(forward_set) | df["AB"].isin(reverse_set)]
-            .copy()
-            .reset_index(drop=True)
-        )
-        # Drop the combined column AB if not needed in the final output
-        filtered_df.drop("AB", axis=1, inplace=True)
-        return filtered_df
-
-    # Define a function to split the string and create a tuple
-    def _get_pairs(df):
-        # Convert DataFrame to a list of tuples
-        pairs = [(a, b) for a, b in zip(df["A"], df["B"])]
-        return pairs
-
-    @staticmethod
     def box_plot_test(
-        df,  # DataFrame from test
-        test=None,  # test type
+        df,
+        test=None,
         group_col=None,
         value_col=None,
         group_order=None,
+        subgroup=None,
         pair_order=None,
         pvalue_order=None,
         palette=None,
@@ -451,6 +427,7 @@ class Plots:
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxplot)
         valid_annot = utils.get_kwargs(Annotator)
+        print(valid_annot)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -473,6 +450,8 @@ class Plots:
             value_col,
             valid_sns,
             valid_annot,
+            subgroup,
+            pair_hue=None,
         )
 
         # to do need ot overwrite pairs and pvalue
@@ -483,7 +462,7 @@ class Plots:
 
         if "pair_hue" in kwargs:
             pairs = kwargs.get("pair_hue")
-            print(pairs)
+            print("pairs:", pairs)
 
         # set orientation for plot and Annotator
         if orient == "v":
@@ -493,6 +472,7 @@ class Plots:
                 y=value_col,
                 order=group_order,
                 palette=palette,
+                hue=subgroup,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -504,6 +484,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="v",
+                hue=subgroup,
                 **annot_kwargs,
             )
         elif orient == "h":
@@ -533,6 +514,7 @@ class Plots:
         # Set custom annotations and annotate
         if pvalue_order:
             pvalue = pvalue_order
+
         annotator.set_custom_annotations(pvalue)
         annotator.annotate(**annotate_kwargs)
 
@@ -580,8 +562,6 @@ class Plots:
             # Add to dictionary
             annotate_kwargs["line_offset_to_group"] = line_offset_to_group
             annotate_kwargs["line_offset"] = line_offset
-
-
 
         # Get plot variables
         pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
@@ -1169,7 +1149,15 @@ class Plots:
         return fig
 
 
-def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
+def _get_test(
+    test,
+    df=None,
+    group_col=None,
+    value_col=None,
+    subgroup=None,
+    pair_hue=None,
+    **kwargs,
+):
     """
     Function to utilize a specific statistical test. This will output the results in a dataframe and also the pvalues as
     a list. This function is primarily used for the plot functions in the stats.Plots() class.
@@ -1275,6 +1263,29 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
             parts = item.split("-")
             pairs.append((parts[0], parts[1]))
 
+    # to do tested for mannu-test. Extract and change for others
+    elif test == "mannu-test":
+        # get kwargs
+        valid_pg = utils.get_kwargs(pg.mwu)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        test_df = Stats.get_mannu_test(
+            df, group_col=group_col, value_col=value_col, subgroup=subgroup, **pg_kwargs
+        )
+        # Obtain pairs and split them from Wilcox result DF for passing into Annotator
+        if subgroup:
+            test_df = _get_pair_hue(test_df, hue=pair_hue)
+            print(test_df)
+
+        pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
+        pairs = _get_pairs(test_df, hue=pair_hue)
+        print('length of pairs:',len(pairs))
+
+        # for item in test_df["Comparison"].tolist():
+        #     parts = item.split("-")
+        #     pairs.append((parts[0], parts[1]))
+
     elif test == "para-ttest":
         # get kwargs
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
@@ -1296,11 +1307,21 @@ def _get_test(test, df=None, group_col=None, value_col=None, **kwargs):
     # elif test == "ttest":
     #     test_df = Stats.get_t_test(df, paired=False, x=None, y=None, **kwargs) # todo determine how to select column to return as list
 
-    return pvalue, test_df, pairs
+    return pvalue, test_df, pairs, subgroup
 
 
 def _plot_variables(
-    df, group_col, kwargs, pair_order, palette, test, value_col, valid_sns, valid_annot
+    df,
+    group_col,
+    kwargs,
+    pair_order,
+    palette,
+    test,
+    value_col,
+    valid_sns,
+    valid_annot,
+    subgroup=None,
+    pair_hue=None,
 ):
     """
     Output plot variables for use inside plots in Plots() class
@@ -1319,11 +1340,12 @@ def _plot_variables(
 
     # Run tests based on test parameter input
     if test is not None:
-        pvalue, test_df, pairs = _get_test(
+        pvalue, test_df, pairs, subgroup = _get_test(
             test=test,
             df=df,
             group_col=group_col,
             value_col=value_col,
+            subgroup=subgroup,
             **kwargs,
         )
     else:
@@ -1340,6 +1362,38 @@ def _plot_variables(
         pairs = pair_order
 
     return pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df
+
+def _get_pair_hue(df, hue=None):
+    """Generate pairs by group_col and hue"""
+
+    if hue is None:
+        hue = _get_pairs(df, hue)
+    else:
+        hue = hue
+    # Convert filter_values to a set of tuples. Both directions are generated for checking df pairs.
+    forward_set = {tuple(x) for x in hue}
+    reverse_set = {(y, x) for (x, y) in forward_set}
+
+    # Combine columns A and B into a single column of tuples
+    df["AB"] = list(zip(df["A"], df["B"]))
+
+    # Filtering DataFrame based on filter values
+    filtered_df = (
+        df[df["AB"].isin(forward_set) | df["AB"].isin(reverse_set)]
+        .copy()
+        .reset_index(drop=True)
+    )
+    # Drop the combined column AB if not needed in the final output
+    filtered_df.drop("AB", axis=1, inplace=True)
+    return filtered_df
+
+    # Define a function to split the string and create a tuple
+
+
+def _get_pairs(df, hue):
+    # Convert DataFrame to a list of tuples
+    pairs = [(a, b) for a, b in zip(df["A"], df["B"])]
+    return pairs
 
 
 if __name__ == "__main__":
