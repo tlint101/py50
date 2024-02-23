@@ -427,7 +427,6 @@ class Plots:
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxplot)
         valid_annot = utils.get_kwargs(Annotator)
-        print(valid_annot)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -454,15 +453,13 @@ class Plots:
             pair_hue=None,
         )
 
-        # to do need ot overwrite pairs and pvalue
-
         # Set order for groups on plot
         if group_order:
             group_order = group_order
 
+        # Set pairs for each hue/subgroup
         if "pair_hue" in kwargs:
             pairs = kwargs.get("pair_hue")
-            print("pairs:", pairs)
 
         # set orientation for plot and Annotator
         if orient == "v":
@@ -1247,44 +1244,39 @@ def _get_test(
             parts = item.split("-")
             pairs.append((parts[0], parts[1]))
 
+    # todo tested for mannu-test. Document and add for others
+    # todo condense subgroup if portion
     elif test == "mannu":
         # get kwargs
         valid_pg = utils.get_kwargs(pg.mwu)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-        # run test
-        test_df = Stats.get_mannu(
-            df, group_col=group_col, value_col=value_col, **pg_kwargs
-        )
-        pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
-        # Obtain pairs and split them from Wilcox result DF for passing into Annotator
-        pairs = []
-        for item in test_df["Comparison"].tolist():
-            parts = item.split("-")
-            pairs.append((parts[0], parts[1]))
-
-    # to do tested for mannu-test. Extract and change for others
-    elif test == "mannu-test":
-        # get kwargs
-        valid_pg = utils.get_kwargs(pg.mwu)
-        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
-
-        # run test
-        test_df = Stats.get_mannu_test(
-            df, group_col=group_col, value_col=value_col, subgroup=subgroup, **pg_kwargs
-        )
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
         if subgroup:
+            # run test
+            test_df = Stats.get_mannu_test(
+                df,
+                group_col=group_col,
+                value_col=value_col,
+                subgroup=subgroup,
+                **pg_kwargs,
+            )
+
             test_df = _get_pair_hue(test_df, hue=pair_hue)
-            print(test_df)
 
-        pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
-        pairs = _get_pairs(test_df, hue=pair_hue)
-        print('length of pairs:',len(pairs))
-
-        # for item in test_df["Comparison"].tolist():
-        #     parts = item.split("-")
-        #     pairs.append((parts[0], parts[1]))
+            pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
+            pairs = _get_pairs(test_df, hue=pair_hue)
+        else:
+            # run test
+            test_df = Stats.get_mannu(
+                df, group_col=group_col, value_col=value_col, **pg_kwargs
+            )
+            pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
+            # Obtain pairs and split them from Wilcox result DF for passing into Annotator
+            pairs = []
+            for item in test_df["Comparison"].tolist():
+                parts = item.split("-")
+                pairs.append((parts[0], parts[1]))
 
     elif test == "para-ttest":
         # get kwargs
@@ -1363,6 +1355,8 @@ def _plot_variables(
 
     return pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df
 
+
+# todo add documentation
 def _get_pair_hue(df, hue=None):
     """Generate pairs by group_col and hue"""
 
@@ -1390,6 +1384,7 @@ def _get_pair_hue(df, hue=None):
     # Define a function to split the string and create a tuple
 
 
+# Add documentation
 def _get_pairs(df, hue):
     # Convert DataFrame to a list of tuples
     pairs = [(a, b) for a, b in zip(df["A"], df["B"])]
