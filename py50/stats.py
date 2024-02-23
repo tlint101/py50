@@ -231,7 +231,7 @@ class Stats:
                 value2 = value2.iloc[:min_length]
 
                 # Perform Wilcoxon signed-rank test
-                result = pg.mwu(value1, value2, **kwargs)
+                result = pg.mwu(x=value1, y=value2, correction=True)
 
                 # Store the results in the list
                 key = f"{group1}-{group2}"
@@ -319,6 +319,7 @@ class Stats:
 
 class Plots:
 
+    # todo, if box_plot_test is successful, use initializer
     # # Initializer for future use
     # def __init__(self, df):
     #     if not isinstance(df, pd.DataFrame):
@@ -340,6 +341,193 @@ class Plots:
             )
         else:
             print("Input Test Not Valid!")
+
+    @staticmethod
+    def get_mannu_test(df, group_col=None, value_col=None, subgroup=None, **kwargs):
+        if subgroup:
+            # Convert 'Name' and 'Status' columns to string
+            df[group_col] = df[group_col].astype(str)
+            df[subgroup] = df[subgroup].astype(str)
+            df["subgroup"] = df[group_col] + "-" + df[subgroup]
+
+            subgroup_list = df["subgroup"].unique().tolist()
+            subgroup_df = df[df["subgroup"].isin(subgroup_list)].copy()
+
+            for item in subgroup_list:
+                group_df = subgroup_df[subgroup_df[subgroup] == item]
+
+                # Get unique pairs from group
+                group = subgroup_df["subgroup"].unique()
+
+            # Empty list to store results
+            results_list = []
+            for i in range(len(group)):
+                for j in range(i + 1, len(group)):
+                    group1 = group[i]
+                    group2 = group[j]
+                    value1 = df[df["subgroup"] == group1][value_col]
+                    value2 = df[df["subgroup"] == group2][value_col]
+                    # Ensure same length for each condition
+                    min_length = min(len(value1), len(value2))
+                    value1 = value1.iloc[:min_length]
+                    value2 = value2.iloc[:min_length]
+                    # Perform Wilcoxon signed-rank test
+                    result = pg.mwu(x=value1, y=value2, **kwargs)
+                    # Store the results in the list
+                    key = f"{group1}-{group2}"
+                    results_list.append(
+                        {
+                            "A": group1,
+                            "B": group2,
+                            "U-val": result["U-val"].iloc[0],
+                            "p-val": result["p-val"].iloc[0],
+                            "RBC": result["RBC"].iloc[0],
+                            "CLES": result["CLES"].iloc[0],
+                        }
+                    )
+            # Convert the list of dictionaries to a DataFrame
+            result_df = pd.DataFrame(results_list)
+
+            # Split values into and separate by comma
+            result_df["A"] = result_df["A"].apply(lambda x: tuple(x.split("-")))
+            result_df["B"] = result_df["B"].apply(lambda x: tuple(x.split("-")))
+
+        return result_df
+
+    @staticmethod
+    def _split_subgroups(df, test, hue=None):
+        "Get pairs from DataFrame"
+        if test == "ttest-between":
+            pairs = [(a, b) for a, b in zip(df["A"], df["B"])]
+            # valid_pg = utils.get_kwargs(pg.pairwise_tests)
+            # pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+            # In func, create pairs, feed into sns and Annotator
+        return pairs
+
+    # Define a function to split the string and create a tuple
+    def get_pairs(df):
+        # Convert DataFrame to a list of tuples
+        pairs = list(zip(df["A"], df["B"]))
+        return pairs
+
+    @staticmethod
+    def box_plot_test(
+        df,  # DataFrame from test
+        test=None,  # test type
+        group_col=None,
+        value_col=None,
+        group_order=None,
+        pair_order=None,
+        pvalue_order=None,
+        palette=None,
+        orient="v",
+        return_df=None,
+        **kwargs,
+    ):
+        """
+        :param df: Input DataFrame.
+        :param test: Name of test to use for calculations.
+        :param group_col: Column containing groups.
+        :param value_col: Column containing values. This is the dependent variable.
+        :param group_order: List. Order the groups for in the plot.
+        :param pair_order: List. Order of group pairs. This will modify the way the plot will be annotated.
+        :param pvalue_order: List. Order the pvalue labels. This order must match the pairorder.
+        :param palette: List. Palette used for the plot. Can be given as common color name or in hex code.
+        :param orient: Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
+        :param return_df: Boolean to return dataframe of calculated results.
+        :return:
+        """
+        # separate kwargs for sns and sns
+        valid_sns = utils.get_kwargs(sns.boxplot)
+        valid_annot = utils.get_kwargs(Annotator)
+        print(valid_annot)
+
+        # Set kwargs dictionary for line annotations
+        annotate_kwargs = {}
+        if "line_offset_to_group" in kwargs and "line_offset" in kwargs:
+            # Get kwargs from input
+            line_offset_to_group = kwargs["line_offset_to_group"]
+            line_offset = kwargs["line_offset"]
+            # Add to dictionary
+            annotate_kwargs["line_offset_to_group"] = line_offset_to_group
+            annotate_kwargs["line_offset"] = line_offset
+
+        # Get plot variables
+        pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
+            df,
+            group_col,
+            kwargs,
+            pair_order,
+            palette,
+            test,
+            value_col,
+            valid_sns,
+            valid_annot,
+        )
+
+        # to do need ot overwrite pairs and pvalue
+
+        # Set order for groups on plot
+        if group_order:
+            group_order = group_order
+
+        if "pair_hue" in kwargs:
+            pairs = kwargs.get("pair_hue")
+            print(pairs)
+
+        # set orientation for plot and Annotator
+        if orient == "v":
+            ax = sns.boxplot(
+                data=df,
+                x=group_col,
+                y=value_col,
+                order=group_order,
+                palette=palette,
+                **sns_kwargs,
+            )
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=group_col,
+                y=value_col,
+                order=group_order,
+                verbose=False,
+                orient="v",
+                **annot_kwargs,
+            )
+        elif orient == "h":
+            ax = sns.boxplot(
+                data=df,
+                x=value_col,
+                y=group_col,
+                order=group_order,
+                palette=palette,
+                **sns_kwargs,
+            )
+            # flip x and y annotations for horizontal orientation
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=df,
+                x=value_col,
+                y=group_col,
+                order=group_order,
+                verbose=False,
+                orient="h",
+                **annot_kwargs,
+            )
+        else:
+            raise ValueError("Orientation must be 'v' or 'h'!")
+
+        # Set custom annotations and annotate
+        if pvalue_order:
+            pvalue = pvalue_order
+        annotator.set_custom_annotations(pvalue)
+        annotator.annotate(**annotate_kwargs)
+
+        if return_df:
+            return test_df  # return calculated df. Change name for more description
 
     @staticmethod
     def box_plot(
@@ -384,7 +572,7 @@ class Plots:
             annotate_kwargs["line_offset"] = line_offset
 
         # Get plot variables
-        pairss, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
+        pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
             kwargs,
@@ -396,14 +584,15 @@ class Plots:
             valid_annot,
         )
 
+        # to do need ot overwrite pairs and pvalue
+
         # Set order for groups on plot
         if group_order:
             group_order = group_order
 
-        if 'pair_hue' in kwargs:
+        if "pair_hue" in kwargs:
             pairs = kwargs.get("pair_hue")
             print(pairs)
-
 
         # set orientation for plot and Annotator
         if orient == "v":
@@ -524,7 +713,7 @@ class Plots:
         ci = kwargs.pop("ci", None)
         if capsize is not None:
             sns_kwargs["capsize"] = capsize  # Update sns_kwargs with capsize
-        if ci is not None: # deprecated in newer sns version
+        if ci is not None:  # deprecated in newer sns version
             sns_kwargs["ci"] = ci
 
         print(sns_kwargs)
