@@ -395,19 +395,30 @@ class Plots:
         return result_df
 
     @staticmethod
-    def _split_subgroups(df, test, hue=None):
-        "Get pairs from DataFrame"
-        if test == "ttest-between":
-            pairs = [(a, b) for a, b in zip(df["A"], df["B"])]
-            # valid_pg = utils.get_kwargs(pg.pairwise_tests)
-            # pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
-            # In func, create pairs, feed into sns and Annotator
-        return pairs
+    def _get_pair_hue(df, test, hue=None):
+        """Generate pairs by group_col and hue"""
+
+        # Convert filter_values to a set of tuples. Both directions are generated for checking df pairs.
+        forward_set = {tuple(x) for x in hue}
+        reverse_set = {(y, x) for (x, y) in forward_set}
+
+        # Combine columns A and B into a single column of tuples
+        df["AB"] = list(zip(df["A"], df["B"]))
+
+        # Filtering DataFrame based on filter values
+        filtered_df = (
+            df[df["AB"].isin(forward_set) | df["AB"].isin(reverse_set)]
+            .copy()
+            .reset_index(drop=True)
+        )
+        # Drop the combined column AB if not needed in the final output
+        filtered_df.drop("AB", axis=1, inplace=True)
+        return filtered_df
 
     # Define a function to split the string and create a tuple
-    def get_pairs(df):
+    def _get_pairs(df):
         # Convert DataFrame to a list of tuples
-        pairs = list(zip(df["A"], df["B"]))
+        pairs = [(a, b) for a, b in zip(df["A"], df["B"])]
         return pairs
 
     @staticmethod
@@ -440,7 +451,6 @@ class Plots:
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxplot)
         valid_annot = utils.get_kwargs(Annotator)
-        print(valid_annot)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -570,6 +580,8 @@ class Plots:
             # Add to dictionary
             annotate_kwargs["line_offset_to_group"] = line_offset_to_group
             annotate_kwargs["line_offset"] = line_offset
+
+
 
         # Get plot variables
         pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
