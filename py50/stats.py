@@ -83,18 +83,18 @@ class Stats:
     #     return result_df
 
     @staticmethod
-    def get_anova(df, dv=None, between=None, **kwargs):
+    def get_anova(df, value_col=None, group_col=None, **kwargs):
         """
         Classic ANOVA
 
         :param df:
-        :param dv:
-        :param between:
+        :param value_col:
+        :param group_col:
         :param type:
         :return:
         """
 
-        result_df = pg.anova(data=df, dv=dv, between=between, **kwargs)
+        result_df = pg.anova(data=df, dv=value_col, between=group_col, **kwargs)
         return result_df
 
     # todo add welch anova
@@ -103,15 +103,15 @@ class Stats:
         pass
 
     @staticmethod
-    def get_tukey(df, dv=None, between=None, **kwargs):
+    def get_tukey(df, value_col=None, group_col=None, **kwargs):
         """
 
         :param df:
-        :param dv:
-        :param between:
+        :param value_col:
+        :param group_col:
         :return:
         """
-        result_df = pg.pairwise_tukey(data=df, dv=dv, between=between, **kwargs)
+        result_df = pg.pairwise_tukey(data=df, dv=value_col, between=group_col, **kwargs)
         return result_df
 
     @staticmethod
@@ -187,10 +187,10 @@ class Stats:
                 result = pg.wilcoxon(value1, value2, **kwargs)
 
                 # Store the results in the list
-                key = f"{group1}-{group2}"
                 results_list.append(
                     {
-                        "Comparison": key,
+                        "A": group1,
+                        "B": group2,
                         "W-val": result["W-val"].iloc[0],
                         "p-val": result["p-val"].iloc[0],
                         "RBC": result["RBC"].iloc[0],
@@ -285,12 +285,11 @@ class Stats:
                     # Perform Wilcoxon signed-rank test
                     result = pg.mwu(x=value1, y=value2)
 
-                    # todo try mirroring this section like above? A and B column
                     # Store the results in the list
-                    key = f"{group1}-{group2}"
                     results_list.append(
                         {
-                            "Comparison": key,
+                            "A": group1,
+                            "B": group2,
                             "U-val": result["U-val"].iloc[0],
                             "p-val": result["p-val"].iloc[0],
                             "RBC": result["RBC"].iloc[0],
@@ -357,7 +356,7 @@ class Stats:
         :return:
         """
         # Run tests based on test parameter input
-        # todo add options for additional test
+        # todo add options for additional test and ensure format matches
         if test == "tukey":
             matrix_df = utils.multi_group(df, group_col1, group_col2, test)
         elif test == "mannu" or test == "wilcoxon":
@@ -1054,7 +1053,7 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_tukey(df, dv=value_col, between=group_col, **pg_kwargs)
+        test_df = Stats.get_tukey(df, value_col=value_col, group_col=group_col, **pg_kwargs)
         pvalue = [utils.star_value(value) for value in test_df["p-tukey"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
@@ -1153,10 +1152,7 @@ def _get_test(
             )
             pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
             # Obtain pairs and split them from Wilcox result DF for passing into Annotator
-            pairs = []
-            for item in test_df["Comparison"].tolist():
-                parts = item.split("-")
-                pairs.append((parts[0], parts[1]))
+            pairs = _get_pairs(test_df, hue=pair_hue)
 
     elif test == "para-ttest":
         # get kwargs
