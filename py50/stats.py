@@ -203,7 +203,7 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_mannu(df, group_col=None, value_col=None, **kwargs):
+    def get_mannu(df, group_col=None, value_col=None, subgroup=None, **kwargs):
         """
         Calculate Mann-Whitney U Test
         :param df:
@@ -211,46 +211,6 @@ class Stats:
         :param value_col:
         :return:
         """
-        # Get unique pairs from group
-        group = df[group_col].unique()
-
-        # Empty list to store results
-        results_list = []
-
-        # Perform Mann-Whitney U Test signed-rank test for each pair
-        for i in range(len(group)):
-            for j in range(i + 1, len(group)):
-                group1 = group[i]
-                group2 = group[j]
-                value1 = df[df[group_col] == group1][value_col]
-                value2 = df[df[group_col] == group2][value_col]
-
-                # Ensure same length for each condition
-                min_length = min(len(value1), len(value2))
-                value1 = value1.iloc[:min_length]
-                value2 = value2.iloc[:min_length]
-
-                # Perform Wilcoxon signed-rank test
-                result = pg.mwu(x=value1, y=value2)
-
-                # Store the results in the list
-                key = f"{group1}-{group2}"
-                results_list.append(
-                    {
-                        "Comparison": key,
-                        "U-val": result["U-val"].iloc[0],
-                        "p-val": result["p-val"].iloc[0],
-                        "RBC": result["RBC"].iloc[0],
-                        "CLES": result["CLES"].iloc[0],
-                    }
-                )
-        # Convert the list of dictionaries to a DataFrame
-        result_df = pd.DataFrame(results_list)
-
-        return result_df
-
-    @staticmethod
-    def get_mannu_test(df, group_col=None, value_col=None, subgroup=None, **kwargs):
         if subgroup:
             # Convert 'Name' and 'Status' columns to string
             df[group_col] = df[group_col].astype(str)
@@ -260,11 +220,8 @@ class Stats:
             subgroup_list = df["subgroup"].unique().tolist()
             subgroup_df = df[df["subgroup"].isin(subgroup_list)].copy()
 
-            for item in subgroup_list:
-                group_df = subgroup_df[subgroup_df[subgroup] == item]
-
-                # Get unique pairs from group
-                group = subgroup_df["subgroup"].unique()
+            # Get unique pairs between group and subgroup
+            group = subgroup_df["subgroup"].unique()
 
             # Empty list to store results
             results_list = []
@@ -274,14 +231,16 @@ class Stats:
                     group2 = group[j]
                     value1 = df[df["subgroup"] == group1][value_col]
                     value2 = df[df["subgroup"] == group2][value_col]
+
                     # Ensure same length for each condition
                     min_length = min(len(value1), len(value2))
                     value1 = value1.iloc[:min_length]
                     value2 = value2.iloc[:min_length]
+
                     # Perform Wilcoxon signed-rank test
                     result = pg.mwu(x=value1, y=value2, **kwargs)
+
                     # Store the results in the list
-                    key = f"{group1}-{group2}"
                     results_list.append(
                         {
                             "A": group1,
@@ -301,7 +260,47 @@ class Stats:
 
             return result_df
         else:
-            pass
+            """
+            No subgroups found. Tests single group and values.
+            """
+            # Get unique pairs from group
+            group = df[group_col].unique()
+
+            # Empty list to store results
+            results_list = []
+
+            # Perform Mann-Whitney U Test signed-rank test for each pair
+            for i in range(len(group)):
+                for j in range(i + 1, len(group)):
+                    group1 = group[i]
+                    group2 = group[j]
+                    value1 = df[df[group_col] == group1][value_col]
+                    value2 = df[df[group_col] == group2][value_col]
+
+                    # Ensure same length for each condition
+                    min_length = min(len(value1), len(value2))
+                    value1 = value1.iloc[:min_length]
+                    value2 = value2.iloc[:min_length]
+
+                    # Perform Wilcoxon signed-rank test
+                    result = pg.mwu(x=value1, y=value2)
+
+                    # todo try mirroring this section like above? A and B column
+                    # Store the results in the list
+                    key = f"{group1}-{group2}"
+                    results_list.append(
+                        {
+                            "Comparison": key,
+                            "U-val": result["U-val"].iloc[0],
+                            "p-val": result["p-val"].iloc[0],
+                            "RBC": result["RBC"].iloc[0],
+                            "CLES": result["CLES"].iloc[0],
+                        }
+                    )
+            # Convert the list of dictionaries to a DataFrame
+            result_df = pd.DataFrame(results_list)
+
+            return result_df
 
     @staticmethod
     def get_kruskal(df, dv=None, between=None, detailed=False):
@@ -1135,7 +1134,7 @@ def _get_test(
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
         if subgroup:
             # run test
-            test_df = Stats.get_mannu_test(
+            test_df = Stats.get_mannu(
                 df,
                 group_col=group_col,
                 value_col=value_col,
