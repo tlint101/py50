@@ -97,10 +97,10 @@ class Stats:
         result_df = pg.anova(data=df, dv=value_col, between=group_col, **kwargs)
         return result_df
 
-    # todo add welch anova
     @staticmethod
-    def get_welch_anova():
-        pass
+    def get_welch_anova(df, group_col=None, value_col=None):
+        result_df = pg.welch_anova(data=df, dv=value_col, between=group_col)
+        return result_df
 
     @staticmethod
     def get_tukey(df, group_col=None, value_col=None, **kwargs):
