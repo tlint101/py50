@@ -373,13 +373,6 @@ class Stats:
 
 class Plots:
 
-    # todo, if box_plot_test is successful, use initializer
-    # # Initializer for future use
-    # def __init__(self, df):
-    #     if not isinstance(df, pd.DataFrame):
-    #         raise ValueError("Input must be a DataFrame")
-    #     self.df = df
-
     # todo update list output
     @staticmethod
     def list_test(list=True):
