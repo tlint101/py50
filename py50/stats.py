@@ -24,33 +24,33 @@ class Stats:
         pass
 
     @staticmethod
-    def get_normality(df, dv=None, group=None, **kwargs):
+    def get_normality(df, group_col=None, value_col=None, **kwargs):
         """
         Test data normality
 
         :param df:
-        :param dv:
-        :param group:
+        :param value_col:
+        :param group_col:
         :param method:
         :return:
         """
 
-        result_df = pg.normality(data=df, dv=dv, group=group, **kwargs)
+        result_df = pg.normality(data=df, dv=value_col, group=group_col, **kwargs)
         return result_df
 
     @staticmethod
-    def get_homoscedasticity(df, dv=None, group=None, **kwargs):
+    def get_homoscedasticity(df, group_col=None, value_col=None,  **kwargs):
         """
         Test for data variance.
 
         :param df:
-        :param dv:
-        :param group:
+        :param value_col:
+        :param group_col:
         :param kwargs:
         :return:
         """
 
-        result_df = pg.homoscedasticity(data=df, dv=dv, group=group, **kwargs)
+        result_df = pg.homoscedasticity(data=df, dv=value_col, group=group_col, **kwargs)
         return result_df
 
     """
@@ -83,7 +83,7 @@ class Stats:
     #     return result_df
 
     @staticmethod
-    def get_anova(df, value_col=None, group_col=None, **kwargs):
+    def get_anova(df, group_col=None, value_col=None, **kwargs):
         """
         Classic ANOVA
 
@@ -103,7 +103,7 @@ class Stats:
         pass
 
     @staticmethod
-    def get_tukey(df, value_col=None, group_col=None, **kwargs):
+    def get_tukey(df, group_col=None, value_col=None, **kwargs):
         """
 
         :param df:
@@ -115,39 +115,40 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_gameshowell(df, dv=None, between=None, **kwargs):
-        result_df = pg.pairwise_gameshowell(data=df, dv=dv, between=between, **kwargs)
+    def get_gameshowell(df, group_col=None, value_col=None, **kwargs):
+        result_df = pg.pairwise_gameshowell(data=df, dv=value_col, between=group_col, **kwargs)
         return result_df
 
     @staticmethod
-    def get_rm_anova(df, dv=None, within=None, subject=None, **kwargs):
+    def get_rm_anova(df, value_col=None, within=None, subject=None, **kwargs):
         "Repeated measures anova"
         result_df = pg.rm_anova(
-            data=df, dv=dv, within=within, subject=subject, **kwargs
+            data=df, dv=value_col, within=within, subject=subject, **kwargs
         )
         return result_df
 
+    # todo add if/else for between and within. Rename as "factor"
     @staticmethod
-    def get_pairwise_test(df, dv=None, between=None, within=None, **kwargs):
+    def get_pairwise_test(df, value_col=None, between=None, within=None, **kwargs):
         """
         Calculate pairwise_tests
         :param within:
         :param df:
-        :param dv:
+        :param value_col:
         :param between:
         :param effsize:
         :param kwargs:
         :return:
         """
         result_df = pg.pairwise_tests(
-            data=df, dv=dv, between=between, within=within, **kwargs
+            data=df, dv=value_col, between=between, within=within, **kwargs
         )
         return result_df
 
     @staticmethod
-    def get_mixed_anova(df, dv=None, within=None, subject=None, **kwargs):
+    def get_mixed_anova(df, value_col=None, within=None, subject=None, **kwargs):
         result_df = pg.mixed_anova(
-            data=df, dv=dv, within=within, subject=subject, **kwargs
+            data=df, dv=value_col, within=within, subject=subject, **kwargs
         )
         return result_df
 
@@ -302,7 +303,7 @@ class Stats:
             return result_df
 
     @staticmethod
-    def get_kruskal(df, dv=None, between=None, detailed=False):
+    def get_kruskal(df, group_col=None, value_col=None, detailed=False):
         """
         Calculate Mann-Whitney U Test
         :param df:
@@ -310,9 +311,10 @@ class Stats:
         :param value_col:
         :return:
         """
-        result_df = pg.kruskal(data=df, dv=dv, between=between, detailed=detailed)
+        result_df = pg.kruskal(data=df, dv=value_col, between=group_col, detailed=detailed)
         return result_df
 
+    # todo add if/else for between and within. Rename as "factor"
     @staticmethod
     def get_nonpara_test(
         df, dv=None, between=None, within=None, parametric=True, **kwargs
@@ -1064,7 +1066,7 @@ def _get_test(
 
         # run test
         test_df = Stats.get_gameshowell(
-            df, dv=value_col, between=group_col, **pg_kwargs
+            df, value_col=value_col, group_col=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["pval"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
@@ -1076,7 +1078,7 @@ def _get_test(
 
         # run test
         test_df = Stats.get_pairwise_test(
-            df, dv=value_col, within=group_col, **pg_kwargs
+            df, value_col=value_col, within=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
@@ -1088,7 +1090,7 @@ def _get_test(
 
         # run test
         test_df = Stats.get_pairwise_test(
-            df, dv=value_col, between=group_col, **pg_kwargs
+            df, value_col=value_col, between=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
@@ -1102,7 +1104,7 @@ def _get_test(
 
         # run test
         test_df = Stats.get_pairwise_test(
-            df, dv=value_col, between=group_col, within=group_col, **pg_kwargs
+            df, value_col=value_col, between=group_col, within=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
@@ -1167,7 +1169,7 @@ def _get_test(
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
     elif test == "kruskal":  # kurskal does not give posthoc. modify
-        test_df = Stats.get_kruskal(df, dv=value_col, between=group_col, detailed=False)
+        test_df = Stats.get_kruskal(df, value_col=value_col, group_col=group_col, detailed=False)
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
     else:
         raise ValueError("Test not recognized!")
