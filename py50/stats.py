@@ -428,14 +428,14 @@ class Stats:
     """
 
     @staticmethod
-    def get_p_matrix(df, test=None, group_col1=None, group_col2=None):
+    def get_p_matrix(df, test=None, group_col1=None, group_col2=None, **kwargs):
         """
         Convert dataframe results into a matrix. Group columns must be indicated. Group 2 is optional and depends on test
         used (i.e. pairwise vs Mann-Whitney U). Final DataFrame output can be used with the Plots.p_matrix() function to
         generate a heatmap of p-values.
         :param df:
-        :param group1:
-        :param group2:
+        :param group_col2:
+        :param group_col1:
         :param test:
         :param kwargs:
         :return:
