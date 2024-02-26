@@ -297,8 +297,8 @@ class Stats:
                 # Store the results in the list
                 results_list.append(
                     {
-                        "A": f'{group1}-{subgroup1}',
-                        "B": f'{group2}-{subgroup2}',
+                        "A": f"{group1}-{subgroup1}",
+                        "B": f"{group2}-{subgroup2}",
                         "U-val": result["U-val"].iloc[0],
                         "p-val": result["p-val"].iloc[0],
                         "RBC": result["RBC"].iloc[0],
@@ -526,16 +526,20 @@ class Plots:
             valid_sns,
             valid_annot,
             subgroup,
-            pair_hue=None,
+            pair_hue=None,  # doublecheck this one
         )
 
         # Set order for groups on plot
         if group_order:
             group_order = group_order
 
+        print('This is the group order:', group_order)
+
         # Set pairs for each hue/subgroup
         if "pair_hue" in kwargs:
             pairs = kwargs.get("pair_hue")
+
+            print('this is the pairs:', pairs)
 
         # set orientation for plot and Annotator
         if orient == "v":
@@ -587,6 +591,7 @@ class Plots:
         # Set custom annotations and annotate
         if pvalue_order:
             pvalue = pvalue_order
+            print('this is the pvalue_order:', pvalue_order)
 
         annotator.set_custom_annotations(pvalue)
         annotator.annotate(**annotate_kwargs)
@@ -1221,9 +1226,10 @@ def _get_test(
                 **pg_kwargs,
             )
 
-            test_df = _get_pair_hue(test_df, hue=pair_hue)
+            test_df = _get_pair_subgroup(test_df, hue=pair_hue)
 
             pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
+            print("this is the pvalue:", pvalue)
             pairs = _get_pairs(test_df, hue=pair_hue)
         else:
             # run test
@@ -1231,7 +1237,7 @@ def _get_test(
                 df, group_col=group_col, value_col=value_col, **pg_kwargs
             )
             pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
-            # Obtain pairs and split them from Wilcox result DF for passing into Annotator
+            # Obtain pairs and split them from test_df for passing into Annotator
             pairs = _get_pairs(test_df, hue=pair_hue)
 
     elif test == "para-ttest":
@@ -1315,13 +1321,14 @@ def _plot_variables(
 
 
 # todo add documentation
-def _get_pair_hue(df, hue=None):
+def _get_pair_subgroup(df, hue=None):
     """Generate pairs by group_col and hue"""
 
     if hue is None:
         hue = _get_pairs(df, hue)
     else:
         hue = hue
+    print("this is the hue", hue)
     # Convert filter_values to a set of tuples. Both directions are generated for checking df pairs.
     forward_set = {tuple(x) for x in hue}
     reverse_set = {(y, x) for (x, y) in forward_set}
@@ -1335,6 +1342,29 @@ def _get_pair_hue(df, hue=None):
         .copy()
         .reset_index(drop=True)
     )
+
+    # todo wrap below into a function - def sorting()
+    # Create a dictionary to map each tuple to its index in the sorting order
+    sorting_dict = {t: i for i, t in enumerate(hue)}
+
+    # Define a function to get the sorting index for each row
+    def get_sorting_index(row):
+        return sorting_dict.get(row["AB"], float("inf"))
+
+    # Apply the sorting function to create a new column with sorting indices
+    df["sorting_index"] = df.apply(get_sorting_index, axis=1)
+
+    # Sort the DataFrame based on the sorting index
+    df_sorted = df.sort_values(by="sorting_index")
+
+    # reset index
+    df_sorted.reset_index(drop=True, inplace=True)
+
+    # Drop the temporary sorting index column
+    df_sorted.drop(columns="sorting_index", inplace=True)
+
+    print(filtered_df)
+
     # Drop the combined column AB if not needed in the final output
     filtered_df.drop("AB", axis=1, inplace=True)
     return filtered_df
