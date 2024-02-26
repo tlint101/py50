@@ -3,6 +3,7 @@ Script to calculate statistics.
 """
 
 import pandas as pd
+from itertools import combinations
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scikit_posthocs as sp
@@ -274,34 +275,65 @@ class Stats:
             # Get unique pairs between group and subgroup
             group = subgroup_df["subgroup"].unique()
 
-            # Empty list to store results
+            # From unique items in group list, generate pairs
+            pairs = list(combinations(group, 2))
+
             results_list = []
-            for i in range(len(group)):
-                for j in range(i + 1, len(group)):
-                    group1 = group[i]
-                    group2 = group[j]
-                    value1 = df[df["subgroup"] == group1][value_col]
-                    value2 = df[df["subgroup"] == group2][value_col]
+            for pair in pairs:
+                # Get items from pair list and split by hyphen
+                group1, subgroup1 = pair[0].split("-")
+                group2, subgroup2 = pair[1].split("-")
 
-                    # Ensure same length for each condition
-                    min_length = min(len(value1), len(value2))
-                    value1 = value1.iloc[:min_length]
-                    value2 = value2.iloc[:min_length]
+                result = pg.mwu(
+                    df[(df[group_col] == group1) & (df[subgroup] == subgroup1)][
+                        value_col
+                    ],
+                    df[(df[group_col] == group2) & (df[subgroup] == subgroup2)][
+                        value_col
+                    ],
+                    alternative="two-sided",
+                )
 
-                    # Perform Wilcoxon signed-rank test
-                    result = pg.mwu(x=value1, y=value2, **kwargs)
+                # Store the results in the list
+                results_list.append(
+                    {
+                        "A": f'{group1}-{subgroup1}',
+                        "B": f'{group2}-{subgroup2}',
+                        "U-val": result["U-val"].iloc[0],
+                        "p-val": result["p-val"].iloc[0],
+                        "RBC": result["RBC"].iloc[0],
+                        "CLES": result["CLES"].iloc[0],
+                    }
+                )
 
-                    # Store the results in the list
-                    results_list.append(
-                        {
-                            "A": group1,
-                            "B": group2,
-                            "U-val": result["U-val"].iloc[0],
-                            "p-val": result["p-val"].iloc[0],
-                            "RBC": result["RBC"].iloc[0],
-                            "CLES": result["CLES"].iloc[0],
-                        }
-                    )
+            # # Empty list to store results
+            # results_list = []
+            # for i in range(len(group)):
+            #     for j in range(i + 1, len(group)):
+            #         group1 = group[i]
+            #         group2 = group[j]
+            #         value1 = df[df["subgroup"] == group1][value_col]
+            #         value2 = df[df["subgroup"] == group2][value_col]
+            #
+            #         # Ensure same length for each condition
+            #         min_length = min(len(value1), len(value2))
+            #         value1 = value1.iloc[:min_length]
+            #         value2 = value2.iloc[:min_length]
+            #
+            #         # Perform Wilcoxon signed-rank test
+            #         result = pg.mwu(x=value1, y=value2, **kwargs)
+            #
+            #         # Store the results in the list
+            #         results_list.append(
+            #             {
+            #                 "A": group1,
+            #                 "B": group2,
+            #                 "U-val": result["U-val"].iloc[0],
+            #                 "p-val": result["p-val"].iloc[0],
+            #                 "RBC": result["RBC"].iloc[0],
+            #                 "CLES": result["CLES"].iloc[0],
+            #             }
+            #         )
             # Convert the list of dictionaries to a DataFrame
             result_df = pd.DataFrame(results_list)
 
