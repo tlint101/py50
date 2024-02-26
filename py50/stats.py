@@ -105,6 +105,36 @@ class Stats:
         return result_df
 
     @staticmethod
+    def get_rm_anova(df, value_col=None, within=None, subject=None, **kwargs):
+        "Repeated measures anova"
+        result_df = pg.rm_anova(
+            data=df, dv=value_col, within=within, subject=subject, **kwargs
+        )
+        return result_df
+
+    @staticmethod
+    def get_mixed_anova(
+        df, group_col, value_col=None, factor="between", subject=None, **kwargs
+    ):
+        global between, within
+        try:
+            if factor == "between":
+                between = group_col
+                within = None
+            elif factor == "within":
+                between = None
+                within = group_col
+            else:
+                print("factor must be between or within")
+        except ValueError as e:
+            print("An error occurred:", e)
+
+        result_df = pg.mixed_anova(
+            data=df, dv=value_col, within=within, subject=subject, **kwargs
+        )
+        return result_df
+
+    @staticmethod
     def get_tukey(df, group_col=None, value_col=None, **kwargs):
         """
 
@@ -125,15 +155,6 @@ class Stats:
         )
         return result_df
 
-    @staticmethod
-    def get_rm_anova(df, value_col=None, within=None, subject=None, **kwargs):
-        "Repeated measures anova"
-        result_df = pg.rm_anova(
-            data=df, dv=value_col, within=within, subject=subject, **kwargs
-        )
-        return result_df
-
-    # todo test pairwise and mixed_anova()
     @staticmethod
     def get_pairwise_test(
         df, group_col=None, value_col=None, factor="between", **kwargs
@@ -167,29 +188,23 @@ class Stats:
         )
         return result_df
 
-    @staticmethod
-    def get_mixed_anova(df, group_col, value_col=None, factor="between", subject=None, **kwargs):
-        global between, within
-        try:
-            if factor == "between":
-                between = group_col
-                within = None
-            elif factor == "within":
-                between = None
-                within = group_col
-            else:
-                print("factor must be between or within")
-        except ValueError as e:
-            print("An error occurred:", e)
-
-        result_df = pg.mixed_anova(
-            data=df, dv=value_col, within=within, subject=subject, **kwargs
-        )
-        return result_df
-
     """
     non-parametric tests below
     """
+
+    @staticmethod
+    def get_kruskal(df, group_col=None, value_col=None, detailed=False):
+        """
+        Calculate Mann-Whitney U Test
+        :param df:
+        :param group_col:
+        :param value_col:
+        :return:
+        """
+        result_df = pg.kruskal(
+            data=df, dv=value_col, between=group_col, detailed=detailed
+        )
+        return result_df
 
     @staticmethod
     def get_wilcoxon(df, group_col=None, value_col=None, **kwargs):
@@ -337,42 +352,41 @@ class Stats:
 
             return result_df
 
-    @staticmethod
-    def get_kruskal(df, group_col=None, value_col=None, detailed=False):
-        """
-        Calculate Mann-Whitney U Test
-        :param df:
-        :param group_col:
-        :param value_col:
-        :return:
-        """
-        result_df = pg.kruskal(
-            data=df, dv=value_col, between=group_col, detailed=detailed
-        )
-        return result_df
-
     # todo add if/else for between and within. Rename as "factor"
     @staticmethod
     def get_nonpara_test(
-        df, dv=None, between=None, within=None, parametric=True, **kwargs
+        df, value_col=None, group_col=None, factor="between", **kwargs
     ):
         """
         Posthoc test for nonparametric statistics. Used after Kruskal test.
+        By default, the parametric parameter is set as True.
         :param df:
-        :param dv:
-        :param between:
-        :param within:
-        :param parametric:
+        :param factor:
+        :param group_col:
+        :param value_col:
         :param kwargs:
         :return:
         """
 
+        global between, within
+        try:
+            if factor == "between":
+                between = group_col
+                within = None
+            elif factor == "within":
+                between = None
+                within = group_col
+            else:
+                print("factor must be between or within")
+        except ValueError as e:
+            print("An error occurred:", e)
+
         result_df = pg.pairwise_tests(
             data=df,
-            dv=dv,
+            dv=value_col,
             between=between,
             within=within,
-            parametric=parametric,
+            parametric=True,
             **kwargs,
         )
         return result_df
