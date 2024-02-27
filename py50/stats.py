@@ -480,12 +480,12 @@ class Plots:
         value_col=None,
         group_order=None,
         subgroup=None,
+        subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
         pair_order=None,
         pvalue_order=None,
         palette=None,
         orient="v",
         return_df=None,
-        # pair_hue=None,
         **kwargs,
     ):
         """
@@ -516,24 +516,22 @@ class Plots:
             annotate_kwargs["line_offset"] = line_offset
 
         # Get plot variables
-        pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
+        pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
             pair_order,
-            palette,
             test,
             value_col,
             valid_sns,
             valid_annot,
             subgroup,
+            subgroup_pairs,
             **kwargs,
         )
 
         # Set order for groups on plot
         if group_order:
             group_order = group_order
-
-        print("This is the group order:", group_order)
 
         # todo what does this do?
         # Set pairs for each hue/subgroup
@@ -543,7 +541,7 @@ class Plots:
         # if pair_hue:
         #     pairs = pair_hue
 
-        print("this is the pairs:", pairs)
+        print("\n this is the pairs:", pairs)
 
         # set orientation for plot and Annotator
         if orient == "v":
@@ -647,11 +645,10 @@ class Plots:
             annotate_kwargs["line_offset"] = line_offset
 
         # Get plot variables
-        pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
+        pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
             pair_order,
-            palette,
             test,
             value_col,
             valid_sns,
@@ -769,11 +766,10 @@ class Plots:
             annotate_kwargs["line_offset"] = line_offset
 
         # Get plot variables
-        pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
+        pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
             pair_order,
-            palette,
             test,
             value_col,
             valid_sns,
@@ -881,11 +877,10 @@ class Plots:
             annotate_kwargs["line_offset"] = line_offset
 
         # Get plot variables
-        pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
+        pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
             pair_order,
-            palette,
             test,
             value_col,
             valid_sns,
@@ -994,11 +989,10 @@ class Plots:
             annotate_kwargs["line_offset"] = line_offset
 
         # Get plot variables
-        pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
+        pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
             pair_order,
-            palette,
             test,
             value_col,
             valid_sns,
@@ -1217,6 +1211,8 @@ def _get_test(
         valid_pg = utils.get_kwargs(pg.mwu)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
+        print("\nfrom _get_test", kwargs)
+
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
         if subgroup:
             # run test
@@ -1228,14 +1224,14 @@ def _get_test(
                 **pg_kwargs,
             )
 
-            print("This is for pair_hue:", subgroup_pairs)
+            print("\nThis is for subgroup_pairs:", subgroup_pairs)
 
             # Make pairs between groups and subgroups by df
             test_df = _get_pair_subgroup(test_df, hue=subgroup_pairs)
             test_df = test_df.reset_index(drop=True)
 
             pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
-            print("this is the pvalue:", pvalue)
+            print("\nthis is the pvalue:", pvalue)
             pairs = _get_pairs(test_df, hue=subgroup_pairs)
         else:
             # run test
@@ -1276,12 +1272,12 @@ def _plot_variables(
     df,
     group_col,
     pair_order,
-    palette,
     test,
     value_col,
     valid_sns,
     valid_annot,
     subgroup=None,
+    subgroup_pairs=None,
     **kwargs,
 ):
     """
@@ -1290,7 +1286,6 @@ def _plot_variables(
     :param group_col:
     :param kwargs:
     :param pair_order:
-    :param palette:
     :param test:
     :param value_col:
     :return:
@@ -1299,7 +1294,7 @@ def _plot_variables(
     sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
     annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
-    print(kwargs)
+    print("from _plot_variables:", kwargs)
 
     # Run tests based on test parameter input
     if test is not None:
@@ -1309,6 +1304,7 @@ def _plot_variables(
             group_col=group_col,
             value_col=value_col,
             subgroup=subgroup,
+            subgroup_pairs=subgroup_pairs,
             **kwargs,
         )
     else:
@@ -1316,15 +1312,12 @@ def _plot_variables(
             "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
         )
 
-    # set default color palette
-    if palette:
-        palette = palette(palette)
-
     # set custom pair order
     if pair_order:
         pairs = pair_order
 
-    return pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df
+    # return pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df
+    return pairs, pvalue, sns_kwargs, annot_kwargs, test_df
 
 
 def _get_pair_subgroup(df, hue=None):
