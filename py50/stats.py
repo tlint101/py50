@@ -306,34 +306,6 @@ class Stats:
                     }
                 )
 
-            # # Empty list to store results
-            # results_list = []
-            # for i in range(len(group)):
-            #     for j in range(i + 1, len(group)):
-            #         group1 = group[i]
-            #         group2 = group[j]
-            #         value1 = df[df["subgroup"] == group1][value_col]
-            #         value2 = df[df["subgroup"] == group2][value_col]
-            #
-            #         # Ensure same length for each condition
-            #         min_length = min(len(value1), len(value2))
-            #         value1 = value1.iloc[:min_length]
-            #         value2 = value2.iloc[:min_length]
-            #
-            #         # Perform Wilcoxon signed-rank test
-            #         result = pg.mwu(x=value1, y=value2, **kwargs)
-            #
-            #         # Store the results in the list
-            #         results_list.append(
-            #             {
-            #                 "A": group1,
-            #                 "B": group2,
-            #                 "U-val": result["U-val"].iloc[0],
-            #                 "p-val": result["p-val"].iloc[0],
-            #                 "RBC": result["RBC"].iloc[0],
-            #                 "CLES": result["CLES"].iloc[0],
-            #             }
-            #         )
             # Convert the list of dictionaries to a DataFrame
             result_df = pd.DataFrame(results_list)
 
@@ -533,16 +505,6 @@ class Plots:
         if group_order:
             group_order = group_order
 
-        # todo what does this do?
-        # Set pairs for each hue/subgroup
-        if "pair_hue" in kwargs:
-            pairs = kwargs.get("pair_hue")
-
-        # if pair_hue:
-        #     pairs = pair_hue
-
-        print("\n this is the pairs:", pairs)
-
         # set orientation for plot and Annotator
         if orient == "v":
             ax = sns.boxplot(
@@ -590,10 +552,9 @@ class Plots:
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
-        # Set custom annotations and annotate
+        # optional input for custom annotations
         if pvalue_order:
             pvalue = pvalue_order
-            print("this is the pvalue_order:", pvalue_order)
 
         annotator.set_custom_annotations(pvalue)
         annotator.annotate(**annotate_kwargs)
@@ -1211,8 +1172,6 @@ def _get_test(
         valid_pg = utils.get_kwargs(pg.mwu)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-        print("\nfrom _get_test", kwargs)
-
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
         if subgroup:
             # run test
@@ -1224,22 +1183,20 @@ def _get_test(
                 **pg_kwargs,
             )
 
-            print("\nThis is for subgroup_pairs:", subgroup_pairs)
-
             # Make pairs between groups and subgroups by df
             test_df = _get_pair_subgroup(test_df, hue=subgroup_pairs)
             test_df = test_df.reset_index(drop=True)
 
+            # Obtain pvalues and pairs and split them from test_df for passing into Annotator
             pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
-            print("\nthis is the pvalue:", pvalue)
             pairs = _get_pairs(test_df, hue=subgroup_pairs)
         else:
             # run test
             test_df = Stats.get_mannu(
                 df, group_col=group_col, value_col=value_col, **pg_kwargs
             )
+            # Obtain pvalues and pairs and split them from test_df for passing into Annotator
             pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
-            # Obtain pairs and split them from test_df for passing into Annotator
             pairs = _get_pairs(test_df, hue=subgroup_pairs)
 
     elif test == "para-ttest":
@@ -1293,8 +1250,6 @@ def _plot_variables(
     # get kwarg for sns plot
     sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
     annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
-
-    print("from _plot_variables:", kwargs)
 
     # Run tests based on test parameter input
     if test is not None:
