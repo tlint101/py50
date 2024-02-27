@@ -1385,7 +1385,7 @@ def _get_pairs(df, hue):
 
 
 # Custom sorting function
-def _pair_sort(row, list_order):
+def _pair_sort(list_order, row):
     try:
         # Check both possible orders of the tuple
         index = list_order.index((row["A"], row["B"]))
@@ -1393,13 +1393,13 @@ def _pair_sort(row, list_order):
         try:
             index = list_order.index((row["B"], row["A"]))
         except ValueError:
-            # If the row tuple is not found in the list_order list, assign a high index
+            # If the row tuple is not found in the desired_order list, assign a high index
             index = len(list_order)
     return index
 
 # Sort the DataFrame based on the custom sorting function
 def _sort_df(df, list_order):
-    sorted_indices = df.apply(lambda row: _pair_sort(row, list_order), axis=1)
+    sorted_indices = df.apply(lambda row: _pair_sort(list_order, row), axis=1)
     return df.iloc[sorted_indices.argsort()]
 
 
