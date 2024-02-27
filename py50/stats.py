@@ -485,6 +485,7 @@ class Plots:
         palette=None,
         orient="v",
         return_df=None,
+        # pair_hue=None,
         **kwargs,
     ):
         """
@@ -518,7 +519,6 @@ class Plots:
         pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
-            kwargs,
             pair_order,
             palette,
             test,
@@ -526,7 +526,7 @@ class Plots:
             valid_sns,
             valid_annot,
             subgroup,
-            pair_hue=None,  # doublecheck this one
+            **kwargs,
         )
 
         # Set order for groups on plot
@@ -535,11 +535,15 @@ class Plots:
 
         print("This is the group order:", group_order)
 
+        # todo what does this do?
         # Set pairs for each hue/subgroup
         if "pair_hue" in kwargs:
             pairs = kwargs.get("pair_hue")
 
-            print("this is the pairs:", pairs)
+        # if pair_hue:
+        #     pairs = pair_hue
+
+        print("this is the pairs:", pairs)
 
         # set orientation for plot and Annotator
         if orient == "v":
@@ -646,13 +650,13 @@ class Plots:
         pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
-            kwargs,
             pair_order,
             palette,
             test,
             value_col,
             valid_sns,
             valid_annot,
+            **kwargs,
         )
 
         # Set order for groups on plot
@@ -768,13 +772,13 @@ class Plots:
         pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
-            kwargs,
             pair_order,
             palette,
             test,
             value_col,
             valid_sns,
             valid_annot,
+            **kwargs,
         )
 
         # Set order for groups on plot
@@ -880,13 +884,13 @@ class Plots:
         pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
-            kwargs,
             pair_order,
             palette,
             test,
             value_col,
             valid_sns,
             valid_annot,
+            **kwargs,
         )
 
         # Set order for groups on plot
@@ -993,13 +997,13 @@ class Plots:
         pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             df,
             group_col,
-            kwargs,
             pair_order,
             palette,
             test,
             value_col,
             valid_sns,
             valid_annot,
+            **kwargs,
         )
 
         # Set order for groups on plot
@@ -1114,7 +1118,7 @@ def _get_test(
     group_col=None,
     value_col=None,
     subgroup=None,
-    pair_hue=None,
+    subgroup_pairs=None,
     **kwargs,
 ):
     """
@@ -1224,13 +1228,15 @@ def _get_test(
                 **pg_kwargs,
             )
 
+            print("This is for pair_hue:", subgroup_pairs)
+
             # Make pairs between groups and subgroups by df
-            test_df = _get_pair_subgroup(test_df, hue=pair_hue)
+            test_df = _get_pair_subgroup(test_df, hue=subgroup_pairs)
             test_df = test_df.reset_index(drop=True)
 
             pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
             print("this is the pvalue:", pvalue)
-            pairs = _get_pairs(test_df, hue=pair_hue)
+            pairs = _get_pairs(test_df, hue=subgroup_pairs)
         else:
             # run test
             test_df = Stats.get_mannu(
@@ -1238,7 +1244,7 @@ def _get_test(
             )
             pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
             # Obtain pairs and split them from test_df for passing into Annotator
-            pairs = _get_pairs(test_df, hue=pair_hue)
+            pairs = _get_pairs(test_df, hue=subgroup_pairs)
 
     elif test == "para-ttest":
         # get kwargs
@@ -1269,7 +1275,6 @@ def _get_test(
 def _plot_variables(
     df,
     group_col,
-    kwargs,
     pair_order,
     palette,
     test,
@@ -1277,7 +1282,7 @@ def _plot_variables(
     valid_sns,
     valid_annot,
     subgroup=None,
-    pair_hue=None,
+    **kwargs,
 ):
     """
     Output plot variables for use inside plots in Plots() class
@@ -1293,6 +1298,8 @@ def _plot_variables(
     # get kwarg for sns plot
     sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
     annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
+
+    print(kwargs)
 
     # Run tests based on test parameter input
     if test is not None:
@@ -1327,7 +1334,6 @@ def _get_pair_subgroup(df, hue=None):
         hue = _get_pairs(df, hue)
     else:
         hue = hue
-    print("this is the hue", hue)
     # Convert filter_values to a set of tuples. Both directions are generated for checking df pairs.
     forward_set = {tuple(x) for x in hue}
     reverse_set = {(y, x) for (x, y) in forward_set}
