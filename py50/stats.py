@@ -435,42 +435,6 @@ class Stats:
                     }
                 )
 
-            # # Empty list to store results
-            # results_list = []
-            #
-            # # Perform Mann-Whitney U Test signed-rank test for each pair
-            # for i in range(len(group)):
-            #     for j in range(i + 1, len(group)):
-            #         group1 = group[i]
-            #         group2 = group[j]
-            #         value1 = df[df[group_col] == group1][value_col]
-            #         value2 = df[df[group_col] == group2][value_col]
-            #
-            #         # Ensure same length for each condition
-            #         min_length = min(len(value1), len(value2))
-            #         value1 = value1.iloc[:min_length]
-            #         value2 = value2.iloc[:min_length]
-            #
-            #         # Perform mwu
-            #         result = pg.mwu(
-            #             x=value1, y=value2, alternative=alternative, **kwargs
-            #         )
-            #
-            #         # Convert significance by pvalue
-            #         pvalue = [utils.star_value(value) for value in result["p-val"]]
-
-            # Store the results in the list
-            # results_list.append(
-            #     {
-            #         "A": group1,
-            #         "B": group2,
-            #         "U-val": result["U-val"].iloc[0],
-            #         "p-val": result["p-val"].iloc[0],
-            #         "significance": pvalue[0],
-            #         "RBC": result["RBC"].iloc[0],
-            #         "CLES": result["CLES"].iloc[0],
-            #     }
-            # )
             # Convert the list of dictionaries to a DataFrame
             result_df = pd.DataFrame(results_list)
 
