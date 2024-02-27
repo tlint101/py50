@@ -1208,8 +1208,6 @@ def _get_test(
             parts = item.split("-")
             pairs.append((parts[0], parts[1]))
 
-    # todo tested for mannu-test. Document and add for others
-    # todo condense subgroup if portion
     elif test == "mannu":
         # get kwargs
         valid_pg = utils.get_kwargs(pg.mwu)
@@ -1226,7 +1224,9 @@ def _get_test(
                 **pg_kwargs,
             )
 
+            # Make pairs between groups and subgroups by df
             test_df = _get_pair_subgroup(test_df, hue=pair_hue)
+            test_df = test_df.reset_index(drop=True)
 
             pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
             print("this is the pvalue:", pvalue)
@@ -1320,7 +1320,6 @@ def _plot_variables(
     return pairs, palette, pvalue, sns_kwargs, annot_kwargs, test_df
 
 
-# todo add documentation
 def _get_pair_subgroup(df, hue=None):
     """Generate pairs by group_col and hue"""
 
@@ -1343,49 +1342,23 @@ def _get_pair_subgroup(df, hue=None):
         .reset_index(drop=True)
     )
 
-    print(filtered_df)
-
+    # Make pairs between groups and subgroups by df
     filtered_df = _sort_df(filtered_df, hue)
-
-    # todo wrap below into a function - def sorting()
-    # # Create a dictionary to map each tuple to its index in the sorting order
-    # sorting_dict = {t: i for i, t in enumerate(hue)}
-    #
-    # # Define a function to get the sorting index for each row
-    # def get_sorting_index(row):
-    #     return sorting_dict.get(row["AB"], float("inf"))
-    #
-    # # Apply the sorting function to create a new column with sorting indices
-    # df["sorting_index"] = df.apply(get_sorting_index, axis=1)
-    #
-    # # Sort the DataFrame based on the sorting index
-    # df_sorted = df.sort_values(by="sorting_index")
-    #
-    # # reset index
-    # df_sorted.reset_index(drop=True, inplace=True)
-    #
-    # # Drop the temporary sorting index column
-    # df_sorted.drop(columns="sorting_index", inplace=True)
-    # todo delete above section. add function from juptyer
-
-    print(filtered_df)
 
     # Drop the combined column AB if not needed in the final output
     filtered_df.drop("AB", axis=1, inplace=True)
     return filtered_df
 
-    # Define a function to split the string and create a tuple
 
-
-# Add documentation
 def _get_pairs(df, hue):
-    # Convert DataFrame to a list of tuples
+    # Support function to make pairs form dataframe into a list of tuples
     pairs = [(a, b) for a, b in zip(df["A"], df["B"])]
     return pairs
 
 
 # Custom sorting function
 def _pair_sort(list_order, row):
+    # Support function to make pairs between groups and subgroups by df
     try:
         # Check both possible orders of the tuple
         index = list_order.index((row["A"], row["B"]))
@@ -1397,8 +1370,10 @@ def _pair_sort(list_order, row):
             index = len(list_order)
     return index
 
+
 # Sort the DataFrame based on the custom sorting function
 def _sort_df(df, list_order):
+    # Support function to make pairs between groups and subgroups by df
     sorted_indices = df.apply(lambda row: _pair_sort(list_order, row), axis=1)
     return df.iloc[sorted_indices.argsort()]
 
