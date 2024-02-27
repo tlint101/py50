@@ -533,13 +533,13 @@ class Plots:
         if group_order:
             group_order = group_order
 
-        print('This is the group order:', group_order)
+        print("This is the group order:", group_order)
 
         # Set pairs for each hue/subgroup
         if "pair_hue" in kwargs:
             pairs = kwargs.get("pair_hue")
 
-            print('this is the pairs:', pairs)
+            print("this is the pairs:", pairs)
 
         # set orientation for plot and Annotator
         if orient == "v":
@@ -591,7 +591,7 @@ class Plots:
         # Set custom annotations and annotate
         if pvalue_order:
             pvalue = pvalue_order
-            print('this is the pvalue_order:', pvalue_order)
+            print("this is the pvalue_order:", pvalue_order)
 
         annotator.set_custom_annotations(pvalue)
         annotator.annotate(**annotate_kwargs)
@@ -1343,25 +1343,30 @@ def _get_pair_subgroup(df, hue=None):
         .reset_index(drop=True)
     )
 
+    print(filtered_df)
+
+    filtered_df = _sort_df(filtered_df, hue)
+
     # todo wrap below into a function - def sorting()
-    # Create a dictionary to map each tuple to its index in the sorting order
-    sorting_dict = {t: i for i, t in enumerate(hue)}
-
-    # Define a function to get the sorting index for each row
-    def get_sorting_index(row):
-        return sorting_dict.get(row["AB"], float("inf"))
-
-    # Apply the sorting function to create a new column with sorting indices
-    df["sorting_index"] = df.apply(get_sorting_index, axis=1)
-
-    # Sort the DataFrame based on the sorting index
-    df_sorted = df.sort_values(by="sorting_index")
-
-    # reset index
-    df_sorted.reset_index(drop=True, inplace=True)
-
-    # Drop the temporary sorting index column
-    df_sorted.drop(columns="sorting_index", inplace=True)
+    # # Create a dictionary to map each tuple to its index in the sorting order
+    # sorting_dict = {t: i for i, t in enumerate(hue)}
+    #
+    # # Define a function to get the sorting index for each row
+    # def get_sorting_index(row):
+    #     return sorting_dict.get(row["AB"], float("inf"))
+    #
+    # # Apply the sorting function to create a new column with sorting indices
+    # df["sorting_index"] = df.apply(get_sorting_index, axis=1)
+    #
+    # # Sort the DataFrame based on the sorting index
+    # df_sorted = df.sort_values(by="sorting_index")
+    #
+    # # reset index
+    # df_sorted.reset_index(drop=True, inplace=True)
+    #
+    # # Drop the temporary sorting index column
+    # df_sorted.drop(columns="sorting_index", inplace=True)
+    # todo delete above section. add function from juptyer
 
     print(filtered_df)
 
@@ -1377,6 +1382,25 @@ def _get_pairs(df, hue):
     # Convert DataFrame to a list of tuples
     pairs = [(a, b) for a, b in zip(df["A"], df["B"])]
     return pairs
+
+
+# Custom sorting function
+def _pair_sort(row, list_order):
+    try:
+        # Check both possible orders of the tuple
+        index = list_order.index((row["A"], row["B"]))
+    except ValueError:
+        try:
+            index = list_order.index((row["B"], row["A"]))
+        except ValueError:
+            # If the row tuple is not found in the list_order list, assign a high index
+            index = len(list_order)
+    return index
+
+# Sort the DataFrame based on the custom sorting function
+def _sort_df(df, list_order):
+    sorted_indices = df.apply(lambda row: _pair_sort(row, list_order), axis=1)
+    return df.iloc[sorted_indices.argsort()]
 
 
 if __name__ == "__main__":
