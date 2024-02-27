@@ -208,54 +208,136 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_wilcoxon(df, group_col=None, value_col=None, **kwargs):
+    def get_wilcoxon(
+        df,
+        group_col=None,
+        value_col=None,
+        subgroup=None,
+        alternative="two-sided",
+        **kwargs,
+    ):
         """
         Calculate wilcoxon
         :param df:
         :param group_col:
-        :param value_col:
+        :param value_col: columns containing X and Y values for testing
         :return:
         """
-        # Get unique pairs from group
-        group = df[group_col].unique()
+        if subgroup:
+            # Convert 'Name' and 'Status' columns to string
+            df[group_col] = df[group_col].astype(str)
+            df[subgroup] = df[subgroup].astype(str)
+            df["subgroup"] = df[group_col] + "-" + df[subgroup]
 
-        # Empty list to store results
-        results_list = []
+            subgroup_list = df["subgroup"].unique().tolist()
+            subgroup_df = df[df["subgroup"].isin(subgroup_list)].copy()
 
-        # Perform Wilcoxon signed-rank test for each pair
-        for i in range(len(group)):
-            for j in range(i + 1, len(group)):
-                group1 = group[i]
-                group2 = group[j]
-                value1 = df[df[group_col] == group1][value_col]
-                value2 = df[df[group_col] == group2][value_col]
+            # Get unique pairs between group and subgroup
+            group = subgroup_df["subgroup"].unique()
 
-                # Ensure same length for each condition
-                min_length = min(len(value1), len(value2))
-                value1 = value1.iloc[:min_length]
-                value2 = value2.iloc[:min_length]
+            # From unique items in group list, generate pairs
+            pairs = list(combinations(group, 2))
+
+            results_list = []
+            for pair in pairs:
+                # Get items from pair list and split by hyphen
+                group1, subgroup1 = pair[0].split("-")
+                group2, subgroup2 = pair[1].split("-")
 
                 # Perform Wilcoxon signed-rank test
-                result = pg.wilcoxon(value1, value2, **kwargs)
+                result = pg.wilcoxon(
+                    df[(df[group_col] == group1) & (df[subgroup] == subgroup1)][
+                        value_col
+                    ],
+                    df[(df[group_col] == group2) & (df[subgroup] == subgroup2)][
+                        value_col
+                    ],
+                    alternative=alternative**kwargs,
+                )
+
+                # Convert significance by pvalue
+                pvalue = [utils.star_value(value) for value in result["p-val"]]
 
                 # Store the results in the list
                 results_list.append(
                     {
-                        "A": group1,
-                        "B": group2,
+                        "A": f"{group1}-{subgroup1}",
+                        "B": f"{group2}-{subgroup2}",
                         "W-val": result["W-val"].iloc[0],
                         "p-val": result["p-val"].iloc[0],
+                        "significance": pvalue[0],
                         "RBC": result["RBC"].iloc[0],
                         "CLES": result["CLES"].iloc[0],
                     }
                 )
-        # Convert the list of dictionaries to a DataFrame
-        result_df = pd.DataFrame(results_list)
 
-        return result_df
+            # Convert the list of dictionaries to a DataFrame
+            result_df = pd.DataFrame(results_list)
+
+            # Split values into and separate by comma
+            result_df["A"] = result_df["A"].apply(lambda x: tuple(x.split("-")))
+            result_df["B"] = result_df["B"].apply(lambda x: tuple(x.split("-")))
+
+            return result_df
+        else:
+            """
+            No subgroups found. Tests single group and values.
+            """
+            # Get unique pairs from group
+            group = df[group_col].unique()
+
+            # Empty list to store results
+            results_list = []
+
+            # Perform Wilcoxon test test for each pair
+            for i in range(len(group)):
+                for j in range(i + 1, len(group)):
+                    group1 = group[i]
+                    group2 = group[j]
+                    value1 = df[df[group_col] == group1][value_col]
+                    value2 = df[df[group_col] == group2][value_col]
+
+                    # Ensure same length for each condition
+                    min_length = min(len(value1), len(value2))
+                    value1 = value1.iloc[:min_length]
+                    value2 = value2.iloc[:min_length]
+                    print(value1)
+                    print(value2)
+
+                    # Perform Wilcoxon signed-rank test
+                    result = pg.wilcoxon(
+                        value1, value2, alternative=alternative, **kwargs
+                    )
+
+                    # Convert significance by pvalue
+                    pvalue = [utils.star_value(value) for value in result["p-val"]]
+
+                    # Store the results in the list
+                    results_list.append(
+                        {
+                            "A": group1,
+                            "B": group2,
+                            "W-val": result["W-val"].iloc[0],
+                            "p-val": result["p-val"].iloc[0],
+                            "significance": pvalue[0],
+                            "RBC": result["RBC"].iloc[0],
+                            "CLES": result["CLES"].iloc[0],
+                        }
+                    )
+            # Convert the list of dictionaries to a DataFrame
+            result_df = pd.DataFrame(results_list)
+
+            return result_df
 
     @staticmethod
-    def get_mannu(df, group_col=None, value_col=None, subgroup=None, **kwargs):
+    def get_mannu(
+        df,
+        group_col=None,
+        value_col=None,
+        subgroup=None,
+        alternative="two-sided",
+        **kwargs,
+    ):
         """
         Calculate Mann-Whitney U Test
         :param df:
@@ -284,6 +366,7 @@ class Stats:
                 group1, subgroup1 = pair[0].split("-")
                 group2, subgroup2 = pair[1].split("-")
 
+                # Perform mwu
                 result = pg.mwu(
                     df[(df[group_col] == group1) & (df[subgroup] == subgroup1)][
                         value_col
@@ -291,8 +374,11 @@ class Stats:
                     df[(df[group_col] == group2) & (df[subgroup] == subgroup2)][
                         value_col
                     ],
-                    alternative="two-sided",
+                    alternative=alternative,
                 )
+
+                # Convert significance by pvalue
+                pvalue = [utils.star_value(value) for value in result["p-val"]]
 
                 # Store the results in the list
                 results_list.append(
@@ -301,6 +387,7 @@ class Stats:
                         "B": f"{group2}-{subgroup2}",
                         "U-val": result["U-val"].iloc[0],
                         "p-val": result["p-val"].iloc[0],
+                        "significance": pvalue[0],
                         "RBC": result["RBC"].iloc[0],
                         "CLES": result["CLES"].iloc[0],
                     }
@@ -337,8 +424,13 @@ class Stats:
                     value1 = value1.iloc[:min_length]
                     value2 = value2.iloc[:min_length]
 
-                    # Perform Wilcoxon signed-rank test
-                    result = pg.mwu(x=value1, y=value2)
+                    # Perform mwu
+                    result = pg.mwu(
+                        x=value1, y=value2, alternative=alternative, **kwargs
+                    )
+
+                    # Convert significance by pvalue
+                    pvalue = [utils.star_value(value) for value in result["p-val"]]
 
                     # Store the results in the list
                     results_list.append(
@@ -347,6 +439,7 @@ class Stats:
                             "B": group2,
                             "U-val": result["U-val"].iloc[0],
                             "p-val": result["p-val"].iloc[0],
+                            "significance": pvalue[0],
                             "RBC": result["RBC"].iloc[0],
                             "CLES": result["CLES"].iloc[0],
                         }
@@ -453,7 +546,7 @@ class Plots:
         group_order=None,
         subgroup=None,
         subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
-        pair_order=None,
+        pairs=None,
         pvalue_order=None,
         palette=None,
         orient="v",
@@ -486,6 +579,8 @@ class Plots:
             # Add to dictionary
             annotate_kwargs["line_offset_to_group"] = line_offset_to_group
             annotate_kwargs["line_offset"] = line_offset
+
+        pair_order = pairs
 
         # Get plot variables
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
@@ -1075,6 +1170,7 @@ def _get_test(
     value_col=None,
     subgroup=None,
     subgroup_pairs=None,
+    pair_order=None,
     **kwargs,
 ):
     """
@@ -1196,9 +1292,12 @@ def _get_test(
             test_df = Stats.get_mannu(
                 df, group_col=group_col, value_col=value_col, **pg_kwargs
             )
+
+            test_df = _get_pair_subgroup(test_df, hue=pair_order)
+
             # Obtain pvalues and pairs and split them from test_df for passing into Annotator
             pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
-            pairs = _get_pairs(test_df, hue=subgroup_pairs)
+            pairs = _get_pairs(test_df, hue=pair_order)
 
     elif test == "para-ttest":
         # get kwargs
@@ -1243,7 +1342,7 @@ def _plot_variables(
     :param df:
     :param group_col:
     :param kwargs:
-    :param pair_order:
+    :param pair_order: input pairs. this will output which data to keep for plotting.
     :param test:
     :param value_col:
     :return:
@@ -1259,6 +1358,7 @@ def _plot_variables(
             df=df,
             group_col=group_col,
             value_col=value_col,
+            pair_order=pair_order,
             subgroup=subgroup,
             subgroup_pairs=subgroup_pairs,
             **kwargs,
@@ -1277,7 +1377,7 @@ def _plot_variables(
 
 
 def _get_pair_subgroup(df, hue=None):
-    """Generate pairs by group_col and hue"""
+    """Generate pairs by group_col and hue. Hue will designate which input rows to keep for plotting."""
 
     if hue is None:
         hue = _get_pairs(df, hue)
