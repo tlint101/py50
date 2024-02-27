@@ -535,9 +535,9 @@ class Plots:
                 y=group_col,
                 order=group_order,
                 palette=palette,
+                hue=subgroup,
                 **sns_kwargs,
             )
-            # flip x and y annotations for horizontal orientation
             annotator = Annotator(
                 ax,
                 pairs=pairs,
@@ -547,6 +547,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="h",
+                hue=subgroup,
                 **annot_kwargs,
             )
         else:
