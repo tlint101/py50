@@ -221,6 +221,8 @@ class Stats:
         :param df:
         :param group_col:
         :param value_col: columns containing X and Y values for testing
+        :param subgroup:
+        :param alternative:
         :return:
         """
         if subgroup:
@@ -252,7 +254,7 @@ class Stats:
                     df[(df[group_col] == group2) & (df[subgroup] == subgroup2)][
                         value_col
                     ],
-                    alternative=alternative**kwargs,
+                    alternative=alternative, **kwargs,
                 )
 
                 # Convert significance by pvalue
@@ -286,44 +288,39 @@ class Stats:
             # Get unique pairs from group
             group = df[group_col].unique()
 
-            # Empty list to store results
+            # From unique items in group list, generate pairs
+            pairs = list(combinations(group, 2))
+
             results_list = []
+            for pair in pairs:
+                # Get items from pair list and split by hyphen
+                group1 = pair[0]
+                group2 = pair[1]
 
-            # Perform Wilcoxon test test for each pair
-            for i in range(len(group)):
-                for j in range(i + 1, len(group)):
-                    group1 = group[i]
-                    group2 = group[j]
-                    value1 = df[df[group_col] == group1][value_col]
-                    value2 = df[df[group_col] == group2][value_col]
+                # todo add try catch here.
+                # print("Dataset is not of equal length/shape")
+                print('first:', df[(df[group_col] == group1)][value_col].shape)
+                print('second:', df[(df[group_col] == group2)][value_col].shape)
 
-                    # Ensure same length for each condition
-                    min_length = min(len(value1), len(value2))
-                    value1 = value1.iloc[:min_length]
-                    value2 = value2.iloc[:min_length]
-                    print(value1)
-                    print(value2)
+                # Perform wilcoxon
+                result = pg.wilcoxon(
+                    df[(df[group_col] == group1)][value_col],
+                    df[(df[group_col] == group2)][value_col],
+                    alternative=alternative,
+                )
+                pvalue = [utils.star_value(value) for value in result["p-val"]]
+                results_list.append(
+                    {
+                        "A": group1,
+                        "B": group2,
+                        "W-val": result["W-val"].iloc[0],
+                        "p-val": result["p-val"].iloc[0],
+                        "significance": pvalue[0],
+                        "RBC": result["RBC"].iloc[0],
+                        "CLES": result["CLES"].iloc[0],
+                    }
+                )
 
-                    # Perform Wilcoxon signed-rank test
-                    result = pg.wilcoxon(
-                        value1, value2, alternative=alternative, **kwargs
-                    )
-
-                    # Convert significance by pvalue
-                    pvalue = [utils.star_value(value) for value in result["p-val"]]
-
-                    # Store the results in the list
-                    results_list.append(
-                        {
-                            "A": group1,
-                            "B": group2,
-                            "W-val": result["W-val"].iloc[0],
-                            "p-val": result["p-val"].iloc[0],
-                            "significance": pvalue[0],
-                            "RBC": result["RBC"].iloc[0],
-                            "CLES": result["CLES"].iloc[0],
-                        }
-                    )
             # Convert the list of dictionaries to a DataFrame
             result_df = pd.DataFrame(results_list)
 
@@ -343,6 +340,8 @@ class Stats:
         :param df:
         :param group_col:
         :param value_col:
+        :param subgroup:
+        :param alternative:
         :return:
         """
         if subgroup:
