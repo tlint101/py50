@@ -194,20 +194,6 @@ class Stats:
     """
 
     @staticmethod
-    def get_kruskal(df, group_col=None, value_col=None, detailed=False):
-        """
-        Calculate Mann-Whitney U Test
-        :param df:
-        :param group_col:
-        :param value_col:
-        :return:
-        """
-        result_df = pg.kruskal(
-            data=df, dv=value_col, between=group_col, detailed=detailed
-        )
-        return result_df
-
-    @staticmethod
     def get_wilcoxon(
         df,
         group_col=None,
@@ -261,7 +247,8 @@ class Stats:
                     df[(df[group_col] == group2) & (df[subgroup] == subgroup2)][
                         value_col
                     ],
-                    alternative=alternative, **kwargs,
+                    alternative=alternative,
+                    **kwargs,
                 )
 
                 # Convert significance by pvalue
@@ -306,8 +293,8 @@ class Stats:
 
                 # todo add try catch here.
                 # print("Dataset is not of equal length/shape")
-                print('first:', df[(df[group_col] == group1)][value_col].shape)
-                print('second:', df[(df[group_col] == group2)][value_col].shape)
+                print("first:", df[(df[group_col] == group1)][value_col].shape)
+                print("second:", df[(df[group_col] == group2)][value_col].shape)
 
                 # Perform wilcoxon
                 result = pg.wilcoxon(
@@ -451,6 +438,48 @@ class Stats:
             result_df = pd.DataFrame(results_list)
 
             return result_df
+
+    @staticmethod
+    def get_kruskal(df, group_col=None, value_col=None, detailed=False):
+        """
+        Calculate Mann-Whitney U Test
+        :param df:
+        :param group_col:
+        :param value_col:
+        :return:
+        """
+        result_df = pg.kruskal(
+            data=df, dv=value_col, between=group_col, detailed=detailed
+        )
+
+        return result_df
+
+    @staticmethod
+    def get_cochran(df, group_col=None, value_col=None, subgroup_col=None):
+        """
+        Calculate Cochran Q Test. This is used when the dependent variable, or value_col, is binary.
+
+        :param df: Input dataframe
+        :param group_col: Column containing group name.
+        :param value_col: Columns containing values for testing
+        :param subgroup: Column containing subgroup name
+        :return: Pandas.DataFrame
+        """
+        if subgroup_col:
+            result_df = pg.cochran(
+                data=df, dv=value_col, within=subgroup_col, subject=group_col
+            )
+        else:
+            result_df = pg.cochran(data=df, dv=value_col, within=group_col)
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
+
+        return result_df
+
+    @staticmethod
+    def get_friedman(df, group_col=None, value_col=None):
+        pass
 
     # todo add if/else for between and within. Rename as "factor"
     @staticmethod
