@@ -217,13 +217,20 @@ class Stats:
         **kwargs,
     ):
         """
-        Calculate wilcoxon
-        :param df:
-        :param group_col:
-        :param value_col: columns containing X and Y values for testing
-        :param subgroup:
-        :param alternative:
-        :return:
+        Calculate wilcoxon tests. Data number has to be uniform to work.
+        :param df: Input dataframe
+        :param group_col: Column containing group name.
+        :param value_col: Columns containing values for testing
+        :param subgroup: Column containing subgroup name
+        :param alternative: Defines the alternative hypothesis, or tail of the test. Must be one of “two-sided”
+        (default), “greater” or “less”. See scipy.stats.wilcoxon() for more details
+
+        :return: Dataframe with the following: statspandas.DataFrame
+                'W-val': W-value
+                'alternative': tail of the test
+                'p-val': p-value
+                'RBC' : matched pairs rank-biserial correlation (effect size)
+                'CLES' : common language effect size
         """
         if subgroup:
             # Convert 'Name' and 'Status' columns to string
@@ -337,12 +344,18 @@ class Stats:
     ):
         """
         Calculate Mann-Whitney U Test
-        :param df:
-        :param group_col:
-        :param value_col:
-        :param subgroup:
-        :param alternative:
-        :return:
+        :param df: Input dataframe
+        :param group_col: Column containing group name.
+        :param value_col: Columns containing values for testing
+        :param subgroup: Column containing subgroup name
+        :param alternative: Defines the alternative hypothesis, or tail of the test. Must be one of “two-sided”
+        (default), “greater” or “less”. See scipy.stats.mannwhitneyu() for more details
+        :return: Dataframe with the following: statspandas.DataFrame
+                'W-val': W-value
+                'alternative': tail of the test
+                'p-val': p-value
+                'RBC' : matched pairs rank-biserial correlation (effect size)
+                'CLES' : common language effect size
         """
         if subgroup:
             # Convert 'Name' and 'Status' columns to string
