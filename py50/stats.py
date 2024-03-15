@@ -457,12 +457,13 @@ class Stats:
     @staticmethod
     def get_cochran(df, group_col=None, value_col=None, subgroup_col=None):
         """
-        Calculate Cochran Q Test. This is used when the dependent variable, or value_col, is binary.
+        Calculate Cochran Q Test. This is used when the dependent variable, or value_col, is binary. For details between
+        groups, posthoc test will be needed.
 
         :param df: Input dataframe
         :param group_col: Column containing group name.
         :param value_col: Columns containing values for testing
-        :param subgroup: Column containing subgroup name
+        :param subgroup_col: Column containing subgroup name
         :return: Pandas.DataFrame
         """
         if subgroup_col:
@@ -478,8 +479,29 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_friedman(df, group_col=None, value_col=None):
-        pass
+    def get_friedman(
+        df, group_col=None, value_col=None, subgroup_col=None, method="chisq"
+    ):
+        """
+        Calculate Friedman Test. Determines if distributions of two or more paired samples are equal. For details between
+        groups, posthoc test will be needed.
+
+        :param df: Input dataframe
+        :param group_col: Column containing group name.
+        :param value_col: Columns containing values for testing
+        :param subgroup_col: Column containing subgroup name
+        :param method: Statistical test to perform. Must be 'chisq' (chi-square test) or 'f' (F test). See Pingouin
+        documentation for further details
+        :return: Pandas.DataFrame
+        """
+
+        result_df = pg.friedman(df)
+
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
+
+        return result_df
 
     # todo add if/else for between and within. Rename as "factor"
     @staticmethod
