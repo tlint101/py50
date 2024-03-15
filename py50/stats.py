@@ -451,6 +451,7 @@ class Stats:
         result_df = pg.kruskal(
             data=df, dv=value_col, between=group_col, detailed=detailed
         )
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
 
         return result_df
 
@@ -480,7 +481,7 @@ class Stats:
 
     @staticmethod
     def get_friedman(
-        df, group_col=None, value_col=None, subgroup_col=None, method="chisq"
+        df=None, group_col=None, value_col=None, subgroup_col=None, method="chisq"
     ):
         """
         Calculate Friedman Test. Determines if distributions of two or more paired samples are equal. For details between
@@ -495,7 +496,9 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        result_df = pg.friedman(df)
+        result_df = pg.friedman(
+            data=df, dv=value_col, within=group_col, subject=subgroup_col, method=method
+        )
 
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
