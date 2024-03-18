@@ -506,9 +506,7 @@ class Stats:
 
         return result_df
 
-    # todo START HERE!!!!!!!!!!
-    # UPDATE NONPARA_TEST FOR POSTHOCS FOR ALL ABOVE POSTHOC TESTS
-    # todo add if/else for between and within. Rename as "factor"
+    # todo UPDATE NONPARA_TEST FOR POSTHOCS FOR ALL ABOVE POSTHOC TESTS
     @staticmethod
     def get_nonpara_test(
         df, value_col=None, group_col=None, factor="between", subgroup_col=None, **kwargs
