@@ -506,10 +506,12 @@ class Stats:
 
         return result_df
 
+    # todo START HERE!!!!!!!!!!
+    # UPDATE NONPARA_TEST FOR POSTHOCS FOR ALL ABOVE POSTHOC TESTS
     # todo add if/else for between and within. Rename as "factor"
     @staticmethod
     def get_nonpara_test(
-        df, value_col=None, group_col=None, factor="between", **kwargs
+        df, value_col=None, group_col=None, factor="between", subgroup_col=None, **kwargs
     ):
         """
         Posthoc test for nonparametric statistics. Used after Kruskal test.
@@ -525,11 +527,11 @@ class Stats:
         global between, within
         try:
             if factor == "between":
-                between = group_col
+                between = subgroup_col
                 within = None
             elif factor == "within":
                 between = None
-                within = group_col
+                within = subgroup_col
             else:
                 print("factor must be between or within")
         except ValueError as e:
@@ -540,7 +542,7 @@ class Stats:
             dv=value_col,
             between=between,
             within=within,
-            parametric=True,
+            parametric=False,
             **kwargs,
         )
         return result_df
