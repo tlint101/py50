@@ -497,7 +497,11 @@ class Stats:
         """
 
         result_df = pg.friedman(
-            data=data, dv=value_col, within=group_col, subject=subgroup_col, method=method
+            data=data,
+            dv=value_col,
+            within=group_col,
+            subject=subgroup_col,
+            method=method,
         )
 
         # Add significance asterisk
@@ -506,10 +510,15 @@ class Stats:
 
         return result_df
 
-    # todo UPDATE NONPARA_TEST FOR POSTHOCS FOR ALL ABOVE POSTHOC TESTS
+    # todo Update documentation
     @staticmethod
     def get_nonpara_test(
-        data, value_col=None, group_col=None, subgroup_col=None, parametric=True, **kwargs
+        data,
+        value_col=None,
+        group_col=None,
+        subgroup_col=None,
+        parametric=True,
+        **kwargs,
     ):
         """
         Posthoc test for nonparametric statistics. Used after Kruskal test.
@@ -531,6 +540,10 @@ class Stats:
             parametric=parametric,
             **kwargs,
         )
+
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
         return result_df
 
     """
