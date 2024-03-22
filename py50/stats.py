@@ -509,26 +509,26 @@ class Stats:
     # todo UPDATE NONPARA_TEST FOR POSTHOCS FOR ALL ABOVE POSTHOC TESTS
     @staticmethod
     def get_nonpara_test(
-        df, value_col=None, group_col=None, subgroup_col=None, **kwargs
+        data, value_col=None, group_col=None, subgroup_col=None, parametric=True, **kwargs
     ):
         """
         Posthoc test for nonparametric statistics. Used after Kruskal test.
         By default, the parametric parameter is set as True.
-        :param within:
-        :param df:
+        :param within: the subgroup
+        :param data:
         :param factor:
-        :param group_col:
+        :param group_col: the between
         :param value_col:
         :param kwargs:
         :return:
         """
 
         result_df = pg.pairwise_tests(
-            data=df,
+            data=data,
             dv=value_col,
             between=group_col,
             within=subgroup_col,
-            parametric=False,
+            parametric=parametric,
             **kwargs,
         )
         return result_df
