@@ -481,7 +481,7 @@ class Stats:
 
     @staticmethod
     def get_friedman(
-        df=None, group_col=None, value_col=None, subgroup_col=None, method="chisq"
+        data=None, group_col=None, value_col=None, subgroup_col=None, method="chisq"
     ):
         """
         Calculate Friedman Test. Determines if distributions of two or more paired samples are equal. For details between
@@ -497,7 +497,7 @@ class Stats:
         """
 
         result_df = pg.friedman(
-            data=df, dv=value_col, within=group_col, subject=subgroup_col, method=method
+            data=data, dv=value_col, within=group_col, subject=subgroup_col, method=method
         )
 
         # Add significance asterisk
@@ -509,11 +509,12 @@ class Stats:
     # todo UPDATE NONPARA_TEST FOR POSTHOCS FOR ALL ABOVE POSTHOC TESTS
     @staticmethod
     def get_nonpara_test(
-        df, value_col=None, group_col=None, factor="between", subgroup_col=None, **kwargs
+        df, value_col=None, group_col=None, subgroup_col=None, **kwargs
     ):
         """
         Posthoc test for nonparametric statistics. Used after Kruskal test.
         By default, the parametric parameter is set as True.
+        :param within:
         :param df:
         :param factor:
         :param group_col:
@@ -522,24 +523,11 @@ class Stats:
         :return:
         """
 
-        global between, within
-        try:
-            if factor == "between":
-                between = subgroup_col
-                within = None
-            elif factor == "within":
-                between = None
-                within = subgroup_col
-            else:
-                print("factor must be between or within")
-        except ValueError as e:
-            print("An error occurred:", e)
-
         result_df = pg.pairwise_tests(
             data=df,
             dv=value_col,
-            between=between,
-            within=within,
+            between=group_col,
+            within=subgroup_col,
             parametric=False,
             **kwargs,
         )
