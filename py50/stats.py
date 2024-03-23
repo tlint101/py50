@@ -614,6 +614,7 @@ class Plots:
         **kwargs,
     ):
         """
+        :param subgroup_pairs: These are the specific pairs used for the plot
         :param data: Input DataFrame.
         :param test: Name of test to use for calculations.
         :param group_col: Column containing groups.
@@ -643,6 +644,7 @@ class Plots:
         pair_order = pairs
 
         # Get plot variables
+        # If plotting more pairs than needed, issues is with the pairs
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             data,
             group_col,
@@ -1228,8 +1230,9 @@ def _get_test(
     data=None,
     group_col=None,
     value_col=None,
-    subgroup=None,
+    subgroup_col=None,
     subgroup_pairs=None,
+    subject_col=None,
     pair_order=None,
     **kwargs,
 ):
@@ -1277,14 +1280,13 @@ def _get_test(
         # run test
         test_df = Stats.get_pairwise_tests(
             data,
-            value_col=None,
-            group_col=None,
-            subgroup_col=None,
-            subject_col=None,
+            value_col=value_col,
+            group_col=group_col,
+            subgroup_col=subgroup_col,
+            subject_col=subject_col,
             parametric=True,
             **kwargs,
         )
-        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
     # todo delete ttest?
@@ -1348,13 +1350,13 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
-        if subgroup:
+        if subgroup_col:
             # run test
             test_df = Stats.get_mannu(
                 data,
                 group_col=group_col,
                 value_col=value_col,
-                subgroup=subgroup,
+                subgroup=subgroup_col,
                 **pg_kwargs,
             )
 
@@ -1400,7 +1402,7 @@ def _get_test(
     # elif test == "ttest":
     #     test_df = Stats.get_t_test(df, paired=False, x=None, y=None, **kwargs) # todo determine how to select column to return as list
 
-    return pvalue, test_df, pairs, subgroup
+    return pvalue, test_df, pairs, subgroup_col
 
 
 def _plot_variables(
@@ -1437,7 +1439,7 @@ def _plot_variables(
             group_col=group_col,
             value_col=value_col,
             pair_order=pair_order,
-            subgroup=subgroup,
+            subgroup_col=subgroup,
             subgroup_pairs=subgroup_pairs,
             **kwargs,
         )
