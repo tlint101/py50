@@ -478,7 +478,7 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_pairwise_test(
+    def get_pairwise_tests(
         data,
         value_col=None,
         group_col=None,
@@ -561,11 +561,14 @@ class Stats:
     @staticmethod
     def explain_significance():
         """
-        Print out explanation of star values.
+        Print out DataFrame containing explanations for star values.
 
-        :return:
+        :return: pandas.DataFrame
         """
+        df = pd.DataFrame({'pvalue': ['> 0.05', '< 0.05', ' < 0.01', '< 0.001', '< 0.0001'],
+            'p_value': ['No Significance (n.s.)', '*', '**', '***', '****']})
 
+        return df
 
 
 class Plots:
@@ -1265,7 +1268,7 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_pairwise_test(
+        test_df = Stats.get_pairwise_tests(
             df, value_col=value_col, within=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
@@ -1277,7 +1280,7 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_pairwise_test(
+        test_df = Stats.get_pairwise_tests(
             df, value_col=value_col, between=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
@@ -1291,7 +1294,7 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_pairwise_test(
+        test_df = Stats.get_pairwise_tests(
             df, value_col=value_col, between=group_col, within=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
