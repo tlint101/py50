@@ -488,7 +488,7 @@ class Stats:
         **kwargs,
     ):
         """
-        Posthoc test for nonparametric statistics. Used after Kruskal test.
+        Posthoc test for parametric or nonparametric statistics. Used after Kruskal test.
         By default, the parametric parameter is set as True.
         :param data: pandas.DataFrame
             Input DataFrame.
@@ -496,11 +496,17 @@ class Stats:
             Name of column containing the dependent variable.
         :param group_col: String or list with 2 elements
             Name of column containing the between-subject factors
-        :param subject_col: String or list with 2 elements
+        :param subgroup_col: String or list with 2 elements
+            Name of column containing the within-subject identifier.
+        :param subject_col: String
             Name of column containing the subject identifier. This is mandatory if group_col is used.
+        :param parametric: Boolean
+            If True (default), use the parametric ttest() function. If False, use [pingouin.wilcoxon()](https://pingouin-stats.org/build/html/generated/pingouin.wilcoxon.html#pingouin.wilcoxon) or [pingouin.mwu()](https://pingouin-stats.org/build/html/generated/pingouin.mwu.html#pingouin.mwu)
+            for paired or unpaired samples, respectively.
         :param kwargs: dict
             Additional keywords arguments that are passed to [pingouin.pairwise_tests()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tests.html#pingouin.pairwise_tests).
-        :return:
+        :return: pandas.DataFrame
+
         """
 
         result_df = pg.pairwise_tests(
@@ -547,6 +553,19 @@ class Stats:
             )
 
         return matrix_df
+
+    """
+    Function to detail significance column meaning
+    """
+
+    @staticmethod
+    def explain_significance():
+        """
+        Print out explanation of star values.
+
+        :return:
+        """
+
 
 
 class Plots:
