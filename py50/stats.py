@@ -156,39 +156,6 @@ class Stats:
         )
         return result_df
 
-    @staticmethod
-    def get_pairwise_test(
-        df, group_col=None, value_col=None, factor="between", **kwargs
-    ):
-        """
-        Calculate pairwise_tests
-        :param within:
-        :param df:
-        :param value_col:
-        :param between:
-        :param effsize:
-        :param kwargs:
-        :return:
-        """
-
-        global between, within
-        try:
-            if factor == "between":
-                between = group_col
-                within = None
-            elif factor == "within":
-                between = None
-                within = group_col
-            else:
-                print("factor must be between or within")
-        except ValueError as e:
-            print("An error occurred:", e)
-
-        result_df = pg.pairwise_tests(
-            data=df, dv=value_col, between=between, within=within, **kwargs
-        )
-        return result_df
-
     """
     non-parametric tests below
     """
@@ -510,25 +477,29 @@ class Stats:
 
         return result_df
 
-    # todo Update documentation
     @staticmethod
-    def get_nonpara_test(
+    def get_pairwise_test(
         data,
         value_col=None,
         group_col=None,
         subgroup_col=None,
+        subject_col=None,
         parametric=True,
         **kwargs,
     ):
         """
         Posthoc test for nonparametric statistics. Used after Kruskal test.
         By default, the parametric parameter is set as True.
-        :param within: the subgroup
-        :param data:
-        :param factor:
-        :param group_col: the between
-        :param value_col:
-        :param kwargs:
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String or list with 2 elements
+            Name of column containing the between-subject factors
+        :param subject_col: String or list with 2 elements
+            Name of column containing the subject identifier. This is mandatory if group_col is used.
+        :param kwargs: dict
+            Additional keywords arguments that are passed to [pingouin.pairwise_tests()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tests.html#pingouin.pairwise_tests).
         :return:
         """
 
@@ -537,6 +508,7 @@ class Stats:
             dv=value_col,
             between=group_col,
             within=subgroup_col,
+            subject=subject_col,
             parametric=parametric,
             **kwargs,
         )
