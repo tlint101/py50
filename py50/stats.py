@@ -452,14 +452,18 @@ class Stats:
     ):
         """
         Calculate Friedman Test. Determines if distributions of two or more paired samples are equal. For details between
-        groups, posthoc test will be needed.
-
-        :param df: Input dataframe
-        :param group_col: Column containing group name.
-        :param value_col: Columns containing values for testing
-        :param subgroup_col: Column containing subgroup name
-        :param method: Statistical test to perform. Must be 'chisq' (chi-square test) or 'f' (F test). See Pingouin
-        documentation for further details
+        groups, posthoc test (get_pairwise_tests(parametric=False)) will be needed.
+        :param df: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable
+        :param group_col: String
+            Name of column containing the between-subject factor.
+        :param subgroup_col: String
+            Name of column containing the subject/rater identifier
+        :param method: String
+            Statistical test to perform. Must be 'chisq' (chi-square test) or 'f' (F test). See Pingouin
+            documentation for further details
         :return: Pandas.DataFrame
         """
 
@@ -495,7 +499,7 @@ class Stats:
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String or list with 2 elements
-            Name of column containing the between-subject factors
+            Name of column containing the between-subject factors.
         :param subgroup_col: String or list with 2 elements
             Name of column containing the within-subject identifier.
         :param subject_col: String
@@ -506,7 +510,6 @@ class Stats:
         :param kwargs: dict
             Additional keywords arguments that are passed to [pingouin.pairwise_tests()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tests.html#pingouin.pairwise_tests).
         :return: pandas.DataFrame
-
         """
 
         result_df = pg.pairwise_tests(
@@ -528,6 +531,7 @@ class Stats:
     Output P-Values as a matrix in Pandas DataFrame
     """
 
+    # todo update documentation
     @staticmethod
     def get_p_matrix(df, test=None, group_col1=None, group_col2=None, **kwargs):
         """
