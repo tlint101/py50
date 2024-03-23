@@ -569,8 +569,12 @@ class Stats:
 
         :return: pandas.DataFrame
         """
-        df = pd.DataFrame({'pvalue': ['> 0.05', '< 0.05', ' < 0.01', '< 0.001', '< 0.0001'],
-            'p_value': ['No Significance (n.s.)', '*', '**', '***', '****']})
+        df = pd.DataFrame(
+            {
+                "pvalue": ["> 0.05", "< 0.05", " < 0.01", "< 0.001", "< 0.0001"],
+                "p_value": ["No Significance (n.s.)", "*", "**", "***", "****"],
+            }
+        )
 
         return df
 
@@ -595,7 +599,7 @@ class Plots:
 
     @staticmethod
     def box_plot(
-        df,
+        data,
         test=None,
         group_col=None,
         value_col=None,
@@ -610,7 +614,7 @@ class Plots:
         **kwargs,
     ):
         """
-        :param df: Input DataFrame.
+        :param data: Input DataFrame.
         :param test: Name of test to use for calculations.
         :param group_col: Column containing groups.
         :param value_col: Column containing values. This is the dependent variable.
@@ -640,7 +644,7 @@ class Plots:
 
         # Get plot variables
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            df,
+            data,
             group_col,
             pair_order,
             test,
@@ -659,7 +663,7 @@ class Plots:
         # set orientation for plot and Annotator
         if orient == "v":
             ax = sns.boxplot(
-                data=df,
+                data=data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -670,7 +674,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=df,
+                data=data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -681,7 +685,7 @@ class Plots:
             )
         elif orient == "h":
             ax = sns.boxplot(
-                data=df,
+                data=data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -692,7 +696,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=df,
+                data=data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1221,7 +1225,7 @@ class Plots:
 
 def _get_test(
     test,
-    df=None,
+    data=None,
     group_col=None,
     value_col=None,
     subgroup=None,
@@ -1234,7 +1238,7 @@ def _get_test(
     a list. This function is primarily used for the plot functions in the stats.Plots() class.
 
     :param test:
-    :param df:
+    :param data:
     :param x_axis:
     :param y_axis:
     :param kwargs:
@@ -1249,7 +1253,7 @@ def _get_test(
 
         # run test
         test_df = Stats.get_tukey(
-            df, value_col=value_col, group_col=group_col, **pg_kwargs
+            data, value_col=value_col, group_col=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-tukey"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
@@ -1261,11 +1265,29 @@ def _get_test(
 
         # run test
         test_df = Stats.get_gameshowell(
-            df, value_col=value_col, group_col=group_col, **pg_kwargs
+            data, value_col=value_col, group_col=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["pval"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
+    elif test == "pairwise":
+        valid_pg = utils.get_kwargs(pg.pairwise_tests)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        test_df = Stats.get_pairwise_tests(
+            data,
+            value_col=None,
+            group_col=None,
+            subgroup_col=None,
+            subject_col=None,
+            parametric=True,
+            **kwargs,
+        )
+        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+
+    # todo delete ttest?
     elif test == "ttest-within":
         # get kwargs
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
@@ -1273,7 +1295,7 @@ def _get_test(
 
         # run test
         test_df = Stats.get_pairwise_tests(
-            df, value_col=value_col, within=group_col, **pg_kwargs
+            data, value_col=value_col, within=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
@@ -1285,7 +1307,7 @@ def _get_test(
 
         # run test
         test_df = Stats.get_pairwise_tests(
-            df, value_col=value_col, between=group_col, **pg_kwargs
+            data, value_col=value_col, between=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
@@ -1299,7 +1321,7 @@ def _get_test(
 
         # run test
         test_df = Stats.get_pairwise_tests(
-            df, value_col=value_col, between=group_col, within=group_col, **pg_kwargs
+            data, value_col=value_col, between=group_col, within=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
@@ -1311,7 +1333,7 @@ def _get_test(
 
         # run test
         test_df = Stats.get_wilcoxon(
-            df, group_col=group_col, value_col=value_col, **pg_kwargs
+            data, group_col=group_col, value_col=value_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
@@ -1329,7 +1351,7 @@ def _get_test(
         if subgroup:
             # run test
             test_df = Stats.get_mannu(
-                df,
+                data,
                 group_col=group_col,
                 value_col=value_col,
                 subgroup=subgroup,
@@ -1346,7 +1368,7 @@ def _get_test(
         else:
             # run test
             test_df = Stats.get_mannu(
-                df, group_col=group_col, value_col=value_col, **pg_kwargs
+                data, group_col=group_col, value_col=value_col, **pg_kwargs
             )
 
             test_df = _get_pair_subgroup(test_df, hue=pair_order)
@@ -1362,14 +1384,14 @@ def _get_test(
 
         # run test
         test_df = Stats.get_nonpara_test(
-            df, dv=value_col, between=group_col, **pg_kwargs
+            data, dv=value_col, between=group_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
 
     elif test == "kruskal":  # kurskal does not give posthoc. modify
         test_df = Stats.get_kruskal(
-            df, value_col=value_col, group_col=group_col, detailed=False
+            data, value_col=value_col, group_col=group_col, detailed=False
         )
         pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
     else:
@@ -1382,7 +1404,7 @@ def _get_test(
 
 
 def _plot_variables(
-    df,
+    data,
     group_col,
     pair_order,
     test,
@@ -1395,7 +1417,7 @@ def _plot_variables(
 ):
     """
     Output plot variables for use inside plots in Plots() class
-    :param df:
+    :param data:
     :param group_col:
     :param kwargs:
     :param pair_order: input pairs. this will output which data to keep for plotting.
@@ -1411,7 +1433,7 @@ def _plot_variables(
     if test is not None:
         pvalue, test_df, pairs, subgroup = _get_test(
             test=test,
-            df=df,
+            data=data,
             group_col=group_col,
             value_col=value_col,
             pair_order=pair_order,
