@@ -25,18 +25,22 @@ class Stats:
         pass
 
     @staticmethod
-    def get_normality(df, group_col=None, value_col=None, **kwargs):
+    def get_normality(data, group_col=None, value_col=None, method='shapiro', **kwargs):
         """
-        Test data normality
+        Test data normality of dataset.
 
-        :param df:
-        :param value_col:
-        :param group_col:
-        :param method:
-        :return:
+        :param data:pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String
+            Name of columnName of column containing the grouping variable.
+        :param method: String
+            Normality test. ‘shapiro’ (default). Additional tests can be found with [pingouin.normality()](https://pingouin-stats.org/build/html/generated/pingouin.normality.html)
+        :return: Pandas.DataFrame
         """
 
-        result_df = pg.normality(data=df, dv=value_col, group=group_col, **kwargs)
+        result_df = pg.normality(data=data, dv=value_col, group=group_col, method=method, **kwargs)
         return result_df
 
     @staticmethod
@@ -453,7 +457,7 @@ class Stats:
         """
         Calculate Friedman Test. Determines if distributions of two or more paired samples are equal. For details between
         groups, posthoc test (get_pairwise_tests(parametric=False)) will be needed.
-        :param df: pandas.DataFrame
+        :param data: pandas.DataFrame
             Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable
