@@ -802,6 +802,14 @@ class Plots:
         if group_order:
             group_order = group_order
 
+        # Set title and size of plot
+        title = kwargs.pop("title", None)
+        title_fontsize = kwargs.pop("title_fontsize", None)
+
+        # Set title if provided
+        if title:
+            plt.title(title, fontsize=title_fontsize)
+
         # set orientation for plot and Annotator
         if orient == "v":
             ax = sns.boxplot(
@@ -1568,6 +1576,7 @@ def _plot_variables(
     :return:
     """
     # get kwarg for sns plot
+
     sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
     annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
