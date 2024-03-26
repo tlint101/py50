@@ -186,7 +186,7 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_tukey(data, value_col=None, group_col=None, **kwargs):
+    def get_tukey(data, value_col=None, group_col=None, effsize='hedges'):
         """
         Pairwise Tukey post-hoc test.
 
@@ -196,20 +196,34 @@ class Stats:
             Name of column containing the dependent variable.
         :param group_col: String
             Name of columnName of column containing the between factor.
-        :param kwargs: optional
-            Other options available with [pingouin.pairwise_tukey()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tukey.html)
+        :param effsize: String or None
+            Effect size. Additional methods can be found with [pingouin.pairwise_tukey()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tukey.html)
         :return: Pandas.DataFrame
         """
 
         result_df = pg.pairwise_tukey(
-            data=data, dv=value_col, between=group_col, **kwargs
+            data=data, dv=value_col, between=group_col, effsize=effsize
         )
         return result_df
 
     @staticmethod
-    def get_gameshowell(df, group_col=None, value_col=None, **kwargs):
+    def get_gameshowell(data, value_col=None, group_col=None, effsize='hedges'):
+        """
+        Pairwise Games-Howell post-hoc test
+
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String
+            Name of columnName of column containing the between factor.
+        :param effsize: String or None
+            Effect size. Additional methods can be found with [pingouin.pairwise_gameshowell()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_gameshowell.html)
+        :return: Pandas.DataFrame
+        """
+
         result_df = pg.pairwise_gameshowell(
-            data=df, dv=value_col, between=group_col, **kwargs
+            data=data, dv=value_col, between=group_col, effsize=effsize
         )
         return result_df
 
