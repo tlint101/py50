@@ -510,23 +510,28 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_cochran(df, group_col=None, value_col=None, subgroup_col=None):
+    def get_cochran(data, value_col=None, group_col=None, subgroup_col=None):
         """
         Calculate Cochran Q Test. This is used when the dependent variable, or value_col, is binary. For details between
         groups, posthoc test will be needed.
 
-        :param df: Input dataframe
-        :param group_col: Column containing group name.
-        :param value_col: Columns containing values for testing
-        :param subgroup_col: Column containing subgroup name
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String
+            Name of column containing the within factor.
+        :param subgroup_col: String
+            Name of column containing the subject identifier.
         :return: Pandas.DataFrame
         """
+
         if subgroup_col:
             result_df = pg.cochran(
-                data=df, dv=value_col, within=subgroup_col, subject=group_col
+                data=data, dv=value_col, within=subgroup_col, subject=group_col
             )
         else:
-            result_df = pg.cochran(data=df, dv=value_col, within=group_col)
+            result_df = pg.cochran(data=data, dv=value_col, within=group_col)
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
         result_df["significance"] = pvalue
