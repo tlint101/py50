@@ -162,23 +162,26 @@ class Stats:
 
     @staticmethod
     def get_mixed_anova(
-        df, group_col, value_col=None, factor="between", subject=None, **kwargs
+        data, value_col=None, group_col=None, subgroup_col=None, **kwargs
     ):
-        global between, within
-        try:
-            if factor == "between":
-                between = group_col
-                within = None
-            elif factor == "within":
-                between = None
-                within = group_col
-            else:
-                print("factor must be between or within")
-        except ValueError as e:
-            print("An error occurred:", e)
+        """
+        Mixed-design ANOVA
+
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String
+            Name of columnName of column containing the within factor.
+        :param subgroup_col: String
+            Name of columnName of column containing the subject identifier.
+        :param kwargs: optional
+            Other options available with [pingouin.mixed_anova()](https://pingouin-stats.org/build/html/generated/pingouin.mixed_anova.html)
+        :return: Pandas.DataFrame
+        """
 
         result_df = pg.mixed_anova(
-            data=df, dv=value_col, within=within, subject=subject, **kwargs
+            data=data, dv=value_col, within=group_col, subject=subgroup_col, **kwargs
         )
         return result_df
 
