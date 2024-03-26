@@ -487,16 +487,23 @@ class Stats:
             return result_df
 
     @staticmethod
-    def get_kruskal(df, group_col=None, value_col=None, detailed=False):
+    def get_kruskal(data, value_col=None, group_col=None, detailed=False):
         """
-        Calculate Mann-Whitney U Test
-        :param df:
-        :param group_col:
-        :param value_col:
-        :return:
+        Calculate Kruskal-Wallis H-test for independent samples.
+
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String
+            Name of column containing the between factor.
+        :param detailed: Boolean
+            Ouput additional details from Kruskal-Wallis H-test.
+        :return: Pandas.DataFrame
         """
+
         result_df = pg.kruskal(
-            data=df, dv=value_col, between=group_col, detailed=detailed
+            data=data, dv=value_col, between=group_col, detailed=detailed
         )
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
 
