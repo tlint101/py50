@@ -186,7 +186,7 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_tukey(data, value_col=None, group_col=None, effsize='hedges'):
+    def get_tukey(data, value_col=None, group_col=None, effsize="hedges"):
         """
         Pairwise Tukey post-hoc test.
 
@@ -207,7 +207,7 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_gameshowell(data, value_col=None, group_col=None, effsize='hedges'):
+    def get_gameshowell(data, value_col=None, group_col=None, effsize="hedges"):
         """
         Pairwise Games-Howell post-hoc test
 
@@ -234,27 +234,29 @@ class Stats:
     @staticmethod
     def get_wilcoxon(
         df,
-        group_col=None,
         value_col=None,
+        group_col=None,
         subgroup=None,
         alternative="two-sided",
         **kwargs,
     ):
         """
-        Calculate wilcoxon tests. Data number has to be uniform to work.
-        :param df: Input dataframe
-        :param group_col: Column containing group name.
-        :param value_col: Columns containing values for testing
-        :param subgroup: Column containing subgroup name
-        :param alternative: Defines the alternative hypothesis, or tail of the test. Must be one of “two-sided”
-        (default), “greater” or “less”. See scipy.stats.wilcoxon() for more details
+        Calculate wilcoxon tests. This is non-parametric version of paired T-test. Data number must be uniform to work.
 
-        :return: Dataframe with the following: statspandas.DataFrame
-                'W-val': W-value
-                'alternative': tail of the test
-                'p-val': p-value
-                'RBC' : matched pairs rank-biserial correlation (effect size)
-                'CLES' : common language effect size
+        :param df: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Columns containing values for testing.
+        :param group_col: String
+            Column containing group name.
+        :param subgroup: String
+            Column containing subgroup name.
+        :param alternative: String
+            Defines the alternative hypothesis, or tail of the test. Must be one of “two-sided”. Must be one of
+            “two-sided” (default), “greater” or “less”.
+        :param kwargs: Optional
+            Other options available with [pingouin.wilcoxon()](https://pingouin-stats.org/build/html/generated/pingouin.wilcoxon.html)
+        :return: Pandas.DataFrame
         """
         if subgroup:
             # Convert 'Name' and 'Status' columns to string
