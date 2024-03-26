@@ -118,6 +118,11 @@ class Stats:
         """
 
         result_df = pg.anova(data=data, dv=value_col, between=group_col, **kwargs)
+
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
+
         return result_df
 
     @staticmethod
@@ -135,6 +140,11 @@ class Stats:
         """
 
         result_df = pg.welch_anova(data=data, dv=value_col, between=group_col)
+
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
+
         return result_df
 
     @staticmethod
@@ -158,6 +168,11 @@ class Stats:
         result_df = pg.rm_anova(
             data=data, dv=value_col, within=group_col, subject=subgroup_col, **kwargs
         )
+
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
+
         return result_df
 
     @staticmethod
@@ -183,6 +198,11 @@ class Stats:
         result_df = pg.mixed_anova(
             data=data, dv=value_col, within=group_col, subject=subgroup_col, **kwargs
         )
+
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
+
         return result_df
 
     @staticmethod
@@ -204,6 +224,11 @@ class Stats:
         result_df = pg.pairwise_tukey(
             data=data, dv=value_col, between=group_col, effsize=effsize
         )
+
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-tukey"]]
+        result_df["significance"] = pvalue
+
         return result_df
 
     @staticmethod
@@ -225,6 +250,11 @@ class Stats:
         result_df = pg.pairwise_gameshowell(
             data=data, dv=value_col, between=group_col, effsize=effsize
         )
+
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
+
         return result_df
 
     """
@@ -341,7 +371,7 @@ class Stats:
                     df[(df[group_col] == group1)][value_col],
                     df[(df[group_col] == group2)][value_col],
                     alternative=alternative,
-                    **kwargs
+                    **kwargs,
                 )
                 pvalue = [utils.star_value(value) for value in result["p-val"]]
                 results_list.append(
@@ -358,6 +388,10 @@ class Stats:
 
             # Convert the list of dictionaries to a DataFrame
             result_df = pd.DataFrame(results_list)
+
+            # Add significance asterisk
+            pvalue = [utils.star_value(value) for value in result_df["p-val"]]
+            result_df["significance"] = pvalue
 
             return result_df
 
@@ -623,6 +657,7 @@ class Stats:
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
         result_df["significance"] = pvalue
+
         return result_df
 
     """
