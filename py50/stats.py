@@ -362,36 +362,40 @@ class Stats:
 
     @staticmethod
     def get_mannu(
-        df,
-        group_col=None,
+        data,
         value_col=None,
+        group_col=None,
         subgroup=None,
         alternative="two-sided",
         **kwargs,
     ):
         """
-        Calculate Mann-Whitney U Test
-        :param df: Input dataframe
-        :param group_col: Column containing group name.
-        :param value_col: Columns containing values for testing
-        :param subgroup: Column containing subgroup name
-        :param alternative: Defines the alternative hypothesis, or tail of the test. Must be one of “two-sided”
-        (default), “greater” or “less”. See scipy.stats.mannwhitneyu() for more details
-        :return: Dataframe with the following: statspandas.DataFrame
-                'W-val': W-value
-                'alternative': tail of the test
-                'p-val': p-value
-                'RBC' : matched pairs rank-biserial correlation (effect size)
-                'CLES' : common language effect size
+        Calculate Mann-Whitney U Test. This is a non-parametric version of the independent T-test.
+
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Columns containing values for testing.
+        :param group_col: String
+            Column containing group name.
+        :param subgroup: String
+            Column containing subgroup name.
+        :param alternative: String
+            Defines the alternative hypothesis, or tail of the test. Must be one of “two-sided”. Must be one of
+            “two-sided” (default), “greater” or “less”.
+        :param kwargs: Optional
+            Other options available with [pingouin.mwu()](https://pingouin-stats.org/build/html/generated/pingouin.mwu.html)
+        :return: Pandas.DataFrame
         """
+
         if subgroup:
             # Convert 'Name' and 'Status' columns to string
-            df[group_col] = df[group_col].astype(str)
-            df[subgroup] = df[subgroup].astype(str)
-            df["subgroup"] = df[group_col] + "-" + df[subgroup]
+            data[group_col] = data[group_col].astype(str)
+            data[subgroup] = data[subgroup].astype(str)
+            data["subgroup"] = data[group_col] + "-" + data[subgroup]
 
-            subgroup_list = df["subgroup"].unique().tolist()
-            subgroup_df = df[df["subgroup"].isin(subgroup_list)].copy()
+            subgroup_list = data["subgroup"].unique().tolist()
+            subgroup_df = data[data["subgroup"].isin(subgroup_list)].copy()
 
             # Get unique pairs between group and subgroup
             group = subgroup_df["subgroup"].unique()
@@ -407,13 +411,14 @@ class Stats:
 
                 # Perform mwu
                 result = pg.mwu(
-                    df[(df[group_col] == group1) & (df[subgroup] == subgroup1)][
+                    data[(data[group_col] == group1) & (data[subgroup] == subgroup1)][
                         value_col
                     ],
-                    df[(df[group_col] == group2) & (df[subgroup] == subgroup2)][
+                    data[(data[group_col] == group2) & (data[subgroup] == subgroup2)][
                         value_col
                     ],
                     alternative=alternative,
+                    **kwargs,
                 )
 
                 # Convert significance by pvalue
@@ -445,7 +450,7 @@ class Stats:
             No subgroups found. Tests single group and values.
             """
             # Get unique pairs from group
-            group = df[group_col].unique()
+            group = data[group_col].unique()
 
             # From unique items in group list, generate pairs
             pairs = list(combinations(group, 2))
@@ -457,9 +462,10 @@ class Stats:
                 group2 = pair[1]
                 # Perform mwu
                 result = pg.mwu(
-                    df[(df[group_col] == group1)][value_col],
-                    df[(df[group_col] == group2)][value_col],
+                    data[(data[group_col] == group1)][value_col],
+                    data[(data[group_col] == group2)][value_col],
                     alternative=alternative,
+                    **kwargs,
                 )
                 pvalue = [utils.star_value(value) for value in result["p-val"]]
                 results_list.append(
