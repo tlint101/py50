@@ -341,6 +341,7 @@ class Stats:
                     df[(df[group_col] == group1)][value_col],
                     df[(df[group_col] == group2)][value_col],
                     alternative=alternative,
+                    **kwargs
                 )
                 pvalue = [utils.star_value(value) for value in result["p-val"]]
                 results_list.append(
