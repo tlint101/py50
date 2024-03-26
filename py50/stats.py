@@ -25,7 +25,7 @@ class Stats:
         pass
 
     @staticmethod
-    def get_normality(data, group_col=None, value_col=None, method='shapiro', **kwargs):
+    def get_normality(data, value_col=None, group_col=None, method='shapiro', **kwargs):
         """
         Test data normality of dataset.
 
@@ -46,7 +46,7 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_homoscedasticity(data, group_col=None, value_col=None, method='levene', **kwargs):
+    def get_homoscedasticity(data, value_col=None, group_col=None, method='levene', **kwargs):
         """
         Test for data variance.
 
@@ -60,7 +60,7 @@ class Stats:
             Statistical test. ‘levene’ (default). Additional tests can be found with [pingouin.homoscedasticity()](https://pingouin-stats.org/build/html/generated/pingouin.homoscedasticity.html#pingouin.homoscedasticity)
         :param kwargs: optional
             Other options available with pingouin.homoscedasticity()
-        :return:
+        :return: Pandas.DataFrame
         """
 
         result_df = pg.homoscedasticity(
@@ -98,18 +98,22 @@ class Stats:
     #     return result_df
 
     @staticmethod
-    def get_anova(df, group_col=None, value_col=None, **kwargs):
+    def get_anova(data, value_col=None, group_col=None, **kwargs):
         """
-        Classic ANOVA
+        One-way and N-way ANOVA.
 
-        :param df:
-        :param value_col:
-        :param group_col:
-        :param type:
-        :return:
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String or list of strings
+            Name of columnName of column containing the grouping variable.
+        :param type: optional
+            Other options available with [pingouin.anova()](https://pingouin-stats.org/build/html/generated/pingouin.anova.html)
+        :return: Pandas.DataFrame
         """
 
-        result_df = pg.anova(data=df, dv=value_col, between=group_col, **kwargs)
+        result_df = pg.anova(data=data, dv=value_col, between=group_col, **kwargs)
         return result_df
 
     @staticmethod
