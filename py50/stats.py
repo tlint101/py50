@@ -505,7 +505,10 @@ class Stats:
         result_df = pg.kruskal(
             data=data, dv=value_col, between=group_col, detailed=detailed
         )
+
+        # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
 
         return result_df
 
@@ -532,6 +535,7 @@ class Stats:
             )
         else:
             result_df = pg.cochran(data=data, dv=value_col, within=group_col)
+
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
         result_df["significance"] = pvalue
@@ -545,6 +549,7 @@ class Stats:
         """
         Calculate Friedman Test. Determines if distributions of two or more paired samples are equal. For details between
         groups, posthoc test (get_pairwise_tests(parametric=False)) will be needed.
+
         :param data: pandas.DataFrame
             Input DataFrame.
         :param value_col: String
@@ -586,6 +591,7 @@ class Stats:
         """
         Posthoc test for parametric or nonparametric statistics. Used after Kruskal test.
         By default, the parametric parameter is set as True.
+
         :param data: pandas.DataFrame
             Input DataFrame.
         :param value_col: String
@@ -625,24 +631,30 @@ class Stats:
 
     # todo update documentation
     @staticmethod
-    def get_p_matrix(df, test=None, group_col1=None, group_col2=None, **kwargs):
+    def get_p_matrix(data, test=None, group_col1=None, group_col2=None, **kwargs):
         """
-        Convert dataframe results into a matrix. Group columns must be indicated. Group 2 is optional and depends on test
-        used (i.e. pairwise vs Mann-Whitney U). Final DataFrame output can be used with the Plots.p_matrix() function to
-        generate a heatmap of p-values.
-        :param df:
-        :param group_col2:
-        :param group_col1:
-        :param test:
+        Convert dataframe of statistic results into a matrix. Group columns must be indicated. Group 2 is optional and
+        depends on test used (i.e. pairwise vs Mann-Whitney U). Final DataFrame output can be used with the
+        Plots.p_matrix() function to generate a heatmap of p-values.
+
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param group_col1: String
+            Name of column containing the group
+        :param group_col2: String
+            Name of column containing the second group. This variable is optional.
+        :param test: String
+            Name of the test used to calculate statistics.
         :param kwargs:
         :return:
         """
+
         # Run tests based on test parameter input
         # todo add options for additional test and ensure format matches
         if test == "tukey":
-            matrix_df = utils.multi_group(df, group_col1, group_col2, test)
+            matrix_df = utils.multi_group(data, group_col1, group_col2, test)
         elif test == "mannu" or test == "wilcoxon":
-            matrix_df = utils.single_group(df=df, group_col=group_col1, test=test)
+            matrix_df = utils.single_group(df=data, group_col=group_col1, test=test)
         else:
             raise NameError(
                 "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
@@ -661,6 +673,7 @@ class Stats:
 
         :return: pandas.DataFrame
         """
+
         df = pd.DataFrame(
             {
                 "pvalue": ["> 0.05", "< 0.05", " < 0.01", "< 0.001", "< 0.0001"],
