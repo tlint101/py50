@@ -37,6 +37,8 @@ class Stats:
             Name of columnName of column containing the grouping variable.
         :param method: String
             Normality test. ‘shapiro’ (default). Additional tests can be found with [pingouin.normality()](https://pingouin-stats.org/build/html/generated/pingouin.normality.html)
+        :param kwargs: optional
+            Other options available with pingouin.normality()
         :return: Pandas.DataFrame
         """
 
@@ -44,19 +46,25 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_homoscedasticity(df, group_col=None, value_col=None, **kwargs):
+    def get_homoscedasticity(data, group_col=None, value_col=None, method='levene', **kwargs):
         """
         Test for data variance.
 
-        :param df:
-        :param value_col:
-        :param group_col:
-        :param kwargs:
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String
+            Name of columnName of column containing the grouping variable.
+        :param method: String
+            Statistical test. ‘levene’ (default). Additional tests can be found with [pingouin.homoscedasticity()](https://pingouin-stats.org/build/html/generated/pingouin.homoscedasticity.html#pingouin.homoscedasticity)
+        :param kwargs: optional
+            Other options available with pingouin.homoscedasticity()
         :return:
         """
 
         result_df = pg.homoscedasticity(
-            data=df, dv=value_col, group=group_col, **kwargs
+            data=data, dv=value_col, group=group_col, method=method, **kwargs
         )
         return result_df
 
