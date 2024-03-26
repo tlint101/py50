@@ -25,7 +25,7 @@ class Stats:
         pass
 
     @staticmethod
-    def get_normality(data, value_col=None, group_col=None, method='shapiro', **kwargs):
+    def get_normality(data, value_col=None, group_col=None, method="shapiro", **kwargs):
         """
         Test data normality of dataset.
 
@@ -42,11 +42,15 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        result_df = pg.normality(data=data, dv=value_col, group=group_col, method=method, **kwargs)
+        result_df = pg.normality(
+            data=data, dv=value_col, group=group_col, method=method, **kwargs
+        )
         return result_df
 
     @staticmethod
-    def get_homoscedasticity(data, value_col=None, group_col=None, method='levene', **kwargs):
+    def get_homoscedasticity(
+        data, value_col=None, group_col=None, method="levene", **kwargs
+    ):
         """
         Test for data variance.
 
@@ -117,8 +121,20 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_welch_anova(df, group_col=None, value_col=None):
-        result_df = pg.welch_anova(data=df, dv=value_col, between=group_col)
+    def get_welch_anova(data, value_col=None, group_col=None):
+        """
+        One-way Welch Anova
+
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String
+            Name of columnName of column containing the grouping variable.
+        :return: Pandas.DataFrame
+        """
+
+        result_df = pg.welch_anova(data=data, dv=value_col, between=group_col)
         return result_df
 
     @staticmethod
