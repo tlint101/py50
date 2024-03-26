@@ -112,7 +112,7 @@ class Stats:
             Name of column containing the dependent variable.
         :param group_col: String or list of strings
             Name of columnName of column containing the grouping variable.
-        :param type: optional
+        :param kwarts: optional
             Other options available with [pingouin.anova()](https://pingouin-stats.org/build/html/generated/pingouin.anova.html)
         :return: Pandas.DataFrame
         """
@@ -138,10 +138,25 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_rm_anova(df, value_col=None, within=None, subject=None, **kwargs):
-        "Repeated measures anova"
+    def get_rm_anova(data, value_col=None, group_col=None, subgroup_col=None, **kwargs):
+        """
+        One-way and two-way repeated measures ANOVA.
+
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String
+            Name of columnName of column containing the within factor.
+        :param subgroup_col: String
+            Name of columnName of column containing the subject identifier.
+        :param kwargs: optional
+            Other options available with [pingouin.rm_anova()](https://pingouin-stats.org/build/html/generated/pingouin.rm_anova.html)
+        :return: Pandas.DataFrame
+        """
+
         result_df = pg.rm_anova(
-            data=df, dv=value_col, within=within, subject=subject, **kwargs
+            data=data, dv=value_col, within=group_col, subject=subgroup_col, **kwargs
         )
         return result_df
 
