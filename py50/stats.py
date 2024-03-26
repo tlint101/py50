@@ -165,7 +165,7 @@ class Stats:
         data, value_col=None, group_col=None, subgroup_col=None, **kwargs
     ):
         """
-        Mixed-design ANOVA
+        Mixed-design ANOVA.
 
         :param data: pandas.DataFrame
             Input DataFrame.
@@ -186,16 +186,23 @@ class Stats:
         return result_df
 
     @staticmethod
-    def get_tukey(df, group_col=None, value_col=None, **kwargs):
+    def get_tukey(data, value_col=None, group_col=None, **kwargs):
+        """
+        Pairwise Tukey post-hoc test.
+
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String
+            Name of columnName of column containing the between factor.
+        :param kwargs: optional
+            Other options available with [pingouin.pairwise_tukey()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tukey.html)
+        :return: Pandas.DataFrame
         """
 
-        :param df:
-        :param value_col:
-        :param group_col:
-        :return:
-        """
         result_df = pg.pairwise_tukey(
-            data=df, dv=value_col, between=group_col, **kwargs
+            data=data, dv=value_col, between=group_col, **kwargs
         )
         return result_df
 
