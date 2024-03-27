@@ -673,7 +673,7 @@ class Stats:
         Plots.p_matrix() function to generate a heatmap of p-values.
 
         :param data: pandas.DataFrame
-            Input DataFrame.
+            Input DataFrame. Must be of already comptued test results.
         :param group_col1: String
             Name of column containing the group
         :param group_col2: String
@@ -1326,21 +1326,22 @@ class Plots:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
-    def p_matrix(matrix_df, cmap=None, title=None, title_size=14, **kwargs):
+    def p_matrix(matrix_df, cmap=None, title=None, title_fontsize=14, **kwargs):
         """
         Wrapper function for scikit_posthoc heatmap.
         :return:
         """
         if title:
-            plt.title(title, fontsize=title_size)
+            plt.title(title, fontsize=title_fontsize)
 
         if cmap is None:
-            cmap = ["1", "#fb6a4a", "#08306b", "#4292c6", "#c6dbef"]
-            sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
+            cmap = ["1", "#fbd7d4", "#005a32", "#238b45", "#a1d99b"]
+            fig = sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
         else:
-            sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
+            fig = sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
 
-        return plt
+        # Display plot
+        return fig
 
     @staticmethod
     def ttest_bar_plot():
