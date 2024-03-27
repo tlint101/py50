@@ -1329,7 +1329,17 @@ class Plots:
     def p_matrix(matrix_df, cmap=None, title=None, title_fontsize=14, **kwargs):
         """
         Wrapper function for scikit_posthoc heatmap.
-        :return:
+
+        :param matrix_df: Pandas.Dataframe
+            Input table must be a matrix calculated using the stats.get_p_matrix()
+        :param cmap: List
+            A list of colors. Can be color names or hex codes
+        :param title: String
+            Input title for figure
+        :param title_fontsize: Int
+            Set size of figure legend
+
+        :return: Pyplot figure
         """
         if title:
             plt.title(title, fontsize=title_fontsize)
