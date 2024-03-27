@@ -1363,19 +1363,31 @@ class Plots:
     """
 
     @staticmethod
-    def distribution(df, val_col=None, type="histplot", **kwargs):
+    def distribution(data, val_col=None, type="histplot", **kwargs):
         """
 
-        :param df:
-        :param val_col:
-        :param type:
-        :param kwargs: key-word arguments for seaborn or matplotlib plotting. Arguments depend on test type.
-        :return:
+        :param data: Pandas.Dataframe
+            Input data.
+        :param val_col: String
+            The name of the column containing the dependent variable.
+        :param type: String
+            The type of figure drawn. For distribution, only "histplot" or "qqplot" supported
+        :param kwargs: Optional
+            keyword arguments for seaborn or pg.qqplot.
+
+        :return: figure
         """
+
+        # Incorporate params from sns.histplot and pg.qq
+        valid_hist = utils.get_kwargs(sns.histplot)
+        valid_qq = utils.get_kwargs(pg.qqplot)
+        hist_kwargs = {key: value for key, value in kwargs.items() if key in valid_hist}
+        qq_kwargs = {key: value for key, value in kwargs.items() if key in valid_qq}
+
         if type == "histplot":
-            fig = sns.histplot(data=df, x=val_col, kde=True, **kwargs)
+            fig = sns.histplot(data=data, x=val_col, **kwargs)
         elif type == "qqplot":
-            fig = pg.qqplot(df[val_col], dist="norm", **kwargs)
+            fig = pg.qqplot(data[val_col], dist="norm", **kwargs)
         else:
             raise ValueError(
                 "For test parameter, only 'histplot' or 'qqplot' available"
