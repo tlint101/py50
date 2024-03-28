@@ -755,7 +755,6 @@ class Plots:
     ):
         """
         :param subgroup_pairs: These are the specific pairs used for the plot
-        :param data: Input DataFrame.
         :param test: Name of test to use for calculations.
         :param group_col: Column containing groups.
         :param value_col: Column containing values. This is the dependent variable.
@@ -862,8 +861,16 @@ class Plots:
         if pvalue_order:
             pvalue = pvalue_order
 
-        annotator.set_custom_annotations(pvalue)
-        annotator.annotate(**annotate_kwargs)
+        # # For debugging pairs and pvalue list orders
+        # print(pairs)
+        # print(pvalue)
+
+        # Make sure the pairs and pvalue lists match
+        if len(pairs) != len(pvalue):
+            raise Exception("pairs and pvalue_order length does not match!")
+        else:
+            annotator.set_custom_annotations(pvalue)
+            annotator.annotate(**annotate_kwargs)
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
@@ -1426,11 +1433,15 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_tukey(
+        result_df = Stats.get_tukey(
             data, value_col=value_col, group_col=group_col, **pg_kwargs
         )
-        pvalue = [utils.star_value(value) for value in test_df["p-tukey"].tolist()]
-        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+
+        # pair_df has removed rows with n.s. This is only needed if plot has specific pairs input
+        pair_df = _get_pair_subgroup(result_df, hue=pair_order)
+
+        pvalue = [utils.star_value(value) for value in pair_df["p-tukey"].tolist()]
+        pairs = [(a, b) for a, b in zip(pair_df["A"], pair_df["B"])]
 
     elif test == "gameshowell":
         # get kwargs
@@ -1438,18 +1449,18 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_gameshowell(
+        result_df = Stats.get_gameshowell(
             data, value_col=value_col, group_col=group_col, **pg_kwargs
         )
-        pvalue = [utils.star_value(value) for value in test_df["pval"].tolist()]
-        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+        pvalue = [utils.star_value(value) for value in result_df["pval"].tolist()]
+        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
     elif test == "pairwise":
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_pairwise_tests(
+        result_df = Stats.get_pairwise_tests(
             data,
             value_col=value_col,
             group_col=group_col,
@@ -1458,7 +1469,7 @@ def _get_test(
             parametric=True,
             **kwargs,
         )
-        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
     # todo delete ttest?
     elif test == "ttest-within":
@@ -1467,11 +1478,11 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_pairwise_tests(
+        result_df = Stats.get_pairwise_tests(
             data, value_col=value_col, within=group_col, **pg_kwargs
         )
-        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
-        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
     elif test == "ttest-between":
         # get kwargs
@@ -1479,11 +1490,11 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_pairwise_tests(
+        result_df = Stats.get_pairwise_tests(
             data, value_col=value_col, between=group_col, **pg_kwargs
         )
-        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
-        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
     # todo find example to test ttest-mixed
     # requires BOTH between and within groups
@@ -1493,11 +1504,11 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_pairwise_tests(
+        result_df = Stats.get_pairwise_tests(
             data, value_col=value_col, between=group_col, within=group_col, **pg_kwargs
         )
-        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
-        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
     elif test == "wilcoxon":
         # get kwargs
@@ -1505,13 +1516,13 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_wilcoxon(
+        result_df = Stats.get_wilcoxon(
             data, group_col=group_col, value_col=value_col, **pg_kwargs
         )
-        pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
+        pvalue = [utils.star_value(value) for value in result_df["p-val"].tolist()]
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
         pairs = []
-        for item in test_df["Comparison"].tolist():
+        for item in result_df["Comparison"].tolist():
             parts = item.split("-")
             pairs.append((parts[0], parts[1]))
 
@@ -1523,7 +1534,7 @@ def _get_test(
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
         if subgroup_col:
             # run test
-            test_df = Stats.get_mannu(
+            result_df = Stats.get_mannu(
                 data,
                 group_col=group_col,
                 value_col=value_col,
@@ -1532,23 +1543,23 @@ def _get_test(
             )
 
             # Make pairs between groups and subgroups by df
-            test_df = _get_pair_subgroup(test_df, hue=subgroup_pairs)
-            test_df = test_df.reset_index(drop=True)
+            result_df = _get_pair_subgroup(result_df, hue=subgroup_pairs)
+            result_df = result_df.reset_index(drop=True)
 
             # Obtain pvalues and pairs and split them from test_df for passing into Annotator
-            pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
-            pairs = _get_pairs(test_df, hue=subgroup_pairs)
+            pvalue = [utils.star_value(value) for value in result_df["p-val"].tolist()]
+            pairs = _get_pairs(result_df, hue=subgroup_pairs)
         else:
             # run test
-            test_df = Stats.get_mannu(
+            result_df = Stats.get_mannu(
                 data, group_col=group_col, value_col=value_col, **pg_kwargs
             )
 
-            test_df = _get_pair_subgroup(test_df, hue=pair_order)
+            result_df = _get_pair_subgroup(result_df, hue=pair_order)
 
             # Obtain pvalues and pairs and split them from test_df for passing into Annotator
-            pvalue = [utils.star_value(value) for value in test_df["p-val"].tolist()]
-            pairs = _get_pairs(test_df, hue=pair_order)
+            pvalue = [utils.star_value(value) for value in result_df["p-val"].tolist()]
+            pairs = _get_pairs(result_df, hue=pair_order)
 
     elif test == "para-ttest":
         # get kwargs
@@ -1556,24 +1567,24 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        test_df = Stats.get_nonpara_test(
+        result_df = Stats.get_nonpara_test(
             data, dv=value_col, between=group_col, **pg_kwargs
         )
-        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
-        pairs = [(a, b) for a, b in zip(test_df["A"], test_df["B"])]
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
     elif test == "kruskal":  # kurskal does not give posthoc. modify
-        test_df = Stats.get_kruskal(
+        result_df = Stats.get_kruskal(
             data, value_col=value_col, group_col=group_col, detailed=False
         )
-        pvalue = [utils.star_value(value) for value in test_df["p-unc"].tolist()]
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
     else:
         raise ValueError("Test not recognized!")
 
     # elif test == "ttest":
     #     test_df = Stats.get_t_test(df, paired=False, x=None, y=None, **kwargs) # todo determine how to select column to return as list
 
-    return pvalue, test_df, pairs, subgroup_col
+    return pvalue, result_df, pairs, subgroup_col
 
 
 def _plot_variables(
@@ -1598,8 +1609,7 @@ def _plot_variables(
     :param value_col:
     :return:
     """
-    # get kwarg for sns plot
-
+    # Get kwarg for sns and annot. If printed, should only appear if kwargs found within module.
     sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
     annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
