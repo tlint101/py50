@@ -1592,6 +1592,8 @@ class Plots:
             Input title for figure
         :param title_fontsize: Int
             Set size of figure legend
+        :param kwargs: Optional
+            Keyword arguemnts associated with [scikit-posthocs](https://scikit-posthocs.readthedocs.io/en/latest/)
 
         :return: Pyplot figure
         """
