@@ -673,7 +673,7 @@ class Stats:
         Plots.p_matrix() function to generate a heatmap of p-values.
 
         :param data: pandas.DataFrame
-            Input DataFrame. Must be of already comptued test results.
+            Input DataFrame. Must be of already computed test results.
         :param group_col1: String
             Name of column containing the group
         :param group_col2: String
@@ -750,21 +750,42 @@ class Plots:
         pvalue_order=None,
         palette=None,
         orient="v",
+        loc="inside",
         return_df=None,
         **kwargs,
     ):
         """
-        :param subgroup_pairs: These are the specific pairs used for the plot
-        :param test: Name of test to use for calculations.
-        :param group_col: Column containing groups.
-        :param value_col: Column containing values. This is the dependent variable.
-        :param group_order: List. Order the groups for in the plot.
-        :param pair_order: List. Order of group pairs. This will modify the way the plot will be annotated.
-        :param pvalue_order: List. Order the pvalue labels. This order must match the pairorder.
-        :param palette: List. Palette used for the plot. Can be given as common color name or in hex code.
-        :param orient: Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
-        :param return_df: Boolean to return dataframe of calculated results.
-        :return:
+        Draw a boxplot from the input DataFrame.
+
+        :param data: Pandas.DataFrame
+            Input data DataFrame.
+        :param test: String
+            Name of test for calculations. Names must match the test names from the py50.Stats()
+        :param group_col: String
+            Name of column containing groups. This should be the between depending on the selected test.
+        :param value_col: String
+            Name of the column containing the values. This is the dependent variable.
+        :param group_order: List.
+            Place the groups in a specific order on the plot.
+        :param subgroup: String
+            Name of the column containing the subgroup for the grou column. This is associated with the hue parameters
+            in Seaborn.
+        :param subgroup_pairs: String
+            Name of the column containing the subgroups to the group column.
+        :param pairs: List
+            A list containing specific pairings for annotation on the plot.
+        :param pvalue_order: List.
+            A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param palette: String or List.
+            Color palette used for the plot. Can be given as common color name or in hex code.
+        :param orient: String
+            Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
+        :param loc: String
+            Set location of annotations. Only "inside" or "outside" are supported.
+        :param return_df: Boolean
+            Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
+
+        :return: Fig
         """
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxplot)
@@ -865,6 +886,15 @@ class Plots:
         # print(pairs)
         # print(pvalue)
 
+        # Location of annotations
+        if loc not in ["inside", "outside"]:
+            raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
+
+        if loc == "inside":
+            annotator.configure(loc=loc, test=None)
+        else:
+            annotator.configure(loc=loc, test=None)
+
         # Make sure the pairs and pvalue lists match
         if len(pairs) != len(pvalue):
             raise Exception("pairs and pvalue_order length does not match!")
@@ -878,35 +908,57 @@ class Plots:
     # todo update below plot with annot_kwargs
     @staticmethod
     def bar_plot(
-        df,
+        data,
         test=None,
         group_col=None,
         value_col=None,
         group_order=None,
-        pair_order=None,
+        subgroup=None,
+        subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
+        pairs=None,
         pvalue_order=None,
         palette=None,
         orient="v",
+        loc="inside",
         return_df=None,
         **kwargs,
     ):
         """
-        :param df: Input DataFrame.
-        :param test: Name of test to use for calculations.
-        :param group_col: Column containing groups.
-        :param value_col: Column containing values. This is the dependent variable.
-        :param group_order: List. Order the groups for in the plot.
-        :param pair_order: List. Order of group pairs. This will modify the way the plot will be annotated.
-        :param pvalue_order: List. Order the pvalue labels. This order must match the pairorder.
-        :param palette: List. Palette used for the plot. Can be given as common color name or in hex code.
-        :param orient: Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
-        :param return_df: Boolean to return dataframe of calculated results.
-        :return:
+        Draw a boxplot from the input DataFrame.
+
+        :param data: Pandas.DataFrame
+            Input data DataFrame.
+        :param test: String
+            Name of test for calculations. Names must match the test names from the py50.Stats()
+        :param group_col: String
+            Name of column containing groups. This should be the between depending on the selected test.
+        :param value_col: String
+            Name of the column containing the values. This is the dependent variable.
+        :param group_order: List.
+            Place the groups in a specific order on the plot.
+        :param subgroup: String
+            Name of the column containing the subgroup for the grou column. This is associated with the hue parameters
+            in Seaborn.
+        :param subgroup_pairs: String
+            Name of the column containing the subgroups to the group column.
+        :param pairs: List
+            A list containing specific pairings for annotation on the plot.
+        :param pvalue_order: List.
+            A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param palette: String or List.
+            Color palette used for the plot. Can be given as common color name or in hex code.
+        :param orient: String
+            Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
+        :param loc: String
+            Set location of annotations. Only "inside" or "outside" are supported.
+        :param return_df: Boolean
+            Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
+
+        :return: Fig
         """
         # separate kwargs for sns and sns
-        valid_sns = utils.get_kwargs(sns.boxplot)
+        valid_sns = utils.get_kwargs(sns.barplot)
         valid_annot = utils.get_kwargs(Annotator)
-        print(valid_sns)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -918,15 +970,20 @@ class Plots:
             annotate_kwargs["line_offset_to_group"] = line_offset_to_group
             annotate_kwargs["line_offset"] = line_offset
 
+        pair_order = pairs
+
         # Get plot variables
+        # If plotting more pairs than needed, issues is with the pairs
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            df,
+            data,
             group_col,
             pair_order,
             test,
             value_col,
             valid_sns,
             valid_annot,
+            subgroup,
+            subgroup_pairs,
             **kwargs,
         )
 
@@ -934,99 +991,141 @@ class Plots:
         if group_order:
             group_order = group_order
 
-        # Get plt kwargs to pass into the sns_kwargs
-        capsize = kwargs.pop("capsize", None)  # Extract capsize if present
-        ci = kwargs.pop("ci", None)
-        if capsize is not None:
-            sns_kwargs["capsize"] = capsize  # Update sns_kwargs with capsize
-        if ci is not None:  # deprecated in newer sns version
-            sns_kwargs["ci"] = ci
+        # Set title and size of plot
+        title = kwargs.pop("title", None)
+        title_fontsize = kwargs.pop("title_fontsize", None)
 
-        print(sns_kwargs)
+        # Set title if provided
+        if title:
+            plt.title(title, fontsize=title_fontsize)
 
         # set orientation for plot and Annotator
         if orient == "v":
             ax = sns.barplot(
-                data=df,
+                data=data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
                 palette=palette,
+                hue=subgroup,
                 **sns_kwargs,
             )
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=df,
+                data=data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
                 verbose=False,
                 orient="v",
+                hue=subgroup,
                 **annot_kwargs,
             )
         elif orient == "h":
             ax = sns.barplot(
-                data=df,
+                data=data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
                 palette=palette,
+                hue=subgroup,
                 **sns_kwargs,
             )
-            # flip x and y annotations for horizontal orientation
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=df,
+                data=data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
                 verbose=False,
                 orient="h",
+                hue=subgroup,
                 **annot_kwargs,
             )
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
-        # Set custom annotations and annotate
+        # optional input for custom annotations
         if pvalue_order:
             pvalue = pvalue_order
-        annotator.set_custom_annotations(pvalue)
-        annotator.annotate(**annotate_kwargs)
+
+        # # For debugging pairs and pvalue list orders
+        # print(pairs)
+        # print(pvalue)
+
+        # Location of annotations
+        if loc not in ["inside", "outside"]:
+            raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
+
+        if loc == "inside":
+            annotator.configure(loc=loc, test=None)
+        else:
+            annotator.configure(loc=loc, test=None)
+
+        # Make sure the pairs and pvalue lists match
+        if len(pairs) != len(pvalue):
+            raise Exception("pairs and pvalue_order length does not match!")
+        else:
+            annotator.set_custom_annotations(pvalue)
+            annotator.annotate(**annotate_kwargs)
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
     def violin_plot(
-        df,
+        data,
         test=None,
         group_col=None,
         value_col=None,
         group_order=None,
-        pair_order=None,
+        subgroup=None,
+        subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
+        pairs=None,
         pvalue_order=None,
         palette=None,
         orient="v",
+        loc="inside",
         return_df=None,
         **kwargs,
     ):
         """
-        :param df: Input DataFrame.
-        :param test: Name of test to use for calculations.
-        :param group_col: Column containing groups.
-        :param value_col: Column containing values. This is the dependent variable.
-        :param group_order: List. Order the groups for in the plot.
-        :param pair_order: List. Order of group pairs. This will modify the way the plot will be annotated.
-        :param pvalue_order: List. Order the pvalue labels. This order must match the pairorder.
-        :param palette: List. Palette used for the plot. Can be given as common color name or in hex code.
-        :param orient: Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
-        :param return_df: Boolean to return dataframe of calculated results.
-        :return:
+        Draw a boxplot from the input DataFrame.
+
+        :param data: Pandas.DataFrame
+            Input data DataFrame.
+        :param test: String
+            Name of test for calculations. Names must match the test names from the py50.Stats()
+        :param group_col: String
+            Name of column containing groups. This should be the between depending on the selected test.
+        :param value_col: String
+            Name of the column containing the values. This is the dependent variable.
+        :param group_order: List.
+            Place the groups in a specific order on the plot.
+        :param subgroup: String
+            Name of the column containing the subgroup for the grou column. This is associated with the hue parameters
+            in Seaborn.
+        :param subgroup_pairs: String
+            Name of the column containing the subgroups to the group column.
+        :param pairs: List
+            A list containing specific pairings for annotation on the plot.
+        :param pvalue_order: List.
+            A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param palette: String or List.
+            Color palette used for the plot. Can be given as common color name or in hex code.
+        :param orient: String
+            Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
+        :param loc: String
+            Set location of annotations. Only "inside" or "outside" are supported.
+        :param return_df: Boolean
+            Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
+
+        :return: Fig
         """
         # separate kwargs for sns and sns
-        valid_sns = utils.get_kwargs(sns.boxplot)
+        valid_sns = utils.get_kwargs(sns.violinplot)
         valid_annot = utils.get_kwargs(Annotator)
 
         # Set kwargs dictionary for line annotations
@@ -1039,15 +1138,20 @@ class Plots:
             annotate_kwargs["line_offset_to_group"] = line_offset_to_group
             annotate_kwargs["line_offset"] = line_offset
 
+        pair_order = pairs
+
         # Get plot variables
+        # If plotting more pairs than needed, issues is with the pairs
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            df,
+            data,
             group_col,
             pair_order,
             test,
             value_col,
             valid_sns,
             valid_annot,
+            subgroup,
+            subgroup_pairs,
             **kwargs,
         )
 
@@ -1055,89 +1159,141 @@ class Plots:
         if group_order:
             group_order = group_order
 
+        # Set title and size of plot
+        title = kwargs.pop("title", None)
+        title_fontsize = kwargs.pop("title_fontsize", None)
+
+        # Set title if provided
+        if title:
+            plt.title(title, fontsize=title_fontsize)
+
         # set orientation for plot and Annotator
         if orient == "v":
             ax = sns.violinplot(
-                data=df,
+                data=data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
                 palette=palette,
+                hue=subgroup,
                 **sns_kwargs,
             )
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=df,
+                data=data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
                 verbose=False,
                 orient="v",
+                hue=subgroup,
                 **annot_kwargs,
             )
         elif orient == "h":
             ax = sns.violinplot(
-                data=df,
+                data=data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
                 palette=palette,
+                hue=subgroup,
                 **sns_kwargs,
             )
-            # flip x and y annotations for horizontal orientation
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=df,
+                data=data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
                 verbose=False,
                 orient="h",
+                hue=subgroup,
                 **annot_kwargs,
             )
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
-        # Set custom annotations and annotate
+        # optional input for custom annotations
         if pvalue_order:
             pvalue = pvalue_order
-        annotator.set_custom_annotations(pvalue)
-        annotator.annotate(**annotate_kwargs)
+
+        # # For debugging pairs and pvalue list orders
+        # print(pairs)
+        # print(pvalue)
+
+        # Location of annotations
+        if loc not in ["inside", "outside"]:
+            raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
+
+        if loc == "inside":
+            annotator.configure(loc=loc, test=None)
+        else:
+            annotator.configure(loc=loc, test=None)
+
+        # Make sure the pairs and pvalue lists match
+        if len(pairs) != len(pvalue):
+            raise Exception("pairs and pvalue_order length does not match!")
+        else:
+            annotator.set_custom_annotations(pvalue)
+            annotator.annotate(**annotate_kwargs)
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
     def swarmplot(
-        df,
+        data,
         test=None,
         group_col=None,
         value_col=None,
         group_order=None,
-        pair_order=None,
+        subgroup=None,
+        subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
+        pairs=None,
         pvalue_order=None,
         palette=None,
         orient="v",
+        loc="inside",
         return_df=None,
         **kwargs,
     ):
         """
-        :param df: Input DataFrame.
-        :param test: Name of test to use for calculations.
-        :param group_col: Column containing groups.
-        :param value_col: Column containing values. This is the dependent variable.
-        :param group_order: List. Order the groups for in the plot.
-        :param pair_order: List. Order of group pairs. This will modify the way the plot will be annotated.
-        :param pvalue_order: List. Order the pvalue labels. This order must match the pairorder.
-        :param palette: List. Palette used for the plot. Can be given as common color name or in hex code.
-        :param orient: Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
-        :param return_df: Boolean to return dataframe of calculated results.
-        :return:
+        Draw a boxplot from the input DataFrame.
+
+        :param data: Pandas.DataFrame
+            Input data DataFrame.
+        :param test: String
+            Name of test for calculations. Names must match the test names from the py50.Stats()
+        :param group_col: String
+            Name of column containing groups. This should be the between depending on the selected test.
+        :param value_col: String
+            Name of the column containing the values. This is the dependent variable.
+        :param group_order: List.
+            Place the groups in a specific order on the plot.
+        :param subgroup: String
+            Name of the column containing the subgroup for the grou column. This is associated with the hue parameters
+            in Seaborn.
+        :param subgroup_pairs: String
+            Name of the column containing the subgroups to the group column.
+        :param pairs: List
+            A list containing specific pairings for annotation on the plot.
+        :param pvalue_order: List.
+            A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param palette: String or List.
+            Color palette used for the plot. Can be given as common color name or in hex code.
+        :param orient: String
+            Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
+        :param loc: String
+            Set location of annotations. Only "inside" or "outside" are supported.
+        :param return_df: Boolean
+            Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
+
+        :return: Fig
         """
         # separate kwargs for sns and sns
-        valid_sns = utils.get_kwargs(sns.boxplot)
+        valid_sns = utils.get_kwargs(sns.swarmplot)
         valid_annot = utils.get_kwargs(Annotator)
 
         # Set kwargs dictionary for line annotations
@@ -1150,15 +1306,20 @@ class Plots:
             annotate_kwargs["line_offset_to_group"] = line_offset_to_group
             annotate_kwargs["line_offset"] = line_offset
 
+        pair_order = pairs
+
         # Get plot variables
+        # If plotting more pairs than needed, issues is with the pairs
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            df,
+            data,
             group_col,
             pair_order,
             test,
             value_col,
             valid_sns,
             valid_annot,
+            subgroup,
+            subgroup_pairs,
             **kwargs,
         )
 
@@ -1166,56 +1327,85 @@ class Plots:
         if group_order:
             group_order = group_order
 
+        # Set title and size of plot
+        title = kwargs.pop("title", None)
+        title_fontsize = kwargs.pop("title_fontsize", None)
+
+        # Set title if provided
+        if title:
+            plt.title(title, fontsize=title_fontsize)
+
         # set orientation for plot and Annotator
         if orient == "v":
             ax = sns.swarmplot(
-                data=df,
+                data=data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
                 palette=palette,
+                hue=subgroup,
                 **sns_kwargs,
             )
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=df,
+                data=data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
                 verbose=False,
                 orient="v",
+                hue=subgroup,
                 **annot_kwargs,
             )
         elif orient == "h":
             ax = sns.swarmplot(
-                data=df,
+                data=data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
                 palette=palette,
+                hue=subgroup,
                 **sns_kwargs,
             )
-            # flip x and y annotations for horizontal orientation
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=df,
+                data=data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
                 verbose=False,
                 orient="h",
+                hue=subgroup,
                 **annot_kwargs,
             )
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
-        # Set custom annotations and annotate
+        # optional input for custom annotations
         if pvalue_order:
             pvalue = pvalue_order
-        annotator.set_custom_annotations(pvalue)
-        annotator.annotate(**annotate_kwargs)
+
+        # # For debugging pairs and pvalue list orders
+        # print(pairs)
+        # print(pvalue)
+
+        # Location of annotations
+        if loc not in ["inside", "outside"]:
+            raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
+
+        if loc == "inside":
+            annotator.configure(loc=loc, test=None)
+        else:
+            annotator.configure(loc=loc, test=None)
+
+        # Make sure the pairs and pvalue lists match
+        if len(pairs) != len(pvalue):
+            raise Exception("pairs and pvalue_order length does not match!")
+        else:
+            annotator.set_custom_annotations(pvalue)
+            annotator.annotate(**annotate_kwargs)
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
@@ -1223,33 +1413,56 @@ class Plots:
     # todo doublecheck if lineplot works
     @staticmethod
     def lineplot(
-        df,
+        data,
         test=None,
         group_col=None,
         value_col=None,
         group_order=None,
-        pair_order=None,
+        subgroup=None,
+        subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
+        pairs=None,
         pvalue_order=None,
         palette=None,
         orient="v",
+        loc="inside",
         return_df=None,
         **kwargs,
     ):
         """
-        :param df: Input DataFrame.
-        :param test: Name of test to use for calculations.
-        :param group_col: Column containing groups.
-        :param value_col: Column containing values. This is the dependent variable.
-        :param group_order: List. Order the groups for in the plot.
-        :param pair_order: List. Order of group pairs. This will modify the way the plot will be annotated.
-        :param pvalue_order: List. Order the pvalue labels. This order must match the pairorder.
-        :param palette: List. Palette used for the plot. Can be given as common color name or in hex code.
-        :param orient: Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
-        :param return_df: Boolean to return dataframe of calculated results.
-        :return:
+        Draw a boxplot from the input DataFrame.
+
+        :param data: Pandas.DataFrame
+            Input data DataFrame.
+        :param test: String
+            Name of test for calculations. Names must match the test names from the py50.Stats()
+        :param group_col: String
+            Name of column containing groups. This should be the between depending on the selected test.
+        :param value_col: String
+            Name of the column containing the values. This is the dependent variable.
+        :param group_order: List.
+            Place the groups in a specific order on the plot.
+        :param subgroup: String
+            Name of the column containing the subgroup for the grou column. This is associated with the hue parameters
+            in Seaborn.
+        :param subgroup_pairs: String
+            Name of the column containing the subgroups to the group column.
+        :param pairs: List
+            A list containing specific pairings for annotation on the plot.
+        :param pvalue_order: List.
+            A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param palette: String or List.
+            Color palette used for the plot. Can be given as common color name or in hex code.
+        :param orient: String
+            Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
+        :param loc: String
+            Set location of annotations. Only "inside" or "outside" are supported.
+        :param return_df: Boolean
+            Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
+
+        :return: Fig
         """
         # separate kwargs for sns and sns
-        valid_sns = utils.get_kwargs(sns.boxplot)
+        valid_sns = utils.get_kwargs(sns.lineplot)
         valid_annot = utils.get_kwargs(Annotator)
 
         # Set kwargs dictionary for line annotations
@@ -1262,15 +1475,20 @@ class Plots:
             annotate_kwargs["line_offset_to_group"] = line_offset_to_group
             annotate_kwargs["line_offset"] = line_offset
 
+        pair_order = pairs
+
         # Get plot variables
+        # If plotting more pairs than needed, issues is with the pairs
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            df,
+            data,
             group_col,
             pair_order,
             test,
             value_col,
             valid_sns,
             valid_annot,
+            subgroup,
+            subgroup_pairs,
             **kwargs,
         )
 
@@ -1278,56 +1496,85 @@ class Plots:
         if group_order:
             group_order = group_order
 
+        # Set title and size of plot
+        title = kwargs.pop("title", None)
+        title_fontsize = kwargs.pop("title_fontsize", None)
+
+        # Set title if provided
+        if title:
+            plt.title(title, fontsize=title_fontsize)
+
         # set orientation for plot and Annotator
         if orient == "v":
             ax = sns.lineplot(
-                data=df,
+                data=data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
                 palette=palette,
+                hue=subgroup,
                 **sns_kwargs,
             )
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=df,
+                data=data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
                 verbose=False,
                 orient="v",
+                hue=subgroup,
                 **annot_kwargs,
             )
         elif orient == "h":
             ax = sns.lineplot(
-                data=df,
+                data=data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
                 palette=palette,
+                hue=subgroup,
                 **sns_kwargs,
             )
-            # flip x and y annotations for horizontal orientation
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=df,
+                data=data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
                 verbose=False,
                 orient="h",
+                hue=subgroup,
                 **annot_kwargs,
             )
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
-        # Set custom annotations and annotate
+        # optional input for custom annotations
         if pvalue_order:
             pvalue = pvalue_order
-        annotator.set_custom_annotations(pvalue)
-        annotator.annotate(**annotate_kwargs)
+
+        # # For debugging pairs and pvalue list orders
+        # print(pairs)
+        # print(pvalue)
+
+        # Location of annotations
+        if loc not in ["inside", "outside"]:
+            raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
+
+        if loc == "inside":
+            annotator.configure(loc=loc, test=None)
+        else:
+            annotator.configure(loc=loc, test=None)
+
+        # Make sure the pairs and pvalue lists match
+        if len(pairs) != len(pvalue):
+            raise Exception("pairs and pvalue_order length does not match!")
+        else:
+            annotator.set_custom_annotations(pvalue)
+            annotator.annotate(**annotate_kwargs)
 
         if return_df:
             return test_df  # return calculated df. Change name for more description
