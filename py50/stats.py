@@ -1437,11 +1437,11 @@ def _get_test(
             data, value_col=value_col, group_col=group_col, **pg_kwargs
         )
 
-        # pair_df has removed rows with n.s. This is only needed if plot has specific pairs input
-        pair_df = _get_pair_subgroup(result_df, hue=pair_order)
+        # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+        result_df = _get_pair_subgroup(result_df, hue=pair_order)
 
-        pvalue = [utils.star_value(value) for value in pair_df["p-tukey"].tolist()]
-        pairs = [(a, b) for a, b in zip(pair_df["A"], pair_df["B"])]
+        pvalue = [utils.star_value(value) for value in result_df["p-tukey"].tolist()]
+        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
     elif test == "gameshowell":
         # get kwargs
