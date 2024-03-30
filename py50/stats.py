@@ -128,14 +128,14 @@ class Stats:
     @staticmethod
     def get_welch_anova(data, value_col=None, group_col=None):
         """
-        One-way Welch Anova
+        One-way Welch ANOVA
 
         :param data: pandas.DataFrame
             Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
-            Name of columnName of column containing the grouping variable.
+            Name of column containing the grouping variable.
         :return: Pandas.DataFrame
         """
 
@@ -147,8 +147,17 @@ class Stats:
 
         return result_df
 
+    #todo add params
     @staticmethod
-    def get_rm_anova(data, value_col=None, group_col=None, subgroup_col=None, **kwargs):
+    def get_rm_anova(
+        data,
+        value_col=None,
+        group_col=None,
+        subgroup_col=None,
+        correction="auto",
+        detailed=False,
+        effsize="ng2"
+    ):
         """
         One-way and two-way repeated measures ANOVA.
 
@@ -166,12 +175,19 @@ class Stats:
         """
 
         result_df = pg.rm_anova(
-            data=data, dv=value_col, within=group_col, subject=subgroup_col, **kwargs
+            data=data,
+            dv=value_col,
+            within=group_col,
+            subject=subgroup_col,
+            correction=correction,
+            detailed=detailed,
+            effsize=effsize,
         )
 
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
         result_df["significance"] = pvalue
+
 
         return result_df
 
@@ -252,7 +268,7 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue = [utils.star_value(value) for value in result_df["pval"]]
         result_df["significance"] = pvalue
 
         return result_df
@@ -1694,7 +1710,7 @@ def _get_test(
 
     elif test == "gameshowell":
         # get kwargs
-        valid_pg = utils.get_kwargs(pg.pairwise_gameshowell())
+        valid_pg = utils.get_kwargs(pg.pairwise_gameshowell)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
