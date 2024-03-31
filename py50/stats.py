@@ -730,7 +730,13 @@ class Stats:
 
         df = pd.DataFrame(
             {
-                "pvalue": ["p > 0.05", "p ≤ 0.05", " p ≤ 0.01", "p ≤ 0.001", "p ≤ 0.0001"],
+                "pvalue": [
+                    "p > 0.05",
+                    "p ≤ 0.05",
+                    " p ≤ 0.01",
+                    "p ≤ 0.001",
+                    "p ≤ 0.0001",
+                ],
                 "p_value": ["No Significance (n.s.)", "*", "**", "***", "****"],
             }
         )
@@ -1727,8 +1733,8 @@ def _get_test(
         pvalue = [utils.star_value(value) for value in result_df["pval"].tolist()]
         pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
-    #todo issues with pairwise?
-    elif test == "pairwise":
+    # Parametric T-Test
+    elif test == "pairwise-parametric":
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
@@ -1740,46 +1746,30 @@ def _get_test(
             subgroup_col=subgroup_col,
             subject_col=subject_col,
             parametric=True,
-            **kwargs,
+            **pg_kwargs,
         )
-        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
-    # todo delete ttest?
-    elif test == "ttest-within":
-        # get kwargs
-        valid_pg = utils.get_kwargs(pg.pairwise_tests)
-        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
-
-        # run test
-        result_df = Stats.get_pairwise_tests(
-            data, value_col=value_col, within=group_col, **pg_kwargs
-        )
+        # Obtain pvalues and pairs and split them from test_df for passing into Annotator
         pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
-    elif test == "ttest-between":
-        # get kwargs
+    # Non-parametric T-Test
+    elif test == "pairwise-nonparametric":
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
         result_df = Stats.get_pairwise_tests(
-            data, value_col=value_col, between=group_col, **pg_kwargs
+            data,
+            value_col=value_col,
+            group_col=group_col,
+            subgroup_col=subgroup_col,
+            subject_col=subject_col,
+            parametric=True,
+            **pg_kwargs,
         )
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
-        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
-    # todo find example to test ttest-mixed
-    # requires BOTH between and within groups
-    elif test == "ttest-mixed":
-        # get kwargs
-        valid_pg = utils.get_kwargs(pg.pairwise_tests)
-        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
-
-        # run test
-        result_df = Stats.get_pairwise_tests(
-            data, value_col=value_col, between=group_col, within=group_col, **pg_kwargs
-        )
+        # Obtain pvalues and pairs and split them from test_df for passing into Annotator
         pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
