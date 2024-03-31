@@ -153,7 +153,7 @@ class Stats:
         data,
         value_col=None,
         group_col=None,
-        subgroup_col=None,
+        subject_col=None,
         correction="auto",
         detailed=False,
         effsize="ng2",
@@ -167,7 +167,7 @@ class Stats:
             Name of column containing the dependent variable.
         :param group_col: String
             Name of columnName of column containing the within factor.
-        :param subgroup_col: String
+        :param subject_col: String
             Name of columnName of column containing the subject identifier.
         :param kwargs: optional
             Other options available with [pingouin.rm_anova()](https://pingouin-stats.org/build/html/generated/pingouin.rm_anova.html)
@@ -178,7 +178,7 @@ class Stats:
             data=data,
             dv=value_col,
             within=group_col,
-            subject=subgroup_col,
+            subject=subject_col,
             correction=correction,
             detailed=detailed,
             effsize=effsize,
@@ -654,7 +654,7 @@ class Stats:
         :param subgroup_col: String or list with 2 elements
             Name of column containing the within-subject identifier.
         :param subject_col: String
-            Name of column containing the subject identifier. This is mandatory if group_col is used.
+            Name of column containing the subject identifier. This is mandatory if subgroup_col is used.
         :param parametric: Boolean
             If True (default), use the parametric ttest() function. If False, use [pingouin.wilcoxon()](https://pingouin-stats.org/build/html/generated/pingouin.wilcoxon.html#pingouin.wilcoxon) or [pingouin.mwu()](https://pingouin-stats.org/build/html/generated/pingouin.mwu.html#pingouin.mwu)
             for paired or unpaired samples, respectively.
@@ -770,6 +770,7 @@ class Plots:
         value_col=None,
         group_order=None,
         subgroup=None,
+        subject_col=None,
         subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
         pairs=None,
         pvalue_order=None,
@@ -840,6 +841,7 @@ class Plots:
             valid_annot,
             subgroup,
             subgroup_pairs,
+            subject_col,
             **kwargs,
         )
 
@@ -1749,6 +1751,9 @@ def _get_test(
             **pg_kwargs,
         )
 
+        # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+        result_df = _get_pair_subgroup(result_df, hue=pair_order)
+
         # Obtain pvalues and pairs and split them from test_df for passing into Annotator
         pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
@@ -1768,6 +1773,9 @@ def _get_test(
             parametric=True,
             **pg_kwargs,
         )
+
+        # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+        result_df = _get_pair_subgroup(result_df, hue=pair_order)
 
         # Obtain pvalues and pairs and split them from test_df for passing into Annotator
         pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
@@ -1860,6 +1868,7 @@ def _plot_variables(
     valid_annot,
     subgroup=None,
     subgroup_pairs=None,
+    subject_col=None,
     **kwargs,
 ):
     """
@@ -1886,6 +1895,7 @@ def _plot_variables(
             pair_order=pair_order,
             subgroup_col=subgroup,
             subgroup_pairs=subgroup_pairs,
+            subject_col=subject_col,
             **kwargs,
         )
     else:
