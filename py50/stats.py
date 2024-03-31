@@ -147,7 +147,7 @@ class Stats:
 
         return result_df
 
-    #todo add params
+    # todo add params
     @staticmethod
     def get_rm_anova(
         data,
@@ -156,7 +156,7 @@ class Stats:
         subgroup_col=None,
         correction="auto",
         detailed=False,
-        effsize="ng2"
+        effsize="ng2",
     ):
         """
         One-way and two-way repeated measures ANOVA.
@@ -187,7 +187,6 @@ class Stats:
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
         result_df["significance"] = pvalue
-
 
         return result_df
 
@@ -628,6 +627,10 @@ class Stats:
 
         return result_df
 
+    """
+    pairwise t-tests below
+    """
+
     @staticmethod
     def get_pairwise_tests(
         data,
@@ -720,14 +723,14 @@ class Stats:
     @staticmethod
     def explain_significance():
         """
-        Print out DataFrame containing explanations for star values.
+        Print out DataFrame containing explanations for star values. This is used for reference. See [GraphPad](https://www.graphpad.com/support/faq/what-is-the-meaning-of--or--or--in-reports-of-statistical-significance-from-prism-or-instat/)
 
         :return: pandas.DataFrame
         """
 
         df = pd.DataFrame(
             {
-                "pvalue": ["> 0.05", "< 0.05", " < 0.01", "< 0.001", "< 0.0001"],
+                "pvalue": ["p > 0.05", "p ≤ 0.05", " p ≤ 0.01", "p ≤ 0.001", "p ≤ 0.0001"],
                 "p_value": ["No Significance (n.s.)", "*", "**", "***", "****"],
             }
         )
@@ -1717,9 +1720,14 @@ def _get_test(
         result_df = Stats.get_gameshowell(
             data, value_col=value_col, group_col=group_col, **pg_kwargs
         )
+
+        # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+        result_df = _get_pair_subgroup(result_df, hue=pair_order)
+
         pvalue = [utils.star_value(value) for value in result_df["pval"].tolist()]
         pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
+    #todo issues with pairwise?
     elif test == "pairwise":
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
