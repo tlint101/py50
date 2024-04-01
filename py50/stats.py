@@ -152,7 +152,7 @@ class Stats:
     def get_rm_anova(
         data,
         value_col=None,
-        group_col=None,
+        within_subject_col=None,
         subject_col=None,
         correction="auto",
         detailed=False,
@@ -165,7 +165,7 @@ class Stats:
             Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
-        :param group_col: String
+        :param within_subject_col: String
             Name of column containing the within factor.
         :param subject_col: String
             Name of column containing the subject identifier.
@@ -177,7 +177,7 @@ class Stats:
         result_df = pg.rm_anova(
             data=data,
             dv=value_col,
-            within=group_col,
+            within=within_subject_col,
             subject=subject_col,
             correction=correction,
             detailed=detailed,
