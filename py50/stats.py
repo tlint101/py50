@@ -166,9 +166,9 @@ class Stats:
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
-            Name of columnName of column containing the within factor.
+            Name of column containing the within factor.
         :param subject_col: String
-            Name of columnName of column containing the subject identifier.
+            Name of column containing the subject identifier.
         :param kwargs: optional
             Other options available with [pingouin.rm_anova()](https://pingouin-stats.org/build/html/generated/pingouin.rm_anova.html)
         :return: Pandas.DataFrame
@@ -192,7 +192,7 @@ class Stats:
 
     @staticmethod
     def get_mixed_anova(
-        data, value_col=None, group_col=None, subgroup_col=None, **kwargs
+        data, value_col=None, group_col=None, within_subject_col=None, subject_col=None, **kwargs
     ):
         """
         Mixed-design ANOVA.
@@ -202,16 +202,18 @@ class Stats:
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
-            Name of columnName of column containing the within factor.
-        :param subgroup_col: String
-            Name of columnName of column containing the subject identifier.
+            Name of column containing the between factor.
+        :param within_subject_col: String
+            Name of column containing the within-subject factor (repeated measurements).
+        :param subject_col:
+            Name of column containing the between-subject identifier.
         :param kwargs: optional
             Other options available with [pingouin.mixed_anova()](https://pingouin-stats.org/build/html/generated/pingouin.mixed_anova.html)
         :return: Pandas.DataFrame
         """
 
         result_df = pg.mixed_anova(
-            data=data, dv=value_col, within=group_col, subject=subgroup_col, **kwargs
+            data=data, dv=value_col, between=group_col, within=within_subject_col, subject=subject_col, **kwargs
         )
 
         # Add significance asterisk
@@ -1035,6 +1037,8 @@ class Plots:
                 order=group_order,
                 palette=palette,
                 hue=subgroup,
+                ci="sd", # errorbar
+                capsize=0.2, # errorbar
                 **sns_kwargs,
             )
             annotator = Annotator(
