@@ -638,7 +638,7 @@ class Stats:
         data,
         value_col=None,
         group_col=None,
-        subgroup_col=None,
+        within_subject_col=None,
         subject_col=None,
         parametric=True,
         **kwargs,
@@ -653,7 +653,7 @@ class Stats:
             Name of column containing the dependent variable.
         :param group_col: String or list with 2 elements
             Name of column containing the between-subject factors.
-        :param subgroup_col: String or list with 2 elements
+        :param within_subject_col: String or list with 2 elements
             Name of column containing the within-subject identifier.
         :param subject_col: String
             Name of column containing the subject identifier. This is mandatory if subgroup_col is used.
@@ -669,7 +669,7 @@ class Stats:
             data=data,
             dv=value_col,
             between=group_col,
-            within=subgroup_col,
+            within=within_subject_col,
             subject=subject_col,
             parametric=parametric,
             **kwargs,
@@ -1749,7 +1749,7 @@ def _get_test(
             data,
             value_col=value_col,
             group_col=group_col,
-            subgroup_col=subgroup_col,
+            within_subject_col=subgroup_col,
             subject_col=subject_col,
             parametric=True,
             **pg_kwargs,
@@ -1772,7 +1772,7 @@ def _get_test(
             data,
             value_col=value_col,
             group_col=group_col,
-            subgroup_col=subgroup_col,
+            within_subject_col=subgroup_col,
             subject_col=subject_col,
             parametric=True,
             **pg_kwargs,
