@@ -654,8 +654,101 @@ class Stats:
         **kwargs,
     ):
         """
-        Posthoc test for parametric or nonparametric statistics. Used after Kruskal test.
-        By default, the parametric parameter is set as True.
+        Posthoc test for parametric or nonparametric statistics. By default, the parametric parameter is set as True.
+
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String or list with 2 elements
+            Name of column containing the between-subject factors.
+        :param within_subject_col: String or list with 2 elements
+            Name of column containing the within-subject identifier.
+        :param subject_col: String
+            Name of column containing the subject identifier. This is mandatory if subgroup_col is used.
+        :param parametric: Boolean
+            If True (default), use the parametric ttest() function. If False, use [pingouin.wilcoxon()](https://pingouin-stats.org/build/html/generated/pingouin.wilcoxon.html#pingouin.wilcoxon) or [pingouin.mwu()](https://pingouin-stats.org/build/html/generated/pingouin.mwu.html#pingouin.mwu)
+            for paired or unpaired samples, respectively.
+        :param kwargs: dict
+            Additional keywords arguments that are passed to [pingouin.pairwise_tests()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tests.html#pingouin.pairwise_tests).
+        :return: pandas.DataFrame
+        """
+
+        result_df = pg.pairwise_tests(
+            data=data,
+            dv=value_col,
+            between=group_col,
+            within=within_subject_col,
+            subject=subject_col,
+            parametric=parametric,
+            **kwargs,
+        )
+
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
+
+        return result_df
+
+    @staticmethod
+    def get_pairwise_rm(
+        data,
+        value_col=None,
+        group_col=None,
+        within_subject_col=None,
+        subject_col=None,
+        parametric=True,
+        **kwargs,
+    ):
+        """
+        Posthoc test for repeated measures.
+
+        :param data: pandas.DataFrame
+            Input DataFrame.
+        :param value_col: String
+            Name of column containing the dependent variable.
+        :param group_col: String or list with 2 elements
+            Name of column containing the between-subject factors.
+        :param within_subject_col: String or list with 2 elements
+            Name of column containing the within-subject identifier.
+        :param subject_col: String
+            Name of column containing the subject identifier. This is mandatory if subgroup_col is used.
+        :param parametric: Boolean
+            If True (default), use the parametric ttest() function. If False, use [pingouin.wilcoxon()](https://pingouin-stats.org/build/html/generated/pingouin.wilcoxon.html#pingouin.wilcoxon) or [pingouin.mwu()](https://pingouin-stats.org/build/html/generated/pingouin.mwu.html#pingouin.mwu)
+            for paired or unpaired samples, respectively.
+        :param kwargs: dict
+            Additional keywords arguments that are passed to [pingouin.pairwise_tests()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tests.html#pingouin.pairwise_tests).
+        :return: pandas.DataFrame
+        """
+
+        result_df = pg.pairwise_tests(
+            data=data,
+            dv=value_col,
+            between=group_col,
+            within=within_subject_col,
+            subject=subject_col,
+            parametric=parametric,
+            **kwargs,
+        )
+
+        # Add significance asterisk
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue
+
+        return result_df
+
+    @staticmethod
+    def get_pairwise_mixed(
+        data,
+        value_col=None,
+        group_col=None,
+        within_subject_col=None,
+        subject_col=None,
+        parametric=True,
+        **kwargs,
+    ):
+        """
+        Posthoc test for mixed ANOVA.
 
         :param data: pandas.DataFrame
             Input DataFrame.
@@ -952,7 +1045,7 @@ class Plots:
         group_col=None,
         value_col=None,
         group_order=None,
-        subgroup=None,
+        subgroup_col=None,
         subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
         pairs=None,
         pvalue_order=None,
@@ -1027,7 +1120,7 @@ class Plots:
             value_col,
             valid_sns,
             valid_annot,
-            subgroup,
+            subgroup_col,
             subgroup_pairs,
             **kwargs,
         )
@@ -1052,7 +1145,7 @@ class Plots:
                 y=value_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup,
+                hue=subgroup_col,
                 ci=ci,  # errorbar
                 capsize=capsize,  # errorbar
                 **sns_kwargs,
@@ -1066,7 +1159,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="v",
-                hue=subgroup,
+                hue=subgroup_col,
                 **annot_kwargs,
             )
         elif orient == "h":
@@ -1076,7 +1169,7 @@ class Plots:
                 y=group_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup,
+                hue=subgroup_col,
                 ci=ci,  # errorbar
                 capsize=capsize,  # errorbar
                 **sns_kwargs,
@@ -1090,7 +1183,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="h",
-                hue=subgroup,
+                hue=subgroup_col,
                 **annot_kwargs,
             )
         else:
@@ -1785,7 +1878,7 @@ def _get_test(
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
         # run test
-        result_df = Stats.get_pairwise_tests(
+        result_df = Stats.get_pairwise_rm(
             data,
             value_col=value_col,
             group_col=None,
@@ -1807,8 +1900,10 @@ def _get_test(
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
+        print(subgroup_col)
+
         # run test
-        result_df = Stats.get_pairwise_tests(
+        result_df = Stats.get_pairwise_mixed(
             data,
             value_col=value_col,
             group_col=group_col,
@@ -1921,7 +2016,7 @@ def _plot_variables(
     value_col,
     valid_sns,
     valid_annot,
-    subgroup=None,
+    subgroup_col=None,
     subgroup_pairs=None,
     subject_col=None,
     **kwargs,
@@ -1948,7 +2043,7 @@ def _plot_variables(
             group_col=group_col,
             value_col=value_col,
             pair_order=pair_order,
-            subgroup_col=subgroup,
+            subgroup_col=subgroup_col,
             subgroup_pairs=subgroup_pairs,
             subject_col=subject_col,
             **kwargs,
