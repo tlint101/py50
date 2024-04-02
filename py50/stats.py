@@ -868,20 +868,20 @@ class Plots:
             print("Input Test Not Valid!")
 
     @staticmethod
-    def box_plot(
+    def boxplot(
         data,
         test=None,
         group_col=None,
         value_col=None,
         group_order=None,
-        subgroup=None,
-        subject_col=None,
+        subgroup_col=None,
         subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
         pairs=None,
         pvalue_order=None,
         palette=None,
         orient="v",
         loc="inside",
+        whis=1.5, # boxplot whiskers
         return_df=None,
         **kwargs,
     ):
@@ -913,6 +913,8 @@ class Plots:
             Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
         :param loc: String
             Set location of annotations. Only "inside" or "outside" are supported.
+        :param whis: Int
+            Set length of whiskers on plot.
         :param return_df: Boolean
             Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
 
@@ -944,9 +946,8 @@ class Plots:
             value_col,
             valid_sns,
             valid_annot,
-            subgroup,
+            subgroup_col,
             subgroup_pairs,
-            subject_col,
             **kwargs,
         )
 
@@ -970,7 +971,8 @@ class Plots:
                 y=value_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup,
+                hue=subgroup_col,
+                whis=whis,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -982,7 +984,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="v",
-                hue=subgroup,
+                hue=subgroup_col,
                 **annot_kwargs,
             )
         elif orient == "h":
@@ -992,7 +994,8 @@ class Plots:
                 y=group_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup,
+                hue=subgroup_col,
+                whis=whis,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1004,7 +1007,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="h",
-                hue=subgroup,
+                hue=subgroup_col,
                 **annot_kwargs,
             )
         else:
@@ -1037,9 +1040,8 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
-    # todo update below plot with annot_kwargs
     @staticmethod
-    def bar_plot(
+    def barplot(
         data,
         test=None,
         group_col=None,
@@ -1217,13 +1219,13 @@ class Plots:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
-    def violin_plot(
+    def violinplot(
         data,
         test=None,
         group_col=None,
         value_col=None,
         group_order=None,
-        subgroup=None,
+        subgroup_col=None,
         subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
         pairs=None,
         pvalue_order=None,
@@ -1292,7 +1294,7 @@ class Plots:
             value_col,
             valid_sns,
             valid_annot,
-            subgroup,
+            subgroup_col,
             subgroup_pairs,
             **kwargs,
         )
@@ -1317,7 +1319,7 @@ class Plots:
                 y=value_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup,
+                hue=subgroup_col,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1329,7 +1331,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="v",
-                hue=subgroup,
+                hue=subgroup_col,
                 **annot_kwargs,
             )
         elif orient == "h":
@@ -1339,7 +1341,7 @@ class Plots:
                 y=group_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup,
+                hue=subgroup_col,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1351,7 +1353,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="h",
-                hue=subgroup,
+                hue=subgroup_col,
                 **annot_kwargs,
             )
         else:
@@ -1391,7 +1393,7 @@ class Plots:
         group_col=None,
         value_col=None,
         group_order=None,
-        subgroup=None,
+        subgroup_col=None,
         subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
         pairs=None,
         pvalue_order=None,
@@ -1460,7 +1462,7 @@ class Plots:
             value_col,
             valid_sns,
             valid_annot,
-            subgroup,
+            subgroup_col,
             subgroup_pairs,
             **kwargs,
         )
@@ -1485,7 +1487,7 @@ class Plots:
                 y=value_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup,
+                hue=subgroup_col,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1497,7 +1499,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="v",
-                hue=subgroup,
+                hue=subgroup_col,
                 **annot_kwargs,
             )
         elif orient == "h":
@@ -1507,7 +1509,7 @@ class Plots:
                 y=group_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup,
+                hue=subgroup_col,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1519,7 +1521,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="h",
-                hue=subgroup,
+                hue=subgroup_col,
                 **annot_kwargs,
             )
         else:
@@ -1552,7 +1554,6 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
-    # todo doublecheck if lineplot works
     @staticmethod
     def lineplot(
         data,
@@ -1560,13 +1561,15 @@ class Plots:
         group_col=None,
         value_col=None,
         group_order=None,
-        subgroup=None,
+        subgroup_col=None,
         subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
         pairs=None,
         pvalue_order=None,
         palette=None,
         orient="v",
         loc="inside",
+        ci="sd",
+        capsize=0.1,
         return_df=None,
         **kwargs,
     ):
@@ -1598,6 +1601,10 @@ class Plots:
             Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
         :param loc: String
             Set location of annotations. Only "inside" or "outside" are supported.
+        :param ci: String
+            Set confidence interval on plot.
+        :param capsize: Int
+            Set cap size on plot.
         :param return_df: Boolean
             Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
 
@@ -1629,7 +1636,7 @@ class Plots:
             value_col,
             valid_sns,
             valid_annot,
-            subgroup,
+            subgroup_col,
             subgroup_pairs,
             **kwargs,
         )
@@ -1654,7 +1661,9 @@ class Plots:
                 y=value_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup,
+                hue=subgroup_col,
+                ci=ci,  # errorbar
+                capsize=capsize,  # errorbar
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1666,7 +1675,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="v",
-                hue=subgroup,
+                hue=subgroup_col,
                 **annot_kwargs,
             )
         elif orient == "h":
@@ -1676,7 +1685,9 @@ class Plots:
                 y=group_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup,
+                hue=subgroup_col,
+                ci=ci,  # errorbar
+                capsize=capsize,  # errorbar
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1688,7 +1699,7 @@ class Plots:
                 order=group_order,
                 verbose=False,
                 orient="h",
-                hue=subgroup,
+                hue=subgroup_col,
                 **annot_kwargs,
             )
         else:
