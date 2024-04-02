@@ -1780,6 +1780,51 @@ def _get_test(
         pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
+    elif test == "pairwise-rm":
+        valid_pg = utils.get_kwargs(pg.pairwise_tests)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        result_df = Stats.get_pairwise_tests(
+            data,
+            value_col=value_col,
+            group_col=None,
+            within_subject_col=group_col,
+            subject_col=subject_col,
+            parametric=True,
+            **pg_kwargs,
+        )
+
+        # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+        result_df = _get_pair_subgroup(result_df, hue=pair_order)
+
+        # Obtain pvalues and pairs and split them from test_df for passing into Annotator
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
+
+    # todo pairwise-mixed needs to be modified for plotting
+    elif test == "pairwise-mixed":
+        valid_pg = utils.get_kwargs(pg.pairwise_tests)
+        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+        # run test
+        result_df = Stats.get_pairwise_tests(
+            data,
+            value_col=value_col,
+            group_col=group_col,
+            within_subject_col=subgroup_col,
+            subject_col=subject_col,
+            parametric=True,
+            **pg_kwargs,
+        )
+
+        # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+        result_df = _get_pair_subgroup(result_df, hue=pair_order)
+
+        # Obtain pvalues and pairs and split them from test_df for passing into Annotator
+        pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
+        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
+
     # Non-parametric T-Test
     elif test == "pairwise-nonparametric":
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
@@ -1853,18 +1898,6 @@ def _get_test(
             # Obtain pvalues and pairs and split them from test_df for passing into Annotator
             pvalue = [utils.star_value(value) for value in result_df["p-val"].tolist()]
             pairs = _get_pairs(result_df, hue=pair_order)
-
-    elif test == "para-ttest":
-        # get kwargs
-        valid_pg = utils.get_kwargs(pg.pairwise_tests)
-        pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
-
-        # run test
-        result_df = Stats.get_nonpara_test(
-            data, dv=value_col, between=group_col, **pg_kwargs
-        )
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
-        pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
     elif test == "kruskal":  # kurskal does not give posthoc. modify
         result_df = Stats.get_kruskal(
