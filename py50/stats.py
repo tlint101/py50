@@ -192,7 +192,12 @@ class Stats:
 
     @staticmethod
     def get_mixed_anova(
-        data, value_col=None, group_col=None, within_subject_col=None, subject_col=None, **kwargs
+        data,
+        value_col=None,
+        group_col=None,
+        within_subject_col=None,
+        subject_col=None,
+        **kwargs,
     ):
         """
         Mixed-design ANOVA.
@@ -213,7 +218,12 @@ class Stats:
         """
 
         result_df = pg.mixed_anova(
-            data=data, dv=value_col, between=group_col, within=within_subject_col, subject=subject_col, **kwargs
+            data=data,
+            dv=value_col,
+            between=group_col,
+            within=within_subject_col,
+            subject=subject_col,
+            **kwargs,
         )
 
         # Add significance asterisk
@@ -949,6 +959,8 @@ class Plots:
         palette=None,
         orient="v",
         loc="inside",
+        ci="sd",
+        capsize=0.1,
         return_df=None,
         **kwargs,
     ):
@@ -980,6 +992,10 @@ class Plots:
             Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
         :param loc: String
             Set location of annotations. Only "inside" or "outside" are supported.
+        :param ci: String
+            Set confidence interval on plot.
+        :param capsize: Int
+            Set cap size on plot.
         :param return_df: Boolean
             Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
 
@@ -1037,8 +1053,8 @@ class Plots:
                 order=group_order,
                 palette=palette,
                 hue=subgroup,
-                ci="sd", # errorbar
-                capsize=0.2, # errorbar
+                ci=ci,  # errorbar
+                capsize=capsize,  # errorbar
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1061,6 +1077,8 @@ class Plots:
                 order=group_order,
                 palette=palette,
                 hue=subgroup,
+                ci=ci,  # errorbar
+                capsize=capsize,  # errorbar
                 **sns_kwargs,
             )
             annotator = Annotator(
