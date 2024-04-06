@@ -1997,11 +1997,7 @@ def _get_test(
             data, group_col=group_col, value_col=value_col, **pg_kwargs
         )
         pvalue = [utils.star_value(value) for value in result_df["p-val"].tolist()]
-        # Obtain pairs and split them from Wilcox result DF for passing into Annotator
-        pairs = []
-        for item in result_df["Comparison"].tolist():
-            parts = item.split("-")
-            pairs.append((parts[0], parts[1]))
+        pairs = _get_pairs(result_df, hue=pair_order)
 
     elif test == "mannu":
         # get kwargs
