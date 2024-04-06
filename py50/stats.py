@@ -10,6 +10,7 @@ import scikit_posthocs as sp
 import pingouin as pg
 from statannotations.Annotator import Annotator
 from py50 import utils
+import warnings
 
 sns.set_style("ticks")
 
@@ -290,7 +291,7 @@ class Stats:
 
     @staticmethod
     def get_wilcoxon(
-        df,
+        data,
         value_col=None,
         group_col=None,
         subgroup=None,
@@ -300,7 +301,7 @@ class Stats:
         """
         Calculate wilcoxon tests. This is non-parametric version of paired T-test. Data number must be uniform to work.
 
-        :param df: pandas.DataFrame
+        :param data: pandas.DataFrame
             Input DataFrame.
         :param value_col: String
             Columns containing values for testing.
@@ -315,14 +316,21 @@ class Stats:
             Other options available with [pingouin.wilcoxon()](https://pingouin-stats.org/build/html/generated/pingouin.wilcoxon.html)
         :return: Pandas.DataFrame
         """
+
+        # ignore Wilcoxon warnings
+        warnings.filterwarnings(
+            "ignore",
+            message="Exact p-value calculation does not work if there are zeros.*",
+        )
+
         if subgroup:
             # Convert 'Name' and 'Status' columns to string
-            df[group_col] = df[group_col].astype(str)
-            df[subgroup] = df[subgroup].astype(str)
-            df["subgroup"] = df[group_col] + "-" + df[subgroup]
+            data[group_col] = data[group_col].astype(str)
+            data[subgroup] = data[subgroup].astype(str)
+            data["subgroup"] = data[group_col] + "-" + data[subgroup]
 
-            subgroup_list = df["subgroup"].unique().tolist()
-            subgroup_df = df[df["subgroup"].isin(subgroup_list)].copy()
+            subgroup_list = data["subgroup"].unique().tolist()
+            subgroup_df = data[data["subgroup"].isin(subgroup_list)].copy()
 
             # Get unique pairs between group and subgroup
             group = subgroup_df["subgroup"].unique()
@@ -336,12 +344,27 @@ class Stats:
                 group1, subgroup1 = pair[0].split("-")
                 group2, subgroup2 = pair[1].split("-")
 
+                # # For troubleshooting
+                # print("first:", data[(data[group_col] == group1)][value_col].shape)
+                # print("second:", data[(data[group_col] == group2)][value_col].shape)
+
+                # Check length of groups
+                group1_length = data[data[group_col] == group1][value_col]
+                group2_length = data[data[group_col] == group2][value_col]
+
+                # print(len(group1_length), len(group2_length)) # For troubleshooting
+
+                if len(group1_length) != len(group2_length):
+                    raise ValueError(
+                        "The lengths of the groups in group_col are not equal!"
+                    )
+
                 # Perform Wilcoxon signed-rank test
                 result = pg.wilcoxon(
-                    df[(df[group_col] == group1) & (df[subgroup] == subgroup1)][
+                    data[(data[group_col] == group1) & (data[subgroup] == subgroup1)][
                         value_col
                     ],
-                    df[(df[group_col] == group2) & (df[subgroup] == subgroup2)][
+                    data[(data[group_col] == group2) & (data[subgroup] == subgroup2)][
                         value_col
                     ],
                     alternative=alternative,
@@ -377,7 +400,7 @@ class Stats:
             No subgroups found. Tests single group and values.
             """
             # Get unique pairs from group
-            group = df[group_col].unique()
+            group = data[group_col].unique()
 
             # From unique items in group list, generate pairs
             pairs = list(combinations(group, 2))
@@ -388,15 +411,25 @@ class Stats:
                 group1 = pair[0]
                 group2 = pair[1]
 
-                # todo add try catch here.
-                # print("Dataset is not of equal length/shape")
-                print("first:", df[(df[group_col] == group1)][value_col].shape)
-                print("second:", df[(df[group_col] == group2)][value_col].shape)
+                # # For troubleshooting
+                # print("first:", data[(data[group_col] == group1)][value_col].shape)
+                # print("second:", data[(data[group_col] == group2)][value_col].shape)
+
+                # Check length of groups
+                group1_length = data[data[group_col] == group1][value_col]
+                group2_length = data[data[group_col] == group2][value_col]
+
+                # print(len(group1_length), len(group2_length)) # For troubleshooting
+
+                if len(group1_length) != len(group2_length):
+                    raise ValueError(
+                        "The lengths of the groups in group_col are not equal!"
+                    )
 
                 # Perform wilcoxon
                 result = pg.wilcoxon(
-                    df[(df[group_col] == group1)][value_col],
-                    df[(df[group_col] == group2)][value_col],
+                    data[(data[group_col] == group1)][value_col],
+                    data[(data[group_col] == group2)][value_col],
                     alternative=alternative,
                     **kwargs,
                 )
@@ -881,7 +914,7 @@ class Plots:
         palette=None,
         orient="v",
         loc="inside",
-        whis=1.5, # boxplot whiskers
+        whis=1.5,  # boxplot whiskers
         return_df=None,
         **kwargs,
     ):
