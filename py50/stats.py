@@ -294,7 +294,7 @@ class Stats:
         data,
         value_col=None,
         group_col=None,
-        subgroup=None,
+        subgroup_col=None,
         alternative="two-sided",
         **kwargs,
     ):
@@ -307,7 +307,7 @@ class Stats:
             Columns containing values for testing.
         :param group_col: String
             Column containing group name.
-        :param subgroup: String
+        :param subgroup_col: String
             Column containing subgroup name.
         :param alternative: String
             Defines the alternative hypothesis, or tail of the test. Must be one of “two-sided”. Must be one of
@@ -323,11 +323,11 @@ class Stats:
             message="Exact p-value calculation does not work if there are zeros.*",
         )
 
-        if subgroup:
+        if subgroup_col:
             # Convert 'Name' and 'Status' columns to string
             data[group_col] = data[group_col].astype(str)
-            data[subgroup] = data[subgroup].astype(str)
-            data["subgroup"] = data[group_col] + "-" + data[subgroup]
+            data[subgroup_col] = data[subgroup_col].astype(str)
+            data["subgroup"] = data[group_col] + "-" + data[subgroup_col]
 
             subgroup_list = data["subgroup"].unique().tolist()
             subgroup_df = data[data["subgroup"].isin(subgroup_list)].copy()
@@ -361,10 +361,10 @@ class Stats:
 
                 # Perform Wilcoxon signed-rank test
                 result = pg.wilcoxon(
-                    data[(data[group_col] == group1) & (data[subgroup] == subgroup1)][
+                    data[(data[group_col] == group1) & (data[subgroup_col] == subgroup1)][
                         value_col
                     ],
-                    data[(data[group_col] == group2) & (data[subgroup] == subgroup2)][
+                    data[(data[group_col] == group2) & (data[subgroup_col] == subgroup2)][
                         value_col
                     ],
                     alternative=alternative,
@@ -460,7 +460,7 @@ class Stats:
         data,
         value_col=None,
         group_col=None,
-        subgroup=None,
+        subgroup_col=None,
         alternative="two-sided",
         **kwargs,
     ):
@@ -473,7 +473,7 @@ class Stats:
             Columns containing values for testing.
         :param group_col: String
             Column containing group name.
-        :param subgroup: String
+        :param subgroup_col: String
             Column containing subgroup name.
         :param alternative: String
             Defines the alternative hypothesis, or tail of the test. Must be one of “two-sided”. Must be one of
@@ -483,11 +483,11 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        if subgroup:
+        if subgroup_col:
             # Convert 'Name' and 'Status' columns to string
             data[group_col] = data[group_col].astype(str)
-            data[subgroup] = data[subgroup].astype(str)
-            data["subgroup"] = data[group_col] + "-" + data[subgroup]
+            data[subgroup_col] = data[subgroup_col].astype(str)
+            data["subgroup"] = data[group_col] + "-" + data[subgroup_col]
 
             subgroup_list = data["subgroup"].unique().tolist()
             subgroup_df = data[data["subgroup"].isin(subgroup_list)].copy()
@@ -498,6 +498,14 @@ class Stats:
             # From unique items in group list, generate pairs
             pairs = list(combinations(group, 2))
 
+            # Check to ensure right columns selected
+            if data[group_col].dtype != 'object':
+                raise ValueError(f"Is group_col: '{group_col}' strings?")
+            elif data[subgroup_col].dtype != 'object':
+                raise ValueError(f"Is subgroup_col: '{subgroup_col}' strings?")
+            elif data[value_col].dtype == 'object':
+                raise ValueError(f"Is value_col: '{value_col}' should be numerical?")
+
             results_list = []
             for pair in pairs:
                 # Get items from pair list and split by hyphen
@@ -506,10 +514,10 @@ class Stats:
 
                 # Perform mwu
                 result = pg.mwu(
-                    data[(data[group_col] == group1) & (data[subgroup] == subgroup1)][
+                    data[(data[group_col] == group1) & (data[subgroup_col] == subgroup1)][
                         value_col
                     ],
-                    data[(data[group_col] == group2) & (data[subgroup] == subgroup2)][
+                    data[(data[group_col] == group2) & (data[subgroup_col] == subgroup2)][
                         value_col
                     ],
                     alternative=alternative,
@@ -2011,7 +2019,7 @@ def _get_test(
                 data,
                 group_col=group_col,
                 value_col=value_col,
-                subgroup=subgroup_col,
+                subgroup_col=subgroup_col,
                 **pg_kwargs,
             )
 
