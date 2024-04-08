@@ -902,11 +902,11 @@ class Plots:
         """
         if list:
             print(
-                "List of tests available for plotting: 'tukey', 'gameshowell', 'ttest-within', 'ttest-between', 'ttest-mixed', 'wilcoxon', 'mannu', 'para-ttest "
+                "List of tests available for plotting: 'tukey', 'gameshowell', 'pairwise-parametric', 'pairwise-rm', 'pairwise-mixed', 'pairwise-nonparametric', 'wilcoxon', 'mannu', 'kruskal'"
                 "'kruskal'"
             )
         else:
-            print("Input Test Not Valid!")
+            print("You don't want a list of tests for py50?")
 
     @staticmethod
     def boxplot(
@@ -1862,6 +1862,8 @@ def _get_test(
     input.
     """
 
+    # Parametric Tests
+
     global pairs
     if test == "tukey":
         # get kwargs
@@ -1965,7 +1967,8 @@ def _get_test(
         pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
-    # Non-parametric T-Test
+    # Non-Parametric Tests
+
     elif test == "pairwise-nonparametric":
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
@@ -2067,7 +2070,9 @@ def _get_test(
         )
         pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
     else:
-        raise ValueError("Test not recognized!")
+        raise ValueError(
+            "Test not recognized! Try one of the following: 'tukey', 'gameshowell', 'pairwise-parametric', 'pairwise-rm', 'pairwise-mixed', 'pairwise-nonparametric', 'wilcoxon', 'mannu', 'kruskal'"
+        )
 
     # elif test == "ttest":
     #     test_df = Stats.get_t_test(df, paired=False, x=None, y=None, **kwargs) # todo determine how to select column to return as list
