@@ -940,7 +940,7 @@ class Plots:
         :param group_order: List.
             Place the groups in a specific order on the plot.
         :param subgroup: String
-            Name of the column containing the subgroup for the grou column. This is associated with the hue parameters
+            Name of the column containing the subgroup for the group column. This is associated with the hue parameters
             in Seaborn.
         :param subgroup_pairs: String
             Name of the column containing the subgroups to the group column.
@@ -1114,7 +1114,7 @@ class Plots:
         :param group_order: List.
             Place the groups in a specific order on the plot.
         :param subgroup: String
-            Name of the column containing the subgroup for the grou column. This is associated with the hue parameters
+            Name of the column containing the subgroup for the group column. This is associated with the hue parameters
             in Seaborn.
         :param subgroup_pairs: String
             Name of the column containing the subgroups to the group column.
@@ -1290,7 +1290,7 @@ class Plots:
         :param group_order: List.
             Place the groups in a specific order on the plot.
         :param subgroup: String
-            Name of the column containing the subgroup for the grou column. This is associated with the hue parameters
+            Name of the column containing the subgroup for the group column. This is associated with the hue parameters
             in Seaborn.
         :param subgroup_pairs: String
             Name of the column containing the subgroups to the group column.
@@ -1458,7 +1458,7 @@ class Plots:
         :param group_order: List.
             Place the groups in a specific order on the plot.
         :param subgroup: String
-            Name of the column containing the subgroup for the grou column. This is associated with the hue parameters
+            Name of the column containing the subgroup for the group column. This is associated with the hue parameters
             in Seaborn.
         :param subgroup_pairs: String
             Name of the column containing the subgroups to the group column.
@@ -1628,7 +1628,7 @@ class Plots:
         :param group_order: List.
             Place the groups in a specific order on the plot.
         :param subgroup: String
-            Name of the column containing the subgroup for the grou column. This is associated with the hue parameters
+            Name of the column containing the subgroup for the group column. This is associated with the hue parameters
             in Seaborn.
         :param subgroup_pairs: String
             Name of the column containing the subgroups to the group column.
