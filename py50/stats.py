@@ -77,31 +77,6 @@ class Stats:
     Parametric posts below
     """
 
-    # @staticmethod
-    # def get_t_test(df, paired=True, stars=False, decimals=4, **kwargs):
-    #     """
-    #     Calculate pairwise t-test.
-    #
-    #     :param df:
-    #     :param paired:
-    #     :param stars:
-    #     :param decimals:
-    #     :param kwargs:
-    #     :return:
-    #     """
-    #     result_df = pg.ptests(
-    #         data=df, paired=paired, stars=stars, decimals=decimals, **kwargs
-    #     )
-    #     return result_df
-
-    # @staticmethod
-    # def get_t_test(df, dv=None, between=None, within=None, **kwargs):
-    #
-    #     result_df = pg.pairwise_tests(
-    #         data=df, dv=dv, between=between, within=within, **kwargs
-    #     )
-    #     return result_df
-
     @staticmethod
     def get_anova(data, value_col=None, group_col=None, **kwargs):
         """
@@ -665,6 +640,10 @@ class Stats:
             documentation for further details
         :return: Pandas.DataFrame
         """
+
+        # Raise error if subgroup_col not given
+        if subgroup_col == None:
+            raise ValueError("Friedman test must be in long format and requires a subgroup_col as subject")
 
         result_df = pg.friedman(
             data=data,
@@ -1980,7 +1959,7 @@ def _get_test(
             group_col=group_col,
             within_subject_col=subgroup_col,
             subject_col=subject_col,
-            parametric=True,
+            parametric=False,
             **pg_kwargs,
         )
 
