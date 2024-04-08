@@ -361,12 +361,12 @@ class Stats:
 
                 # Perform Wilcoxon signed-rank test
                 result = pg.wilcoxon(
-                    data[(data[group_col] == group1) & (data[subgroup_col] == subgroup1)][
-                        value_col
-                    ],
-                    data[(data[group_col] == group2) & (data[subgroup_col] == subgroup2)][
-                        value_col
-                    ],
+                    data[
+                        (data[group_col] == group1) & (data[subgroup_col] == subgroup1)
+                    ][value_col],
+                    data[
+                        (data[group_col] == group2) & (data[subgroup_col] == subgroup2)
+                    ][value_col],
                     alternative=alternative,
                     **kwargs,
                 )
@@ -499,11 +499,11 @@ class Stats:
             pairs = list(combinations(group, 2))
 
             # Check to ensure right columns selected
-            if data[group_col].dtype != 'object':
+            if data[group_col].dtype != "object":
                 raise ValueError(f"Is group_col: '{group_col}' strings?")
-            elif data[subgroup_col].dtype != 'object':
+            elif data[subgroup_col].dtype != "object":
                 raise ValueError(f"Is subgroup_col: '{subgroup_col}' strings?")
-            elif data[value_col].dtype == 'object':
+            elif data[value_col].dtype == "object":
                 raise ValueError(f"Is value_col: '{value_col}' should be numerical?")
 
             results_list = []
@@ -514,12 +514,12 @@ class Stats:
 
                 # Perform mwu
                 result = pg.mwu(
-                    data[(data[group_col] == group1) & (data[subgroup_col] == subgroup1)][
-                        value_col
-                    ],
-                    data[(data[group_col] == group2) & (data[subgroup_col] == subgroup2)][
-                        value_col
-                    ],
+                    data[
+                        (data[group_col] == group1) & (data[subgroup_col] == subgroup1)
+                    ][value_col],
+                    data[
+                        (data[group_col] == group2) & (data[subgroup_col] == subgroup2)
+                    ][value_col],
                     alternative=alternative,
                     **kwargs,
                 )
@@ -982,7 +982,7 @@ class Plots:
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             data,
             group_col,
-            pair_order,
+            pair_order,  # This is the same as pairs variable
             test,
             value_col,
             valid_sns,
@@ -1158,7 +1158,7 @@ class Plots:
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
             data,
             group_col,
-            pair_order,
+            pair_order,  # This is the same as pairs variable
             test,
             value_col,
             valid_sns,
@@ -1865,6 +1865,7 @@ def _get_test(
     :param data:
     :param x_axis:
     :param y_axis:
+    pair_order: List of pairs for annotating plot.
     :param kwargs:
     :return:
     """
@@ -2000,12 +2001,36 @@ def _get_test(
         valid_pg = utils.get_kwargs(pg.wilcoxon)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-        # run test
-        result_df = Stats.get_wilcoxon(
-            data, group_col=group_col, value_col=value_col, **pg_kwargs
-        )
+        if subgroup_col:
+            # run test
+            result_df = Stats.get_wilcoxon(
+                data, group_col=group_col, value_col=value_col, **pg_kwargs
+            )
+
+            # Make pairs between groups and subgroups by df
+            result_df = _get_pair_subgroup(result_df, hue=pair_order)
+            result_df = result_df.reset_index(drop=True)
+
+            # Obtain pvalues and pairs and split them from test_df for passing into Annotator
+            pvalue = [utils.star_value(value) for value in result_df["p-val"].tolist()]
+            pairs = _get_pairs(
+                result_df
+            )  # changed this from subgroup_pairs to see what happens
+        else:
+            # run test
+            result_df = Stats.get_wilcoxon(
+                data, group_col=group_col, value_col=value_col, **pg_kwargs
+            )
+
+            result_df = _get_pair_subgroup(result_df, hue=pair_order)
+
+            # Obtain pvalues and pairs and split them from test_df for passing into Annotator
+            pvalue = [utils.star_value(value) for value in result_df["p-val"].tolist()]
+            pairs = _get_pairs(result_df)
+
+        # Obtain pvalues and pairs and split them from test_df for passing into Annotator
         pvalue = [utils.star_value(value) for value in result_df["p-val"].tolist()]
-        pairs = _get_pairs(result_df, hue=pair_order)
+        pairs = _get_pairs(result_df)
 
     elif test == "mannu":
         # get kwargs
@@ -2024,12 +2049,14 @@ def _get_test(
             )
 
             # Make pairs between groups and subgroups by df
-            result_df = _get_pair_subgroup(result_df, hue=subgroup_pairs)
+            result_df = _get_pair_subgroup(result_df, hue=pair_order)
             result_df = result_df.reset_index(drop=True)
 
             # Obtain pvalues and pairs and split them from test_df for passing into Annotator
             pvalue = [utils.star_value(value) for value in result_df["p-val"].tolist()]
-            pairs = _get_pairs(result_df, hue=subgroup_pairs)
+            pairs = _get_pairs(
+                result_df
+            )  # changed this from subgroup_pairs to see what happens
         else:
             # run test
             result_df = Stats.get_mannu(
@@ -2040,7 +2067,7 @@ def _get_test(
 
             # Obtain pvalues and pairs and split them from test_df for passing into Annotator
             pvalue = [utils.star_value(value) for value in result_df["p-val"].tolist()]
-            pairs = _get_pairs(result_df, hue=pair_order)
+            pairs = _get_pairs(result_df)
 
     elif test == "kruskal":  # kurskal does not give posthoc. modify
         result_df = Stats.get_kruskal(
@@ -2113,9 +2140,8 @@ def _get_pair_subgroup(df, hue=None):
     """Generate pairs by group_col and hue. Hue will designate which input rows to keep for plotting."""
 
     if hue is None:
-        hue = _get_pairs(df, hue)
-    else:
-        hue = hue
+        hue = _get_pairs(df)
+
     # Convert filter_values to a set of tuples. Both directions are generated for checking df pairs.
     forward_set = {tuple(x) for x in hue}
     reverse_set = {(y, x) for (x, y) in forward_set}
@@ -2135,12 +2161,14 @@ def _get_pair_subgroup(df, hue=None):
 
     # Drop the combined column AB if not needed in the final output
     filtered_df.drop("AB", axis=1, inplace=True)
+
     return filtered_df
 
 
-def _get_pairs(df, hue):
+def _get_pairs(df):
     # Support function to make pairs form dataframe into a list of tuples
     pairs = [(a, b) for a, b in zip(df["A"], df["B"])]
+
     return pairs
 
 
@@ -2156,6 +2184,7 @@ def _pair_sort(list_order, row):
         except ValueError:
             # If the row tuple is not found in the desired_order list, assign a high index
             index = len(list_order)
+
     return index
 
 
