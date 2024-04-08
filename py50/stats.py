@@ -1858,16 +1858,8 @@ def _get_test(
     **kwargs,
 ):
     """
-    Function to utilize a specific statistical test. This will output the results in a dataframe and also the pvalues as
-    a list. This function is primarily used for the plot functions in the stats.Plots() class.
-
-    :param test:
-    :param data:
-    :param x_axis:
-    :param y_axis:
-    pair_order: List of pairs for annotating plot.
-    :param kwargs:
-    :return:
+    Function to obtain a results of indicated test for Plotting. Table will be filtered based on the subgroup_pairs
+    input.
     """
 
     global pairs
@@ -2097,14 +2089,7 @@ def _plot_variables(
     **kwargs,
 ):
     """
-    Output plot variables for use inside plots in Plots() class
-    :param data:
-    :param group_col:
-    :param kwargs:
-    :param pair_order: input pairs. this will output which data to keep for plotting.
-    :param test:
-    :param value_col:
-    :return:
+    Function to accept plot variables to perform indicated tests.
     """
     # Get kwarg for sns and annot. If printed, should only appear if kwargs found within module.
     sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
