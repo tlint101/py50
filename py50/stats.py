@@ -984,6 +984,7 @@ class Plots:
             plt.title(title, fontsize=title_fontsize)
 
         # set orientation for plot and Annotator
+        orient = orient.lower()
         if orient == "v":
             ax = sns.boxplot(
                 data=data,
@@ -1160,6 +1161,7 @@ class Plots:
             plt.title(title, fontsize=title_fontsize)
 
         # set orientation for plot and Annotator
+        orient = orient.lower()
         if orient == "v":
             ax = sns.barplot(
                 data=data,
@@ -1332,6 +1334,7 @@ class Plots:
             plt.title(title, fontsize=title_fontsize)
 
         # set orientation for plot and Annotator
+        orient = orient.lower()
         if orient == "v":
             ax = sns.violinplot(
                 data=data,
@@ -1500,6 +1503,7 @@ class Plots:
             plt.title(title, fontsize=title_fontsize)
 
         # set orientation for plot and Annotator
+        orient = orient.lower()
         if orient == "v":
             ax = sns.swarmplot(
                 data=data,
