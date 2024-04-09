@@ -811,7 +811,7 @@ class Stats:
     """
 
     @staticmethod
-    def get_p_matrix(data, test=None, group_col1=None, group_col2=None, **kwargs):
+    def get_p_matrix(data, test=None, group_col1=None, group_col2=None, order=None):
         """
         Convert dataframe of statistic results into a matrix. Group columns must be indicated. Group 2 is optional and
         depends on test used (i.e. pairwise vs Mann-Whitney U). Final DataFrame output can be used with the
@@ -825,11 +825,13 @@ class Stats:
             Name of column containing the second group. This variable is optional.
         :param test: String
             Name of the test used to calculate statistics.
-        :param kwargs:
+        :param order: List or String == "alpha"
+            Reorder the groups for the final table. If input is string "alpha", the order of the groups will be
+            alphabetized.
         :return:
         """
 
-        matrix_df = utils.multi_group(data, group_col1, group_col2, test)
+        matrix_df = utils.multi_group(data, group_col1, group_col2, test, order)
 
         return matrix_df
 
@@ -1749,18 +1751,22 @@ class Plots:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
-    def p_matrix(matrix_df, cmap=None, title=None, title_fontsize=14, **kwargs):
+    def p_matrix(data, cmap=None, title=None, title_fontsize=14, linewidths=0.01, linecolor='gray', **kwargs):
         """
         Wrapper function for scikit_posthoc heatmap.
 
-        :param matrix_df: Pandas.Dataframe
-            Input table must be a matrix calculated using the stats.get_p_matrix()
+        :param data: Pandas.Dataframe
+            Input table must be a matrix calculated using the stats.get_p_matrix().
         :param cmap: List
-            A list of colors. Can be color names or hex codes
+            A list of colors. Can be color names or hex codes.
         :param title: String
-            Input title for figure
+            Input title for figure.
         :param title_fontsize: Int
-            Set size of figure legend
+            Set size of figure legend.
+        :param linewidths: Int
+            Set line width of figure.  
+        :param linecolor: String
+            Set line color. Can be color name or hex code.
         :param kwargs: Optional
             Keyword arguemnts associated with [scikit-posthocs](https://scikit-posthocs.readthedocs.io/en/latest/)
 
@@ -1772,9 +1778,9 @@ class Plots:
 
         if cmap is None:
             cmap = ["1", "#fbd7d4", "#005a32", "#238b45", "#a1d99b"]
-            fig = sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
+            fig = sp.sign_plot(data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs)
         else:
-            fig = sp.sign_plot(matrix_df, cmap=cmap, **kwargs)
+            fig = sp.sign_plot(data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs)
 
         # Display plot
         return fig
@@ -1806,9 +1812,9 @@ class Plots:
         qq_kwargs = {key: value for key, value in kwargs.items() if key in valid_qq}
 
         if type == "histplot":
-            fig = sns.histplot(data=data, x=val_col, **kwargs)
+            fig = sns.histplot(data=data, x=val_col, **hist_kwargs)
         elif type == "qqplot":
-            fig = pg.qqplot(data[val_col], dist="norm", **kwargs)
+            fig = pg.qqplot(data[val_col], dist="norm", **qq_kwargs)
         else:
             raise ValueError(
                 "For test parameter, only 'histplot' or 'qqplot' available"

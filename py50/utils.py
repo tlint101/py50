@@ -5,6 +5,7 @@ for maintainability.
 
 import inspect
 from itertools import combinations
+import numpy as np
 import pandas as pd
 import seaborn as sns
 
@@ -74,7 +75,7 @@ def gameshowell_plot_logic(test_value):
     return pvalue
 
 
-def multi_group(df, group_col1=None, group_col2=None, test=None):
+def multi_group(df, group_col1=None, group_col2=None, test=None, order=None):
     """
     Logic for obtaining p matrix. This is for tests outputs a multiple column with categorical data.
     :param df: pandas.DataFrame
@@ -85,10 +86,13 @@ def multi_group(df, group_col1=None, group_col2=None, test=None):
         Column with second group of data.
     :param test: String
         Test type. This will extract pvalue column from statistics table.
+    :param order: List
+        Reorder the groups for the final table. If input is string "alpha", the order of the groups will be
+            alphabetized.
 
     :return:
     """
-    global p_col
+    global p_col, row_order_list, column_order_list
     if test == "tukey":
         p_col = "p-tukey"
     elif test == "gameshowell":
@@ -97,23 +101,79 @@ def multi_group(df, group_col1=None, group_col2=None, test=None):
         p_col = "p-val"
     elif test == "pairwise-parametric" or test == "pairwise-nonparametric":
         p_col = "p-unc"
+
+    # Create empty matrix table
     groups = sorted(set(df[group_col1]) | set(df[group_col2]))
     matrix_df = pd.DataFrame(index=groups, columns=groups)
 
     # Fill the matrix with p-values
-    for i, row in df.iterrows():
-        matrix_df.loc[row[group_col1], row[group_col2]] = row[p_col]
-        matrix_df.loc[row[group_col2], row[group_col1]] = row[p_col]
+
+    # If table utilizes subgroup
+    if isinstance(matrix_df.index[0], tuple):
+        matrix_df.index = matrix_df.index.map(lambda x: str(x))
+        dummy_df = pd.DataFrame()
+        for i, row in df.iterrows():
+            dummy_df.loc[str(row[group_col1]), str(row[group_col2])] = row[p_col]
+            dummy_df.loc[str(row[group_col2]), str(row[group_col1])] = row[p_col]
+
+        # Convert index and header into (group1, group2) format
+        dummy_df.index = dummy_df.index.map(lambda x: eval(x))
+        dummy_df.columns = dummy_df.columns.map(lambda x: eval(x))
+
+        # Rename and flatten index and column headers
+        dummy_df.index = [f"{idx[0]}-{idx[1]}" for idx in dummy_df.index]
+        dummy_df.columns = [f"{col[0]}-{col[1]}" for col in dummy_df.columns]
+
+        # Ensure that the matrix contains 1 diagonally. Row Index and Column Headers should be in same order
+        # Create a permutation
+        permutation = np.random.permutation(dummy_df.index)
+        # Reindex the DataFrame with the permutation for both index and columns
+        dummy_df = dummy_df.reindex(index=permutation, columns=permutation)
+
+        matrix_df = dummy_df
+
+    # If table does not use subgroup
+    else:
+        for i, row in df.iterrows():
+            matrix_df.loc[row[group_col1], row[group_col2]] = row[p_col]
+            matrix_df.loc[row[group_col2], row[group_col1]] = row[p_col]
 
     # Fill NaN cells with NS (Not Significant)
     matrix_df.fillna(1, inplace=True)
 
+    # sort table order
+    if isinstance(order, list):
+        row_order_list = order
+        column_order_list = order
+    # else sort alphabetically
+    elif order == "alpha":
+        row_order_list = sorted(matrix_df.index)
+        column_order_list = sorted(matrix_df.columns)
+    else:
+        print("order param can only be alpha or a list")
+
+    if isinstance(order, list) or order == "alpha":
+        matrix_df = matrix_df.loc[row_order_list, column_order_list]
+
+    # # For trouble shooting
+    # print(matrix_df)
+
     return matrix_df
+
+
+"""
+Can further test the subgroup matrix by manually modifying the order as follows:
+row_index_list = matrix.index.tolist()
+order_list = ['Lunch-Fri', 'Dinner-Sat', 'Dinner-Sun', 'Dinner-Thur', 'Lunch-Thur', 'Dinner-Fri']
+
+matrix_sorted = matrix.loc[order_list]
+"""
 
 
 def single_group(df, group_col=None, test=None):
     """
     Logic for obtaining p matrix. This is for tests that only outputs a single column with categorical data.
+    :param test:
     :param df:
     :param group_col:
     :param p_col:
