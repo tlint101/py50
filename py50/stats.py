@@ -123,7 +123,6 @@ class Stats:
 
         return result_df
 
-    # todo add params
     @staticmethod
     def get_rm_anova(
         data,
@@ -137,6 +136,8 @@ class Stats:
         """
         One-way and two-way repeated measures ANOVA.
 
+
+
         :param data: pandas.DataFrame
             Input DataFrame.
         :param value_col: String
@@ -145,8 +146,13 @@ class Stats:
             Name of column containing the within factor.
         :param subject_col: String
             Name of column containing the subject identifier.
-        :param kwargs: optional
-            Other options available with [pingouin.rm_anova()](https://pingouin-stats.org/build/html/generated/pingouin.rm_anova.html)
+        :param correction: String or Boolean
+            If True, also return the Greenhouse-Geisser corrected p-value.
+        :param detailed: Boolean
+            If True, return full ANOVA table.
+        :param effsize: String
+            Effect size.
+
         :return: Pandas.DataFrame
         """
 
@@ -865,7 +871,6 @@ class Stats:
 
 class Plots:
 
-    # todo update list output
     @staticmethod
     def list_test(list=True):
         """
@@ -1919,7 +1924,6 @@ def _get_test(
         pvalue = [utils.star_value(value) for value in result_df["p-unc"].tolist()]
         pairs = [(a, b) for a, b in zip(result_df["A"], result_df["B"])]
 
-    # todo pairwise-mixed needs to be modified for plotting
     elif test == "pairwise-mixed":
         valid_pg = utils.get_kwargs(pg.pairwise_tests)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
@@ -2050,9 +2054,6 @@ def _get_test(
         raise ValueError(
             "Test not recognized! Try one of the following: 'tukey', 'gameshowell', 'pairwise-parametric', 'pairwise-rm', 'pairwise-mixed', 'pairwise-nonparametric', 'wilcoxon', 'mannu', 'kruskal'"
         )
-
-    # elif test == "ttest":
-    #     test_df = Stats.get_t_test(df, paired=False, x=None, y=None, **kwargs) # todo determine how to select column to return as list
 
     return pvalue, result_df, pairs, subgroup_col
 
