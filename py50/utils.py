@@ -77,16 +77,26 @@ def gameshowell_plot_logic(test_value):
 def multi_group(df, group_col1=None, group_col2=None, test=None):
     """
     Logic for obtaining p matrix. This is for tests outputs a multiple column with categorical data.
-    :param df:
-    :param kwargs:
-    :param test:
-    :param x_axis:
-    :param y_axis:
+    :param df: pandas.DataFrame
+        Input DataFrame.
+    :param group_col1: String
+        Column with first group of data.
+    :param group_col2: String
+        Column with second group of data.
+    :param test: String
+        Test type. This will extract pvalue column from statistics table.
+
     :return:
     """
     global p_col
     if test == "tukey":
         p_col = "p-tukey"
+    elif test == "gameshowell":
+        p_col = "pval"
+    elif test == "mannu" or test == "wilcoxon":
+        p_col = "p-val"
+    elif test == "pairwise-parametric" or test == "pairwise-nonparametric":
+        p_col = "p-unc"
     groups = sorted(set(df[group_col1]) | set(df[group_col2]))
     matrix_df = pd.DataFrame(index=groups, columns=groups)
 

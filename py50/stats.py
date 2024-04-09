@@ -643,7 +643,9 @@ class Stats:
 
         # Raise error if subgroup_col not given
         if subgroup_col == None:
-            raise ValueError("Friedman test must be in long format and requires a subgroup_col as subject")
+            raise ValueError(
+                "Friedman test must be in long format and requires a subgroup_col as subject"
+            )
 
         result_df = pg.friedman(
             data=data,
@@ -808,7 +810,6 @@ class Stats:
     Output P-Values as a matrix in Pandas DataFrame
     """
 
-    # todo update documentation
     @staticmethod
     def get_p_matrix(data, test=None, group_col1=None, group_col2=None, **kwargs):
         """
@@ -828,16 +829,7 @@ class Stats:
         :return:
         """
 
-        # Run tests based on test parameter input
-        # todo add options for additional test and ensure format matches
-        if test == "tukey":
-            matrix_df = utils.multi_group(data, group_col1, group_col2, test)
-        elif test == "mannu" or test == "wilcoxon":
-            matrix_df = utils.single_group(df=data, group_col=group_col1, test=test)
-        else:
-            raise NameError(
-                "Must include a post-hoc test like: 'tukey', 'gameshowell', 'ptest', 'mannu', etc"
-            )
+        matrix_df = utils.multi_group(data, group_col1, group_col2, test)
 
         return matrix_df
 
@@ -895,7 +887,7 @@ class Plots:
         value_col=None,
         group_order=None,
         subgroup_col=None,
-        subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
+        subgroup_pairs=None,
         pairs=None,
         pvalue_order=None,
         palette=None,
@@ -918,7 +910,7 @@ class Plots:
             Name of the column containing the values. This is the dependent variable.
         :param group_order: List.
             Place the groups in a specific order on the plot.
-        :param subgroup: String
+        :param subgroup_col: String
             Name of the column containing the subgroup for the group column. This is associated with the hue parameters
             in Seaborn.
         :param subgroup_pairs: String
@@ -936,7 +928,7 @@ class Plots:
         :param whis: Int
             Set length of whiskers on plot.
         :param return_df: Boolean
-            Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
+            Returns a DataFrame of calculated results. If pairs used, only return rows with annotated pairs.
 
         :return: Fig
         """
@@ -1069,7 +1061,7 @@ class Plots:
         value_col=None,
         group_order=None,
         subgroup_col=None,
-        subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
+        subgroup_pairs=None,
         pairs=None,
         pvalue_order=None,
         palette=None,
@@ -1093,7 +1085,7 @@ class Plots:
             Name of the column containing the values. This is the dependent variable.
         :param group_order: List.
             Place the groups in a specific order on the plot.
-        :param subgroup: String
+        :param subgroup_col: String
             Name of the column containing the subgroup for the group column. This is associated with the hue parameters
             in Seaborn.
         :param subgroup_pairs: String
@@ -1113,9 +1105,9 @@ class Plots:
         :param capsize: Int
             Set cap size on plot.
         :param return_df: Boolean
-            Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
+            Returns a DataFrame of calculated results. If pairs used, only return rows with annotated pairs.
 
-        :return: Fig
+        :return:
         """
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.barplot)
@@ -1248,7 +1240,7 @@ class Plots:
         value_col=None,
         group_order=None,
         subgroup_col=None,
-        subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
+        subgroup_pairs=None,
         pairs=None,
         pvalue_order=None,
         palette=None,
@@ -1270,7 +1262,7 @@ class Plots:
             Name of the column containing the values. This is the dependent variable.
         :param group_order: List.
             Place the groups in a specific order on the plot.
-        :param subgroup: String
+        :param subgroup_col: String
             Name of the column containing the subgroup for the group column. This is associated with the hue parameters
             in Seaborn.
         :param subgroup_pairs: String
@@ -1286,9 +1278,9 @@ class Plots:
         :param loc: String
             Set location of annotations. Only "inside" or "outside" are supported.
         :param return_df: Boolean
-            Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
+            Returns a DataFrame of calculated results. If pairs used, only return rows with annotated pairs.
 
-        :return: Fig
+        :return:
         """
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.violinplot)
@@ -1417,7 +1409,7 @@ class Plots:
         value_col=None,
         group_order=None,
         subgroup_col=None,
-        subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
+        subgroup_pairs=None,
         pairs=None,
         pvalue_order=None,
         palette=None,
@@ -1455,9 +1447,9 @@ class Plots:
         :param loc: String
             Set location of annotations. Only "inside" or "outside" are supported.
         :param return_df: Boolean
-            Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
+            Returns a DataFrame of calculated results. If pairs used, only return rows with annotated pairs.
 
-        :return: Fig
+        :return:
         """
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.swarmplot)
@@ -1579,14 +1571,14 @@ class Plots:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
-    def lineplot(
+    def _lineplot(
         data,
         test=None,
         group_col=None,
         value_col=None,
         group_order=None,
         subgroup_col=None,
-        subgroup_pairs=None,  # The minute this is a parameter, the program goes heywire. Added as variable to _plot_variables()
+        subgroup_pairs=None,
         pairs=None,
         pvalue_order=None,
         palette=None,
@@ -1630,9 +1622,9 @@ class Plots:
         :param capsize: Int
             Set cap size on plot.
         :param return_df: Boolean
-            Returns a DataFrame of calculated results. If pairs used, only return rows with associated pairs.
+            Returns a DataFrame of calculated results. If pairs used, only return rows with annotated pairs.
 
-        :return: Fig
+        :return:
         """
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.lineplot)
@@ -1774,6 +1766,7 @@ class Plots:
 
         :return: Pyplot figure
         """
+
         if title:
             plt.title(title, fontsize=title_fontsize)
 
@@ -1785,11 +1778,6 @@ class Plots:
 
         # Display plot
         return fig
-
-    @staticmethod
-    def ttest_bar_plot():
-        # Function will mirror above. Need to format shape to fit Statannotation
-        pass
 
     """
     Functions to plot data distribution
