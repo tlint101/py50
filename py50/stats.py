@@ -891,7 +891,7 @@ class Plots:
         subgroup_col=None,
         subgroup_pairs=None,
         pairs=None,
-        pvalue_order=None,
+        pvalue_label=None,
         palette=None,
         orient="v",
         loc="inside",
@@ -919,7 +919,7 @@ class Plots:
             Name of the column containing the subgroups to the group column.
         :param pairs: List
             A list containing specific pairings for annotation on the plot.
-        :param pvalue_order: List.
+        :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
@@ -1029,8 +1029,8 @@ class Plots:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
         # optional input for custom annotations
-        if pvalue_order:
-            pvalue = pvalue_order
+        if pvalue_label:
+            pvalue = pvalue_label
 
         # # For debugging pairs and pvalue list orders
         # print(pairs)
@@ -1065,7 +1065,7 @@ class Plots:
         subgroup_col=None,
         subgroup_pairs=None,
         pairs=None,
-        pvalue_order=None,
+        pvalue_label=None,
         palette=None,
         orient="v",
         loc="inside",
@@ -1094,7 +1094,7 @@ class Plots:
             Name of the column containing the subgroups to the group column.
         :param pairs: List
             A list containing specific pairings for annotation on the plot.
-        :param pvalue_order: List.
+        :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
@@ -1208,8 +1208,8 @@ class Plots:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
         # optional input for custom annotations
-        if pvalue_order:
-            pvalue = pvalue_order
+        if pvalue_label:
+            pvalue = pvalue_label
 
         # # For debugging pairs and pvalue list orders
         # print(pairs)
@@ -1244,7 +1244,7 @@ class Plots:
         subgroup_col=None,
         subgroup_pairs=None,
         pairs=None,
-        pvalue_order=None,
+        pvalue_label=None,
         palette=None,
         orient="v",
         loc="inside",
@@ -1271,7 +1271,7 @@ class Plots:
             Name of the column containing the subgroups to the group column.
         :param pairs: List
             A list containing specific pairings for annotation on the plot.
-        :param pvalue_order: List.
+        :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
@@ -1377,8 +1377,8 @@ class Plots:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
         # optional input for custom annotations
-        if pvalue_order:
-            pvalue = pvalue_order
+        if pvalue_label:
+            pvalue = pvalue_label
 
         # # For debugging pairs and pvalue list orders
         # print(pairs)
@@ -1413,7 +1413,7 @@ class Plots:
         subgroup_col=None,
         subgroup_pairs=None,
         pairs=None,
-        pvalue_order=None,
+        pvalue_label=None,
         palette=None,
         orient="v",
         loc="inside",
@@ -1440,7 +1440,7 @@ class Plots:
             Name of the column containing the subgroups to the group column.
         :param pairs: List
             A list containing specific pairings for annotation on the plot.
-        :param pvalue_order: List.
+        :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
@@ -1546,8 +1546,8 @@ class Plots:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
         # optional input for custom annotations
-        if pvalue_order:
-            pvalue = pvalue_order
+        if pvalue_label:
+            pvalue = pvalue_label
 
         # # For debugging pairs and pvalue list orders
         # print(pairs)
@@ -1582,7 +1582,7 @@ class Plots:
         subgroup_col=None,
         subgroup_pairs=None,
         pairs=None,
-        pvalue_order=None,
+        pvalue_label=None,
         palette=None,
         orient="v",
         loc="inside",
@@ -1611,7 +1611,7 @@ class Plots:
             Name of the column containing the subgroups to the group column.
         :param pairs: List
             A list containing specific pairings for annotation on the plot.
-        :param pvalue_order: List.
+        :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
@@ -1724,8 +1724,8 @@ class Plots:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
         # optional input for custom annotations
-        if pvalue_order:
-            pvalue = pvalue_order
+        if pvalue_label:
+            pvalue = pvalue_label
 
         # # For debugging pairs and pvalue list orders
         # print(pairs)

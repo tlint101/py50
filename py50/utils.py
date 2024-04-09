@@ -95,12 +95,20 @@ def multi_group(df, group_col1=None, group_col2=None, test=None, order=None):
     global p_col, row_order_list, column_order_list
     if test == "tukey":
         p_col = "p-tukey"
+        group_col1 = "A"
+        group_col2 = "B"
     elif test == "gameshowell":
         p_col = "pval"
+        group_col1 = "A"
+        group_col2 = "B"
     elif test == "mannu" or test == "wilcoxon":
         p_col = "p-val"
+        group_col1 = "A"
+        group_col2 = "B"
     elif test == "pairwise-parametric" or test == "pairwise-nonparametric":
         p_col = "p-unc"
+        group_col1 = "A"
+        group_col2 = "B"
 
     # Create empty matrix table
     groups = sorted(set(df[group_col1]) | set(df[group_col2]))
@@ -149,6 +157,8 @@ def multi_group(df, group_col1=None, group_col2=None, test=None, order=None):
     elif order == "alpha":
         row_order_list = sorted(matrix_df.index)
         column_order_list = sorted(matrix_df.columns)
+    elif order is None:
+        pass
     else:
         print("order param can only be alpha or a list")
 
