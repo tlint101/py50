@@ -841,9 +841,12 @@ class Stats:
         return df
 
 
-class Plots:
+class Plots(Stats):
 
     def __init__(self, df):
+        # Call methods from above class
+        super().__init__(df)
+        # Ensure df as input
         if not isinstance(df, pd.DataFrame):
             raise ValueError("Input must be a DataFrame")
         self.df = df
@@ -1728,9 +1731,56 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
-    @staticmethod
+    # @staticmethod
+    # def p_matrix(
+    #     data,
+    #     cmap=None,
+    #     title=None,
+    #     title_fontsize=14,
+    #     linewidths=0.01,
+    #     linecolor="gray",
+    #     **kwargs,
+    # ):
+    #     """
+    #     Wrapper function for scikit_posthoc heatmap.
+    #
+    #     :param data: Pandas.Dataframe
+    #         Input table must be a matrix calculated using the stats.get_p_matrix().
+    #     :param cmap: List
+    #         A list of colors. Can be color names or hex codes.
+    #     :param title: String
+    #         Input title for figure.
+    #     :param title_fontsize: Int
+    #         Set size of figure legend.
+    #     :param linewidths: Int
+    #         Set line width of figure.
+    #     :param linecolor: String
+    #         Set line color. Can be color name or hex code.
+    #     :param kwargs: Optional
+    #         Keyword arguemnts associated with [scikit-posthocs](https://scikit-posthocs.readthedocs.io/en/latest/)
+    #
+    #     :return: Pyplot figure
+    #     """
+    #
+    #     if title:
+    #         plt.title(title, fontsize=title_fontsize)
+    #
+    #     if cmap is None:
+    #         cmap = ["1", "#fbd7d4", "#005a32", "#238b45", "#a1d99b"]
+    #         fig = sp.sign_plot(
+    #             data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
+    #         )
+    #     else:
+    #         fig = sp.sign_plot(
+    #             data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
+    #         )
+    #
+    #     # Display plot
+    #     return fig
+
     def p_matrix(
-        data,
+        self,
+        # data,
         cmap=None,
         title=None,
         title_fontsize=14,
@@ -1765,11 +1815,11 @@ class Plots:
         if cmap is None:
             cmap = ["1", "#fbd7d4", "#005a32", "#238b45", "#a1d99b"]
             fig = sp.sign_plot(
-                data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
+                self.df, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
             )
         else:
             fig = sp.sign_plot(
-                data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
+                self.df, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
             )
 
         # Display plot
