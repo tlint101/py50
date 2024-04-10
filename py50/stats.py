@@ -22,16 +22,29 @@ class Stats:
     DataFrame for output as a csv or xlsx file using pandas.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, df):
+        if not isinstance(df, pd.DataFrame):
+            raise ValueError("Input must be a DataFrame")
+        self.df = df
 
-    @staticmethod
-    def get_normality(data, value_col=None, group_col=None, method="shapiro", **kwargs):
+    def show(self, rows=None):
+        """
+        show DataFrame
+
+        :param rows: Int
+            Indicate the number of rows to display. If none, automatically show 5.
+        :return: DataFrame
+        """
+
+        if rows is None:
+            return self.df.head()
+        elif isinstance(rows, int):
+            return self.df.head(rows)
+
+    def get_normality(self, value_col=None, group_col=None, method="shapiro", **kwargs):
         """
         Test data normality of dataset.
 
-        :param data:pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
@@ -44,19 +57,16 @@ class Stats:
         """
 
         result_df = pg.normality(
-            data=data, dv=value_col, group=group_col, method=method, **kwargs
+            data=self.df, dv=value_col, group=group_col, method=method, **kwargs
         )
         return result_df
 
-    @staticmethod
     def get_homoscedasticity(
-        data, value_col=None, group_col=None, method="levene", **kwargs
+        self, value_col=None, group_col=None, method="levene", **kwargs
     ):
         """
         Test for data variance.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
@@ -69,7 +79,7 @@ class Stats:
         """
 
         result_df = pg.homoscedasticity(
-            data=data, dv=value_col, group=group_col, method=method, **kwargs
+            data=self.df, dv=value_col, group=group_col, method=method, **kwargs
         )
         return result_df
 
@@ -77,13 +87,10 @@ class Stats:
     Parametric posts below
     """
 
-    @staticmethod
-    def get_anova(data, value_col=None, group_col=None, **kwargs):
+    def get_anova(self, value_col=None, group_col=None, **kwargs):
         """
         One-way and N-way ANOVA.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String or list of strings
@@ -93,7 +100,7 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        result_df = pg.anova(data=data, dv=value_col, between=group_col, **kwargs)
+        result_df = pg.anova(data=self.df, dv=value_col, between=group_col, **kwargs)
 
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -101,13 +108,10 @@ class Stats:
 
         return result_df
 
-    @staticmethod
-    def get_welch_anova(data, value_col=None, group_col=None):
+    def get_welch_anova(self, value_col=None, group_col=None):
         """
         One-way Welch ANOVA
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
@@ -115,7 +119,7 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        result_df = pg.welch_anova(data=data, dv=value_col, between=group_col)
+        result_df = pg.welch_anova(data=self.df, dv=value_col, between=group_col)
 
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -123,9 +127,8 @@ class Stats:
 
         return result_df
 
-    @staticmethod
     def get_rm_anova(
-        data,
+        self,
         value_col=None,
         within_subject_col=None,
         subject_col=None,
@@ -136,10 +139,6 @@ class Stats:
         """
         One-way and two-way repeated measures ANOVA.
 
-
-
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param within_subject_col: String
@@ -157,7 +156,7 @@ class Stats:
         """
 
         result_df = pg.rm_anova(
-            data=data,
+            data=self.df,
             dv=value_col,
             within=within_subject_col,
             subject=subject_col,
@@ -172,9 +171,8 @@ class Stats:
 
         return result_df
 
-    @staticmethod
     def get_mixed_anova(
-        data,
+        self,
         value_col=None,
         group_col=None,
         within_subject_col=None,
@@ -184,8 +182,6 @@ class Stats:
         """
         Mixed-design ANOVA.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
@@ -200,7 +196,7 @@ class Stats:
         """
 
         result_df = pg.mixed_anova(
-            data=data,
+            data=self.df,
             dv=value_col,
             between=group_col,
             within=within_subject_col,
@@ -214,13 +210,10 @@ class Stats:
 
         return result_df
 
-    @staticmethod
-    def get_tukey(data, value_col=None, group_col=None, effsize="hedges"):
+    def get_tukey(self, value_col=None, group_col=None, effsize="hedges"):
         """
         Pairwise Tukey post-hoc test.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
@@ -231,7 +224,7 @@ class Stats:
         """
 
         result_df = pg.pairwise_tukey(
-            data=data, dv=value_col, between=group_col, effsize=effsize
+            data=self.df, dv=value_col, between=group_col, effsize=effsize
         )
 
         # Add significance asterisk
@@ -240,13 +233,10 @@ class Stats:
 
         return result_df
 
-    @staticmethod
-    def get_gameshowell(data, value_col=None, group_col=None, effsize="hedges"):
+    def get_gameshowell(self, value_col=None, group_col=None, effsize="hedges"):
         """
         Pairwise Games-Howell post-hoc test
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
@@ -257,7 +247,7 @@ class Stats:
         """
 
         result_df = pg.pairwise_gameshowell(
-            data=data, dv=value_col, between=group_col, effsize=effsize
+            data=self.df, dv=value_col, between=group_col, effsize=effsize
         )
 
         # Add significance asterisk
@@ -270,9 +260,8 @@ class Stats:
     non-parametric tests below
     """
 
-    @staticmethod
     def get_wilcoxon(
-        data,
+        self,
         value_col=None,
         group_col=None,
         subgroup_col=None,
@@ -282,8 +271,6 @@ class Stats:
         """
         Calculate wilcoxon tests. This is non-parametric version of paired T-test. Data number must be uniform to work.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Columns containing values for testing.
         :param group_col: String
@@ -306,12 +293,12 @@ class Stats:
 
         if subgroup_col:
             # Convert 'Name' and 'Status' columns to string
-            data[group_col] = data[group_col].astype(str)
-            data[subgroup_col] = data[subgroup_col].astype(str)
-            data["subgroup"] = data[group_col] + "-" + data[subgroup_col]
+            self.df[group_col] = self.df[group_col].astype(str)
+            self.df[subgroup_col] = self.df[subgroup_col].astype(str)
+            self.df["subgroup"] = self.df[group_col] + "-" + self.df[subgroup_col]
 
-            subgroup_list = data["subgroup"].unique().tolist()
-            subgroup_df = data[data["subgroup"].isin(subgroup_list)].copy()
+            subgroup_list = self.df["subgroup"].unique().tolist()
+            subgroup_df = self.df[self.df["subgroup"].isin(subgroup_list)].copy()
 
             # Get unique pairs between group and subgroup
             group = subgroup_df["subgroup"].unique()
@@ -330,8 +317,8 @@ class Stats:
                 # print("second:", data[(data[group_col] == group2)][value_col].shape)
 
                 # Check length of groups
-                group1_length = data[data[group_col] == group1][value_col]
-                group2_length = data[data[group_col] == group2][value_col]
+                group1_length = self.df[self.df[group_col] == group1][value_col]
+                group2_length = self.df[self.df[group_col] == group2][value_col]
 
                 # print(len(group1_length), len(group2_length)) # For troubleshooting
 
@@ -342,11 +329,13 @@ class Stats:
 
                 # Perform Wilcoxon signed-rank test
                 result = pg.wilcoxon(
-                    data[
-                        (data[group_col] == group1) & (data[subgroup_col] == subgroup1)
+                    self.df[
+                        (self.df[group_col] == group1)
+                        & (self.df[subgroup_col] == subgroup1)
                     ][value_col],
-                    data[
-                        (data[group_col] == group2) & (data[subgroup_col] == subgroup2)
+                    self.df[
+                        (self.df[group_col] == group2)
+                        & (self.df[subgroup_col] == subgroup2)
                     ][value_col],
                     alternative=alternative,
                     **kwargs,
@@ -381,7 +370,7 @@ class Stats:
             No subgroups found. Tests single group and values.
             """
             # Get unique pairs from group
-            group = data[group_col].unique()
+            group = self.df[group_col].unique()
 
             # From unique items in group list, generate pairs
             pairs = list(combinations(group, 2))
@@ -397,8 +386,8 @@ class Stats:
                 # print("second:", data[(data[group_col] == group2)][value_col].shape)
 
                 # Check length of groups
-                group1_length = data[data[group_col] == group1][value_col]
-                group2_length = data[data[group_col] == group2][value_col]
+                group1_length = self.df[self.df[group_col] == group1][value_col]
+                group2_length = self.df[self.df[group_col] == group2][value_col]
 
                 # print(len(group1_length), len(group2_length)) # For troubleshooting
 
@@ -409,8 +398,8 @@ class Stats:
 
                 # Perform wilcoxon
                 result = pg.wilcoxon(
-                    data[(data[group_col] == group1)][value_col],
-                    data[(data[group_col] == group2)][value_col],
+                    self.df[(self.df[group_col] == group1)][value_col],
+                    self.df[(self.df[group_col] == group2)][value_col],
                     alternative=alternative,
                     **kwargs,
                 )
@@ -436,9 +425,8 @@ class Stats:
 
             return result_df
 
-    @staticmethod
     def get_mannu(
-        data,
+        self,
         value_col=None,
         group_col=None,
         subgroup_col=None,
@@ -448,7 +436,7 @@ class Stats:
         """
         Calculate Mann-Whitney U Test. This is a non-parametric version of the independent T-test.
 
-        :param data: pandas.DataFrame
+        :param self: pandas.DataFrame
             Input DataFrame.
         :param value_col: String
             Columns containing values for testing.
@@ -466,12 +454,12 @@ class Stats:
 
         if subgroup_col:
             # Convert 'Name' and 'Status' columns to string
-            data[group_col] = data[group_col].astype(str)
-            data[subgroup_col] = data[subgroup_col].astype(str)
-            data["subgroup"] = data[group_col] + "-" + data[subgroup_col]
+            self.df[group_col] = self.df[group_col].astype(str)
+            self.df[subgroup_col] = self.df[subgroup_col].astype(str)
+            self.df["subgroup"] = self.df[group_col] + "-" + self.df[subgroup_col]
 
-            subgroup_list = data["subgroup"].unique().tolist()
-            subgroup_df = data[data["subgroup"].isin(subgroup_list)].copy()
+            subgroup_list = self.df["subgroup"].unique().tolist()
+            subgroup_df = self.df[self.df["subgroup"].isin(subgroup_list)].copy()
 
             # Get unique pairs between group and subgroup
             group = subgroup_df["subgroup"].unique()
@@ -480,11 +468,11 @@ class Stats:
             pairs = list(combinations(group, 2))
 
             # Check to ensure right columns selected
-            if data[group_col].dtype != "object":
+            if self.df[group_col].dtype != "object":
                 raise ValueError(f"Is group_col: '{group_col}' strings?")
-            elif data[subgroup_col].dtype != "object":
+            elif self.df[subgroup_col].dtype != "object":
                 raise ValueError(f"Is subgroup_col: '{subgroup_col}' strings?")
-            elif data[value_col].dtype == "object":
+            elif self.df[value_col].dtype == "object":
                 raise ValueError(f"Is value_col: '{value_col}' should be numerical?")
 
             results_list = []
@@ -495,11 +483,13 @@ class Stats:
 
                 # Perform mwu
                 result = pg.mwu(
-                    data[
-                        (data[group_col] == group1) & (data[subgroup_col] == subgroup1)
+                    self.df[
+                        (self.df[group_col] == group1)
+                        & (self.df[subgroup_col] == subgroup1)
                     ][value_col],
-                    data[
-                        (data[group_col] == group2) & (data[subgroup_col] == subgroup2)
+                    self.df[
+                        (self.df[group_col] == group2)
+                        & (self.df[subgroup_col] == subgroup2)
                     ][value_col],
                     alternative=alternative,
                     **kwargs,
@@ -522,19 +512,19 @@ class Stats:
                 )
 
             # Convert the list of dictionaries to a DataFrame
-            result_df = pd.DataFrame(results_list)
+            df = pd.DataFrame(results_list)
 
             # Split values into and separate by comma
-            result_df["A"] = result_df["A"].apply(lambda x: tuple(x.split("-")))
-            result_df["B"] = result_df["B"].apply(lambda x: tuple(x.split("-")))
+            df["A"] = df["A"].apply(lambda x: tuple(x.split("-")))
+            df["B"] = df["B"].apply(lambda x: tuple(x.split("-")))
 
-            return result_df
+            return df
         else:
             """
             No subgroups found. Tests single group and values.
             """
             # Get unique pairs from group
-            group = data[group_col].unique()
+            group = self.df[group_col].unique()
 
             # From unique items in group list, generate pairs
             pairs = list(combinations(group, 2))
@@ -546,8 +536,8 @@ class Stats:
                 group2 = pair[1]
                 # Perform mwu
                 result = pg.mwu(
-                    data[(data[group_col] == group1)][value_col],
-                    data[(data[group_col] == group2)][value_col],
+                    self.df[(self.df[group_col] == group1)][value_col],
+                    self.df[(self.df[group_col] == group2)][value_col],
                     alternative=alternative,
                     **kwargs,
                 )
@@ -565,17 +555,14 @@ class Stats:
                 )
 
             # Convert the list of dictionaries to a DataFrame
-            result_df = pd.DataFrame(results_list)
+            df = pd.DataFrame(results_list)
 
-            return result_df
+            return df
 
-    @staticmethod
-    def get_kruskal(data, value_col=None, group_col=None, detailed=False):
+    def get_kruskal(self, value_col=None, group_col=None, detailed=False):
         """
         Calculate Kruskal-Wallis H-test for independent samples.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
@@ -586,7 +573,7 @@ class Stats:
         """
 
         result_df = pg.kruskal(
-            data=data, dv=value_col, between=group_col, detailed=detailed
+            data=self.df, dv=value_col, between=group_col, detailed=detailed
         )
 
         # Add significance asterisk
@@ -595,14 +582,11 @@ class Stats:
 
         return result_df
 
-    @staticmethod
-    def get_cochran(data, value_col=None, group_col=None, subgroup_col=None):
+    def get_cochran(self, value_col=None, group_col=None, subgroup_col=None):
         """
         Calculate Cochran Q Test. This is used when the dependent variable, or value_col, is binary. For details between
         groups, posthoc test will be needed.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String
@@ -614,10 +598,10 @@ class Stats:
 
         if subgroup_col:
             result_df = pg.cochran(
-                data=data, dv=value_col, within=subgroup_col, subject=group_col
+                data=self.df, dv=value_col, within=subgroup_col, subject=group_col
             )
         else:
-            result_df = pg.cochran(data=data, dv=value_col, within=group_col)
+            result_df = pg.cochran(data=self.df, dv=value_col, within=group_col)
 
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -625,16 +609,13 @@ class Stats:
 
         return result_df
 
-    @staticmethod
     def get_friedman(
-        data=None, group_col=None, value_col=None, subgroup_col=None, method="chisq"
+        self, group_col=None, value_col=None, subgroup_col=None, method="chisq"
     ):
         """
         Calculate Friedman Test. Determines if distributions of two or more paired samples are equal. For details between
         groups, posthoc test (get_pairwise_tests(parametric=False)) will be needed.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable
         :param group_col: String
@@ -648,13 +629,13 @@ class Stats:
         """
 
         # Raise error if subgroup_col not given
-        if subgroup_col == None:
+        if subgroup_col is None:
             raise ValueError(
                 "Friedman test must be in long format and requires a subgroup_col as subject"
             )
 
         result_df = pg.friedman(
-            data=data,
+            data=self.df,
             dv=value_col,
             within=group_col,
             subject=subgroup_col,
@@ -671,9 +652,8 @@ class Stats:
     pairwise t-tests below
     """
 
-    @staticmethod
     def get_pairwise_tests(
-        data,
+        self,
         value_col=None,
         group_col=None,
         within_subject_col=None,
@@ -684,8 +664,6 @@ class Stats:
         """
         Posthoc test for parametric or nonparametric statistics. By default, the parametric parameter is set as True.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String or list with 2 elements
@@ -703,7 +681,7 @@ class Stats:
         """
 
         result_df = pg.pairwise_tests(
-            data=data,
+            data=self.df,
             dv=value_col,
             between=group_col,
             within=within_subject_col,
@@ -718,9 +696,8 @@ class Stats:
 
         return result_df
 
-    @staticmethod
     def get_pairwise_rm(
-        data,
+        self,
         value_col=None,
         group_col=None,
         within_subject_col=None,
@@ -731,8 +708,6 @@ class Stats:
         """
         Posthoc test for repeated measures.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String or list with 2 elements
@@ -750,7 +725,7 @@ class Stats:
         """
 
         result_df = pg.pairwise_tests(
-            data=data,
+            data=self.df,
             dv=value_col,
             between=group_col,
             within=within_subject_col,
@@ -765,9 +740,8 @@ class Stats:
 
         return result_df
 
-    @staticmethod
     def get_pairwise_mixed(
-        data,
+        self,
         value_col=None,
         group_col=None,
         within_subject_col=None,
@@ -778,8 +752,6 @@ class Stats:
         """
         Posthoc test for mixed ANOVA.
 
-        :param data: pandas.DataFrame
-            Input DataFrame.
         :param value_col: String
             Name of column containing the dependent variable.
         :param group_col: String or list with 2 elements
@@ -797,7 +769,7 @@ class Stats:
         """
 
         result_df = pg.pairwise_tests(
-            data=data,
+            data=self.df,
             dv=value_col,
             between=group_col,
             within=within_subject_col,
@@ -871,24 +843,39 @@ class Stats:
 
 class Plots:
 
+    def __init__(self, df):
+        if not isinstance(df, pd.DataFrame):
+            raise ValueError("Input must be a DataFrame")
+        self.df = df
+
+    def show(self, rows=None):
+        """
+        show DataFrame
+
+        :param rows: Int
+            Indicate the number of rows to display. If none, automatically show 5.
+        :return: DataFrame
+        """
+
+        if rows is None:
+            return self.df.head()
+        elif isinstance(rows, int):
+            return self.df.head(rows)
+
     @staticmethod
-    def list_test(list=True):
+    def list_test():
         """
         List all tests available for plotting
         :param list:
         :return:
         """
-        if list:
-            print(
-                "List of tests available for plotting: 'tukey', 'gameshowell', 'pairwise-parametric', 'pairwise-rm', 'pairwise-mixed', 'pairwise-nonparametric', 'wilcoxon', 'mannu', 'kruskal'"
-                "'kruskal'"
-            )
-        else:
-            print("You don't want a list of tests for py50?")
+        print(
+            "List of tests available for plotting: 'tukey', 'gameshowell', 'pairwise-parametric', 'pairwise-rm', 'pairwise-mixed', 'pairwise-nonparametric', 'wilcoxon', 'mannu', 'kruskal'"
+            "'kruskal'"
+        )
 
-    @staticmethod
     def boxplot(
-        data,
+        self,
         test=None,
         group_col=None,
         value_col=None,
@@ -907,8 +894,6 @@ class Plots:
         """
         Draw a boxplot from the input DataFrame.
 
-        :param data: Pandas.DataFrame
-            Input data DataFrame.
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
         :param group_col: String
@@ -958,7 +943,7 @@ class Plots:
         # Get plot variables
         # If plotting more pairs than needed, issues is with the pairs
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            data,
+            self,
             group_col,
             pair_order,  # This is the same as pairs variable
             test,
@@ -986,7 +971,7 @@ class Plots:
         orient = orient.lower()
         if orient == "v":
             ax = sns.boxplot(
-                data=data,
+                data=self.df,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -998,7 +983,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=data,
+                data=self.df,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1009,7 +994,7 @@ class Plots:
             )
         elif orient == "h":
             ax = sns.boxplot(
-                data=data,
+                data=self.df,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1021,7 +1006,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=data,
+                data=self.df,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1060,9 +1045,8 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
-    @staticmethod
     def barplot(
-        data,
+        self,
         test=None,
         group_col=None,
         value_col=None,
@@ -1082,8 +1066,6 @@ class Plots:
         """
         Draw a boxplot from the input DataFrame.
 
-        :param data: Pandas.DataFrame
-            Input data DataFrame.
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
         :param group_col: String
@@ -1135,7 +1117,7 @@ class Plots:
         # Get plot variables
         # If plotting more pairs than needed, issues is with the pairs
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            data,
+            self,
             group_col,
             pair_order,  # This is the same as pairs variable
             test,
@@ -1163,7 +1145,7 @@ class Plots:
         orient = orient.lower()
         if orient == "v":
             ax = sns.barplot(
-                data=data,
+                data=self.df,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1176,7 +1158,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=data,
+                data=self.df,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1187,7 +1169,7 @@ class Plots:
             )
         elif orient == "h":
             ax = sns.barplot(
-                data=data,
+                data=self.df,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1200,7 +1182,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=data,
+                data=self.df,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1239,9 +1221,8 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
-    @staticmethod
     def violinplot(
-        data,
+        self,
         test=None,
         group_col=None,
         value_col=None,
@@ -1259,8 +1240,6 @@ class Plots:
         """
         Draw a boxplot from the input DataFrame.
 
-        :param data: Pandas.DataFrame
-            Input data DataFrame.
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
         :param group_col: String
@@ -1308,7 +1287,7 @@ class Plots:
         # Get plot variables
         # If plotting more pairs than needed, issues is with the pairs
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            data,
+            self,
             group_col,
             pair_order,
             test,
@@ -1336,7 +1315,7 @@ class Plots:
         orient = orient.lower()
         if orient == "v":
             ax = sns.violinplot(
-                data=data,
+                data=self.df,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1347,7 +1326,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=data,
+                data=self.df,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1358,7 +1337,7 @@ class Plots:
             )
         elif orient == "h":
             ax = sns.violinplot(
-                data=data,
+                data=self.df,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1369,7 +1348,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=data,
+                data=self.df,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1408,9 +1387,8 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
-    @staticmethod
     def swarmplot(
-        data,
+        self,
         test=None,
         group_col=None,
         value_col=None,
@@ -1428,8 +1406,6 @@ class Plots:
         """
         Draw a boxplot from the input DataFrame.
 
-        :param data: Pandas.DataFrame
-            Input data DataFrame.
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
         :param group_col: String
@@ -1438,7 +1414,7 @@ class Plots:
             Name of the column containing the values. This is the dependent variable.
         :param group_order: List.
             Place the groups in a specific order on the plot.
-        :param subgroup: String
+        :param subgroup_col: String
             Name of the column containing the subgroup for the group column. This is associated with the hue parameters
             in Seaborn.
         :param subgroup_pairs: String
@@ -1477,7 +1453,7 @@ class Plots:
         # Get plot variables
         # If plotting more pairs than needed, issues is with the pairs
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            data,
+            self,
             group_col,
             pair_order,
             test,
@@ -1505,7 +1481,7 @@ class Plots:
         orient = orient.lower()
         if orient == "v":
             ax = sns.swarmplot(
-                data=data,
+                data=self.df,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1516,7 +1492,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=data,
+                data=self.df,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1527,7 +1503,7 @@ class Plots:
             )
         elif orient == "h":
             ax = sns.swarmplot(
-                data=data,
+                data=self.df,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1538,7 +1514,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=data,
+                data=self.df,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1577,9 +1553,8 @@ class Plots:
         if return_df:
             return test_df  # return calculated df. Change name for more description
 
-    @staticmethod
     def _lineplot(
-        data,
+        self,
         test=None,
         group_col=None,
         value_col=None,
@@ -1599,8 +1574,6 @@ class Plots:
         """
         Draw a boxplot from the input DataFrame.
 
-        :param data: Pandas.DataFrame
-            Input data DataFrame.
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
         :param group_col: String
@@ -1652,7 +1625,7 @@ class Plots:
         # Get plot variables
         # If plotting more pairs than needed, issues is with the pairs
         pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            data,
+            self,
             group_col,
             pair_order,
             test,
@@ -1679,7 +1652,7 @@ class Plots:
         # set orientation for plot and Annotator
         if orient == "v":
             ax = sns.lineplot(
-                data=data,
+                data=self.df,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1692,7 +1665,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=data,
+                data=self.df,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1703,7 +1676,7 @@ class Plots:
             )
         elif orient == "h":
             ax = sns.lineplot(
-                data=data,
+                data=self.df,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1716,7 +1689,7 @@ class Plots:
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=data,
+                data=self.df,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1756,7 +1729,15 @@ class Plots:
             return test_df  # return calculated df. Change name for more description
 
     @staticmethod
-    def p_matrix(data, cmap=None, title=None, title_fontsize=14, linewidths=0.01, linecolor='gray', **kwargs):
+    def p_matrix(
+        data,
+        cmap=None,
+        title=None,
+        title_fontsize=14,
+        linewidths=0.01,
+        linecolor="gray",
+        **kwargs,
+    ):
         """
         Wrapper function for scikit_posthoc heatmap.
 
@@ -1769,7 +1750,7 @@ class Plots:
         :param title_fontsize: Int
             Set size of figure legend.
         :param linewidths: Int
-            Set line width of figure.  
+            Set line width of figure.
         :param linecolor: String
             Set line color. Can be color name or hex code.
         :param kwargs: Optional
@@ -1783,9 +1764,13 @@ class Plots:
 
         if cmap is None:
             cmap = ["1", "#fbd7d4", "#005a32", "#238b45", "#a1d99b"]
-            fig = sp.sign_plot(data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs)
+            fig = sp.sign_plot(
+                data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
+            )
         else:
-            fig = sp.sign_plot(data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs)
+            fig = sp.sign_plot(
+                data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
+            )
 
         # Display plot
         return fig
@@ -1794,11 +1779,10 @@ class Plots:
     Functions to plot data distribution
     """
 
-    @staticmethod
-    def distribution(data, val_col=None, type="histplot", **kwargs):
+    def distribution(self, val_col=None, type="histplot", **kwargs):
         """
 
-        :param data: Pandas.Dataframe
+        :param self: Pandas.Dataframe
             Input data.
         :param val_col: String
             The name of the column containing the dependent variable.
@@ -1817,9 +1801,9 @@ class Plots:
         qq_kwargs = {key: value for key, value in kwargs.items() if key in valid_qq}
 
         if type == "histplot":
-            fig = sns.histplot(data=data, x=val_col, **hist_kwargs)
+            fig = sns.histplot(data=self.df, x=val_col, **hist_kwargs)
         elif type == "qqplot":
-            fig = pg.qqplot(data[val_col], dist="norm", **qq_kwargs)
+            fig = pg.qqplot(self.df[val_col], dist="norm", **qq_kwargs)
         else:
             raise ValueError(
                 "For test parameter, only 'histplot' or 'qqplot' available"
@@ -2013,11 +1997,12 @@ def _get_test(
         valid_pg = utils.get_kwargs(pg.mwu)
         pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
+        data = Stats(data.df)
+
         # Obtain pairs and split them from Wilcox result DF for passing into Annotator
         if subgroup_col:
             # run test
-            result_df = Stats.get_mannu(
-                data,
+            result_df = data.get_mannu(
                 group_col=group_col,
                 value_col=value_col,
                 subgroup_col=subgroup_col,
