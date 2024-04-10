@@ -15,13 +15,19 @@ class PlotCurve:
             raise ValueError("Input must be a DataFrame")
         self.df = df
 
-    def show(self):
+    def show(self, rows=None):
         """
-        Show DataFrame
+        show DataFrame
 
+        :param rows: Int
+            Indicate the number of rows to display. If none, automatically show 5.
         :return: DataFrame
         """
-        return self.df
+
+        if rows is None:
+            return self.df.head()
+        elif isinstance(rows, int):
+            return self.df.head(rows)
 
     def show_column(self, key):
         """
