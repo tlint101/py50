@@ -22,10 +22,10 @@ class Stats:
     DataFrame for output as a csv or xlsx file using pandas.
     """
 
-    def __init__(self, df):
-        if not isinstance(df, pd.DataFrame):
+    def __init__(self, data):
+        if not isinstance(data, pd.DataFrame):
             raise ValueError("Input must be a DataFrame")
-        self.df = df
+        self.df = data
 
     def show(self, rows=None):
         """
@@ -36,10 +36,14 @@ class Stats:
         :return: DataFrame
         """
 
+        returned_df = self.df
+
         if rows is None:
-            return self.df.head()
+            print("rows is none")
+            return returned_df.head()
         elif isinstance(rows, int):
-            return self.df.head(rows)
+            print("rows are given!")
+            return returned_df.head(rows)
 
     def get_normality(self, value_col=None, group_col=None, method="shapiro", **kwargs):
         """
@@ -843,27 +847,8 @@ class Stats:
 
 class Plots(Stats):
 
-    def __init__(self, df):
-        # Call methods from above class
-        super().__init__(df)
-        # Ensure df as input
-        if not isinstance(df, pd.DataFrame):
-            raise ValueError("Input must be a DataFrame")
-        self.df = df
-
-    def show(self, rows=None):
-        """
-        show DataFrame
-
-        :param rows: Int
-            Indicate the number of rows to display. If none, automatically show 5.
-        :return: DataFrame
-        """
-
-        if rows is None:
-            return self.df.head()
-        elif isinstance(rows, int):
-            return self.df.head(rows)
+    def __init__(self, data):
+        super().__init__(data)
 
     @staticmethod
     def list_test():
@@ -884,7 +869,6 @@ class Plots(Stats):
         value_col=None,
         group_order=None,
         subgroup_col=None,
-        subgroup_pairs=None,
         pairs=None,
         pvalue_label=None,
         palette=None,
@@ -908,8 +892,6 @@ class Plots(Stats):
         :param subgroup_col: String
             Name of the column containing the subgroup for the group column. This is associated with the hue parameters
             in Seaborn.
-        :param subgroup_pairs: String
-            Name of the column containing the subgroups to the group column.
         :param pairs: List
             A list containing specific pairings for annotation on the plot.
         :param pvalue_label: List.
@@ -928,8 +910,188 @@ class Plots(Stats):
         :return: Fig
         """
         # separate kwargs for sns and sns
+        global stat_df
         valid_sns = utils.get_kwargs(sns.boxplot)
         valid_annot = utils.get_kwargs(Annotator)
+
+        sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
+        annot_kwargs = {
+            key: value for key, value in kwargs.items() if key in valid_annot
+        }
+
+        # Check input test and run calculation
+        if test == "tukey":
+            # Get kwargs for pingouin
+            valid_pg = utils.get_kwargs(pg.pairwise_tukey)
+            pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+            stat_df = Stats(self.df).get_tukey(
+                value_col=value_col, group_col=group_col, **pg_kwargs
+            )
+
+            """Get pvalue and pairs from table"""
+            # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+            stat_df = _get_pair_subgroup(stat_df, hue=pairs)
+
+            pvalue = [utils.star_value(value) for value in stat_df["p-tukey"].tolist()]
+            pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
+
+        elif test == "gameshowell":
+            # Get kwargs for pingouin
+            valid_pg = utils.get_kwargs(pg.pairwise_gameshowell)
+            pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+            stat_df = Stats(self.df).get_gameshowell(
+                value_col=value_col, group_col=group_col, **pg_kwargs
+            )
+
+            """Get pvalue and pairs from table"""
+            # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+            stat_df = _get_pair_subgroup(stat_df, hue=pairs)
+
+            pvalue = [utils.star_value(value) for value in stat_df["pval"].tolist()]
+            pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
+
+        elif test == "pairwise-rm":
+            # Get kwargs for pingouin
+            valid_pg = utils.get_kwargs(pg.pairwise_tests)
+            pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+            stat_df = Stats(self.df).get_pairwise_rm(
+                value_col=value_col,
+                group_col=group_col,
+                within_subject_col=None,
+                subgroup_col=subgroup_col,
+                parametric=True,
+                **pg_kwargs,
+            )
+
+            """Get pvalue and pairs from table"""
+            # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+            stat_df = _get_pair_subgroup(stat_df, hue=pairs)
+
+            pvalue = [utils.star_value(value) for value in stat_df["p-unc"].tolist()]
+            pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
+
+        elif test == "pairwise-mixed":
+            # Get kwargs for pingouin
+            valid_pg = utils.get_kwargs(pg.pairwise_tests)
+            pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+            stat_df = Stats(self.df).get_pairwise_mixed(
+                value_col=value_col,
+                group_col=group_col,
+                within_subject_col=None,
+                subgroup_col=subgroup_col,
+                parametric=True,
+                **pg_kwargs,
+            )
+
+            """Get pvalue and pairs from table"""
+            # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+            stat_df = _get_pair_subgroup(stat_df, hue=pairs)
+
+            pvalue = [utils.star_value(value) for value in stat_df["p-unc"].tolist()]
+            pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
+
+        elif test == "pairwise-nonparametric":
+            # Get kwargs for pingouin
+            valid_pg = utils.get_kwargs(pg.pairwise_tests)
+            pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+            stat_df = Stats(self.df).get_pairwise_tests(
+                value_col=value_col,
+                group_col=group_col,
+                within_subject_col=None,
+                subgroup_col=subgroup_col,
+                parametric=False,
+                **pg_kwargs,
+            )
+
+            """Get pvalue and pairs from table"""
+            # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+            stat_df = _get_pair_subgroup(stat_df, hue=pairs)
+
+            pvalue = [utils.star_value(value) for value in stat_df["p-unc"].tolist()]
+            pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
+
+        elif test == "pairwise-parametric":
+            # Get kwargs for pingouin
+            valid_pg = utils.get_kwargs(pg.pairwise_tests)
+            pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+            stat_df = Stats(self.df).get_pairwise_tests(
+                value_col=value_col,
+                group_col=group_col,
+                within_subject_col=None,
+                subgroup_col=subgroup_col,
+                parametric=True,
+                **pg_kwargs,
+            )
+
+            """Get pvalue and pairs from table"""
+            # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+            stat_df = _get_pair_subgroup(stat_df, hue=pairs)
+
+            pvalue = [utils.star_value(value) for value in stat_df["p-unc"].tolist()]
+            pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
+
+        elif test == "wilcoxon":
+            # Get kwargs for pingouin
+            valid_pg = utils.get_kwargs(pg.wilcoxon)
+            pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+            stat_df = Stats(self.df).get_wilcoxon(
+                value_col=value_col,
+                group_col=group_col,
+                subgroup_col=subgroup_col,
+                **pg_kwargs,
+            )
+
+            """Get pvalue and pairs from table"""
+            # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+            stat_df = _get_pair_subgroup(stat_df, hue=pairs)
+
+            pvalue = [utils.star_value(value) for value in stat_df["p-val"].tolist()]
+            pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
+
+        elif test == "mannu":
+            # Get kwargs for pingouin
+            valid_pg = utils.get_kwargs(pg.mwu)
+            pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+            stat_df = Stats(self.df).get_mannu(
+                value_col=value_col,
+                group_col=group_col,
+                subgroup_col=subgroup_col,
+                alternative="two-sided",
+                **pg_kwargs,
+            )
+
+            """Get pvalue and pairs from table"""
+            # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+            stat_df = _get_pair_subgroup(stat_df, hue=pairs)
+
+            pvalue = [utils.star_value(value) for value in stat_df["p-val"].tolist()]
+            pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
+
+        elif test == "kruskal":
+            # Get kwargs for pingouin
+            valid_pg = utils.get_kwargs(pg.kruskal)
+            pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+
+            stat_df = Stats(self.df).get_kruskal(
+                value_col=value_col, group_col=group_col, **pg_kwargs
+            )
+
+            """Get pvalue and pairs from table"""
+            # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
+            stat_df = _get_pair_subgroup(stat_df, hue=pairs)
+
+            pvalue = [utils.star_value(value) for value in stat_df["p-unc"].tolist()]
+            pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
+        else:
+            print(f"Plotting not supported for {test}!")
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -941,34 +1103,9 @@ class Plots(Stats):
             annotate_kwargs["line_offset_to_group"] = line_offset_to_group
             annotate_kwargs["line_offset"] = line_offset
 
-        pair_order = pairs
-
-        # Get plot variables
-        # If plotting more pairs than needed, issues is with the pairs
-        pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
-            self,
-            group_col,
-            pair_order,  # This is the same as pairs variable
-            test,
-            value_col,
-            valid_sns,
-            valid_annot,
-            subgroup_col,
-            subgroup_pairs,
-            **kwargs,
-        )
-
         # Set order for groups on plot
         if group_order:
             group_order = group_order
-
-        # Set title and size of plot
-        title = kwargs.pop("title", None)
-        title_fontsize = kwargs.pop("title_fontsize", None)
-
-        # Set title if provided
-        if title:
-            plt.title(title, fontsize=title_fontsize)
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1021,13 +1158,9 @@ class Plots(Stats):
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
-        # optional input for custom annotations
+        # Optional input to make custom labels
         if pvalue_label:
             pvalue = pvalue_label
-
-        # # For debugging pairs and pvalue list orders
-        # print(pairs)
-        # print(pvalue)
 
         # Location of annotations
         if loc not in ["inside", "outside"]:
@@ -1046,7 +1179,182 @@ class Plots(Stats):
             annotator.annotate(**annotate_kwargs)
 
         if return_df:
-            return test_df  # return calculated df. Change name for more description
+            return stat_df  # return calculated df. Change name for more description
+
+    # def boxplot(
+    #     self,
+    #     test=None,
+    #     group_col=None,
+    #     value_col=None,
+    #     group_order=None,
+    #     subgroup_col=None,
+    #     subgroup_pairs=None,
+    #     pairs=None,
+    #     pvalue_label=None,
+    #     palette=None,
+    #     orient="v",
+    #     loc="inside",
+    #     whis=1.5,  # boxplot whiskers
+    #     return_df=None,
+    #     **kwargs,
+    # ):
+    #     """
+    #     Draw a boxplot from the input DataFrame.
+    #
+    #     :param test: String
+    #         Name of test for calculations. Names must match the test names from the py50.Stats()
+    #     :param group_col: String
+    #         Name of column containing groups. This should be the between depending on the selected test.
+    #     :param value_col: String
+    #         Name of the column containing the values. This is the dependent variable.
+    #     :param group_order: List.
+    #         Place the groups in a specific order on the plot.
+    #     :param subgroup_col: String
+    #         Name of the column containing the subgroup for the group column. This is associated with the hue parameters
+    #         in Seaborn.
+    #     :param subgroup_pairs: String
+    #         Name of the column containing the subgroups to the group column.
+    #     :param pairs: List
+    #         A list containing specific pairings for annotation on the plot.
+    #     :param pvalue_label: List.
+    #         A list containing specific pvalue labels. This order must match the length of pairs list.
+    #     :param palette: String or List.
+    #         Color palette used for the plot. Can be given as common color name or in hex code.
+    #     :param orient: String
+    #         Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
+    #     :param loc: String
+    #         Set location of annotations. Only "inside" or "outside" are supported.
+    #     :param whis: Int
+    #         Set length of whiskers on plot.
+    #     :param return_df: Boolean
+    #         Returns a DataFrame of calculated results. If pairs used, only return rows with annotated pairs.
+    #
+    #     :return: Fig
+    #     """
+    #     # separate kwargs for sns and sns
+    #     valid_sns = utils.get_kwargs(sns.boxplot)
+    #     valid_annot = utils.get_kwargs(Annotator)
+    #
+    #     # input_df = self.input_df
+    #     input_df = self.original_df
+    #     print(input_df)
+    #
+    #     # Set kwargs dictionary for line annotations
+    #     annotate_kwargs = {}
+    #     if "line_offset_to_group" in kwargs and "line_offset" in kwargs:
+    #         # Get kwargs from input
+    #         line_offset_to_group = kwargs["line_offset_to_group"]
+    #         line_offset = kwargs["line_offset"]
+    #         # Add to dictionary
+    #         annotate_kwargs["line_offset_to_group"] = line_offset_to_group
+    #         annotate_kwargs["line_offset"] = line_offset
+    #
+    #     pair_order = pairs
+    #
+    #     # Get plot variables
+    #     # If plotting more pairs than needed, issues is with the pairs
+    #     pairs, pvalue, sns_kwargs, annot_kwargs, test_df = _plot_variables(
+    #         input_df,
+    #         group_col,
+    #         pair_order,  # This is the same as pairs variable
+    #         test,
+    #         value_col,
+    #         valid_sns,
+    #         valid_annot,
+    #         subgroup_col,
+    #         subgroup_pairs,
+    #         **kwargs,
+    #     )
+    #
+    #     # Set order for groups on plot
+    #     if group_order:
+    #         group_order = group_order
+    #
+    #     # Set title and size of plot
+    #     title = kwargs.pop("title", None)
+    #     title_fontsize = kwargs.pop("title_fontsize", None)
+    #
+    #     # Set title if provided
+    #     if title:
+    #         plt.title(title, fontsize=title_fontsize)
+    #
+    #     # set orientation for plot and Annotator
+    #     orient = orient.lower()
+    #     if orient == "v":
+    #         ax = sns.boxplot(
+    #             data=input_df,
+    #             x=group_col,
+    #             y=value_col,
+    #             order=group_order,
+    #             palette=palette,
+    #             hue=subgroup_col,
+    #             whis=whis,
+    #             **sns_kwargs,
+    #         )
+    #         annotator = Annotator(
+    #             ax,
+    #             pairs=pairs,
+    #             data=input_df,
+    #             x=group_col,
+    #             y=value_col,
+    #             order=group_order,
+    #             verbose=False,
+    #             orient="v",
+    #             hue=subgroup_col,
+    #             **annot_kwargs,
+    #         )
+    #     elif orient == "h":
+    #         ax = sns.boxplot(
+    #             data=input_df,
+    #             x=value_col,
+    #             y=group_col,
+    #             order=group_order,
+    #             palette=palette,
+    #             hue=subgroup_col,
+    #             whis=whis,
+    #             **sns_kwargs,
+    #         )
+    #         annotator = Annotator(
+    #             ax,
+    #             pairs=pairs,
+    #             data=input_df,
+    #             x=value_col,
+    #             y=group_col,
+    #             order=group_order,
+    #             verbose=False,
+    #             orient="h",
+    #             hue=subgroup_col,
+    #             **annot_kwargs,
+    #         )
+    #     else:
+    #         raise ValueError("Orientation must be 'v' or 'h'!")
+    #
+    #     # optional input for custom annotations
+    #     if pvalue_label:
+    #         pvalue = pvalue_label
+    #
+    #     # # For debugging pairs and pvalue list orders
+    #     # print(pairs)
+    #     # print(pvalue)
+    #
+    #     # Location of annotations
+    #     if loc not in ["inside", "outside"]:
+    #         raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
+    #
+    #     if loc == "inside":
+    #         annotator.configure(loc=loc, test=None)
+    #     else:
+    #         annotator.configure(loc=loc, test=None)
+    #
+    #     # Make sure the pairs and pvalue lists match
+    #     if len(pairs) != len(pvalue):
+    #         raise Exception("pairs and pvalue_order length does not match!")
+    #     else:
+    #         annotator.set_custom_annotations(pvalue)
+    #         annotator.annotate(**annotate_kwargs)
+    #
+    #     if return_df:
+    #         return test_df  # return calculated df. Change name for more description
 
     def barplot(
         self,
@@ -1862,6 +2170,7 @@ class Plots(Stats):
         return fig
 
 
+# todo remove
 def _get_test(
     test,
     data=None,
@@ -2093,6 +2402,7 @@ def _get_test(
     return pvalue, result_df, pairs, subgroup_col
 
 
+# todo remove?
 def _plot_variables(
     data,
     group_col,
