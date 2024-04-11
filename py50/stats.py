@@ -909,6 +909,7 @@ class Plots(Stats):
 
         :return: Fig
         """
+
         # separate kwargs for sns and sns
         global stat_df
         valid_sns = utils.get_kwargs(sns.boxplot)
@@ -919,6 +920,100 @@ class Plots(Stats):
             key: value for key, value in kwargs.items() if key in valid_annot
         }
 
+        pairs, pvalue = self._get_test(group_col, kwargs, pairs, subgroup_col, test, value_col)
+
+        # Set kwargs dictionary for line annotations
+        annotate_kwargs = {}
+        if "line_offset_to_group" in kwargs and "line_offset" in kwargs:
+            # Get kwargs from input
+            line_offset_to_group = kwargs["line_offset_to_group"]
+            line_offset = kwargs["line_offset"]
+            # Add to dictionary
+            annotate_kwargs["line_offset_to_group"] = line_offset_to_group
+            annotate_kwargs["line_offset"] = line_offset
+
+        # Set order for groups on plot
+        if group_order:
+            group_order = group_order
+
+        # set orientation for plot and Annotator
+        orient = orient.lower()
+        if orient == "v":
+            ax = sns.boxplot(
+                data=self.df,
+                x=group_col,
+                y=value_col,
+                order=group_order,
+                palette=palette,
+                hue=subgroup_col,
+                whis=whis,
+                **sns_kwargs,
+            )
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=self.df,
+                x=group_col,
+                y=value_col,
+                order=group_order,
+                verbose=False,
+                orient="v",
+                hue=subgroup_col,
+                **annot_kwargs,
+            )
+        elif orient == "h":
+            ax = sns.boxplot(
+                data=self.df,
+                x=value_col,
+                y=group_col,
+                order=group_order,
+                palette=palette,
+                hue=subgroup_col,
+                whis=whis,
+                **sns_kwargs,
+            )
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=self.df,
+                x=value_col,
+                y=group_col,
+                order=group_order,
+                verbose=False,
+                orient="h",
+                hue=subgroup_col,
+                **annot_kwargs,
+            )
+        else:
+            raise ValueError("Orientation must be 'v' or 'h'!")
+
+        # Optional input to make custom labels
+        if pvalue_label:
+            pvalue = pvalue_label
+
+        # Location of annotations
+        if loc not in ["inside", "outside"]:
+            raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
+
+        if loc == "inside":
+            annotator.configure(loc=loc, test=None)
+        else:
+            annotator.configure(loc=loc, test=None)
+
+        # Make sure the pairs and pvalue lists match
+        if len(pairs) != len(pvalue):
+            raise Exception("pairs and pvalue_order length does not match!")
+        else:
+            annotator.set_custom_annotations(pvalue)
+            annotator.annotate(**annotate_kwargs)
+
+        if return_df:
+            return stat_df  # return calculated df. Change name for more description
+
+    # todo
+    # Replace with dunder functions below
+    def _get_test(self, group_col, kwargs, pairs, subgroup_col, test, value_col):
+        global stat_df
         # Check input test and run calculation
         if test == "tukey":
             # Get kwargs for pingouin
@@ -1092,94 +1187,7 @@ class Plots(Stats):
             pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
         else:
             print(f"Plotting not supported for {test}!")
-
-        # Set kwargs dictionary for line annotations
-        annotate_kwargs = {}
-        if "line_offset_to_group" in kwargs and "line_offset" in kwargs:
-            # Get kwargs from input
-            line_offset_to_group = kwargs["line_offset_to_group"]
-            line_offset = kwargs["line_offset"]
-            # Add to dictionary
-            annotate_kwargs["line_offset_to_group"] = line_offset_to_group
-            annotate_kwargs["line_offset"] = line_offset
-
-        # Set order for groups on plot
-        if group_order:
-            group_order = group_order
-
-        # set orientation for plot and Annotator
-        orient = orient.lower()
-        if orient == "v":
-            ax = sns.boxplot(
-                data=self.df,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                palette=palette,
-                hue=subgroup_col,
-                whis=whis,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.df,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                verbose=False,
-                orient="v",
-                hue=subgroup_col,
-                **annot_kwargs,
-            )
-        elif orient == "h":
-            ax = sns.boxplot(
-                data=self.df,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                palette=palette,
-                hue=subgroup_col,
-                whis=whis,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.df,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                verbose=False,
-                orient="h",
-                hue=subgroup_col,
-                **annot_kwargs,
-            )
-        else:
-            raise ValueError("Orientation must be 'v' or 'h'!")
-
-        # Optional input to make custom labels
-        if pvalue_label:
-            pvalue = pvalue_label
-
-        # Location of annotations
-        if loc not in ["inside", "outside"]:
-            raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
-
-        if loc == "inside":
-            annotator.configure(loc=loc, test=None)
-        else:
-            annotator.configure(loc=loc, test=None)
-
-        # Make sure the pairs and pvalue lists match
-        if len(pairs) != len(pvalue):
-            raise Exception("pairs and pvalue_order length does not match!")
-        else:
-            annotator.set_custom_annotations(pvalue)
-            annotator.annotate(**annotate_kwargs)
-
-        if return_df:
-            return stat_df  # return calculated df. Change name for more description
+        return pairs, pvalue
 
     # def boxplot(
     #     self,
