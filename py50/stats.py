@@ -25,7 +25,7 @@ class Stats:
     def __init__(self, data):
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Input must be a DataFrame")
-        self.df = data
+        self.data = data
 
     def show(self, rows=None):
         """
@@ -36,7 +36,7 @@ class Stats:
         :return: DataFrame
         """
 
-        returned_df = self.df
+        returned_df = self.data
 
         if rows is None:
             print("rows is none")
@@ -61,7 +61,7 @@ class Stats:
         """
 
         result_df = pg.normality(
-            data=self.df, dv=value_col, group=group_col, method=method, **kwargs
+            data=self.data, dv=value_col, group=group_col, method=method, **kwargs
         )
         return result_df
 
@@ -83,7 +83,7 @@ class Stats:
         """
 
         result_df = pg.homoscedasticity(
-            data=self.df, dv=value_col, group=group_col, method=method, **kwargs
+            data=self.data, dv=value_col, group=group_col, method=method, **kwargs
         )
         return result_df
 
@@ -104,7 +104,7 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        result_df = pg.anova(data=self.df, dv=value_col, between=group_col, **kwargs)
+        result_df = pg.anova(data=self.data, dv=value_col, between=group_col, **kwargs)
 
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -123,7 +123,7 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        result_df = pg.welch_anova(data=self.df, dv=value_col, between=group_col)
+        result_df = pg.welch_anova(data=self.data, dv=value_col, between=group_col)
 
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -160,7 +160,7 @@ class Stats:
         """
 
         result_df = pg.rm_anova(
-            data=self.df,
+            data=self.data,
             dv=value_col,
             within=within_subject_col,
             subject=subject_col,
@@ -200,7 +200,7 @@ class Stats:
         """
 
         result_df = pg.mixed_anova(
-            data=self.df,
+            data=self.data,
             dv=value_col,
             between=group_col,
             within=within_subject_col,
@@ -228,7 +228,7 @@ class Stats:
         """
 
         result_df = pg.pairwise_tukey(
-            data=self.df, dv=value_col, between=group_col, effsize=effsize
+            data=self.data, dv=value_col, between=group_col, effsize=effsize
         )
 
         # Add significance asterisk
@@ -251,7 +251,7 @@ class Stats:
         """
 
         result_df = pg.pairwise_gameshowell(
-            data=self.df, dv=value_col, between=group_col, effsize=effsize
+            data=self.data, dv=value_col, between=group_col, effsize=effsize
         )
 
         # Add significance asterisk
@@ -297,12 +297,12 @@ class Stats:
 
         if subgroup_col:
             # Convert 'Name' and 'Status' columns to string
-            self.df[group_col] = self.df[group_col].astype(str)
-            self.df[subgroup_col] = self.df[subgroup_col].astype(str)
-            self.df["subgroup"] = self.df[group_col] + "-" + self.df[subgroup_col]
+            self.data[group_col] = self.data[group_col].astype(str)
+            self.data[subgroup_col] = self.data[subgroup_col].astype(str)
+            self.data["subgroup"] = self.data[group_col] + "-" + self.data[subgroup_col]
 
-            subgroup_list = self.df["subgroup"].unique().tolist()
-            subgroup_df = self.df[self.df["subgroup"].isin(subgroup_list)].copy()
+            subgroup_list = self.data["subgroup"].unique().tolist()
+            subgroup_df = self.data[self.data["subgroup"].isin(subgroup_list)].copy()
 
             # Get unique pairs between group and subgroup
             group = subgroup_df["subgroup"].unique()
@@ -321,8 +321,8 @@ class Stats:
                 # print("second:", data[(data[group_col] == group2)][value_col].shape)
 
                 # Check length of groups
-                group1_length = self.df[self.df[group_col] == group1][value_col]
-                group2_length = self.df[self.df[group_col] == group2][value_col]
+                group1_length = self.data[self.data[group_col] == group1][value_col]
+                group2_length = self.data[self.data[group_col] == group2][value_col]
 
                 # print(len(group1_length), len(group2_length)) # For troubleshooting
 
@@ -333,13 +333,13 @@ class Stats:
 
                 # Perform Wilcoxon signed-rank test
                 result = pg.wilcoxon(
-                    self.df[
-                        (self.df[group_col] == group1)
-                        & (self.df[subgroup_col] == subgroup1)
+                    self.data[
+                        (self.data[group_col] == group1)
+                        & (self.data[subgroup_col] == subgroup1)
                     ][value_col],
-                    self.df[
-                        (self.df[group_col] == group2)
-                        & (self.df[subgroup_col] == subgroup2)
+                    self.data[
+                        (self.data[group_col] == group2)
+                        & (self.data[subgroup_col] == subgroup2)
                     ][value_col],
                     alternative=alternative,
                     **kwargs,
@@ -374,7 +374,7 @@ class Stats:
             No subgroups found. Tests single group and values.
             """
             # Get unique pairs from group
-            group = self.df[group_col].unique()
+            group = self.data[group_col].unique()
 
             # From unique items in group list, generate pairs
             pairs = list(combinations(group, 2))
@@ -390,8 +390,8 @@ class Stats:
                 # print("second:", data[(data[group_col] == group2)][value_col].shape)
 
                 # Check length of groups
-                group1_length = self.df[self.df[group_col] == group1][value_col]
-                group2_length = self.df[self.df[group_col] == group2][value_col]
+                group1_length = self.data[self.data[group_col] == group1][value_col]
+                group2_length = self.data[self.data[group_col] == group2][value_col]
 
                 # print(len(group1_length), len(group2_length)) # For troubleshooting
 
@@ -402,8 +402,8 @@ class Stats:
 
                 # Perform wilcoxon
                 result = pg.wilcoxon(
-                    self.df[(self.df[group_col] == group1)][value_col],
-                    self.df[(self.df[group_col] == group2)][value_col],
+                    self.data[(self.data[group_col] == group1)][value_col],
+                    self.data[(self.data[group_col] == group2)][value_col],
                     alternative=alternative,
                     **kwargs,
                 )
@@ -458,12 +458,12 @@ class Stats:
 
         if subgroup_col:
             # Convert 'Name' and 'Status' columns to string
-            self.df[group_col] = self.df[group_col].astype(str)
-            self.df[subgroup_col] = self.df[subgroup_col].astype(str)
-            self.df["subgroup"] = self.df[group_col] + "-" + self.df[subgroup_col]
+            self.data[group_col] = self.data[group_col].astype(str)
+            self.data[subgroup_col] = self.data[subgroup_col].astype(str)
+            self.data["subgroup"] = self.data[group_col] + "-" + self.data[subgroup_col]
 
-            subgroup_list = self.df["subgroup"].unique().tolist()
-            subgroup_df = self.df[self.df["subgroup"].isin(subgroup_list)].copy()
+            subgroup_list = self.data["subgroup"].unique().tolist()
+            subgroup_df = self.data[self.data["subgroup"].isin(subgroup_list)].copy()
 
             # Get unique pairs between group and subgroup
             group = subgroup_df["subgroup"].unique()
@@ -472,11 +472,11 @@ class Stats:
             pairs = list(combinations(group, 2))
 
             # Check to ensure right columns selected
-            if self.df[group_col].dtype != "object":
+            if self.data[group_col].dtype != "object":
                 raise ValueError(f"Is group_col: '{group_col}' strings?")
-            elif self.df[subgroup_col].dtype != "object":
+            elif self.data[subgroup_col].dtype != "object":
                 raise ValueError(f"Is subgroup_col: '{subgroup_col}' strings?")
-            elif self.df[value_col].dtype == "object":
+            elif self.data[value_col].dtype == "object":
                 raise ValueError(f"Is value_col: '{value_col}' should be numerical?")
 
             results_list = []
@@ -487,13 +487,13 @@ class Stats:
 
                 # Perform mwu
                 result = pg.mwu(
-                    self.df[
-                        (self.df[group_col] == group1)
-                        & (self.df[subgroup_col] == subgroup1)
+                    self.data[
+                        (self.data[group_col] == group1)
+                        & (self.data[subgroup_col] == subgroup1)
                     ][value_col],
-                    self.df[
-                        (self.df[group_col] == group2)
-                        & (self.df[subgroup_col] == subgroup2)
+                    self.data[
+                        (self.data[group_col] == group2)
+                        & (self.data[subgroup_col] == subgroup2)
                     ][value_col],
                     alternative=alternative,
                     **kwargs,
@@ -528,7 +528,7 @@ class Stats:
             No subgroups found. Tests single group and values.
             """
             # Get unique pairs from group
-            group = self.df[group_col].unique()
+            group = self.data[group_col].unique()
 
             # From unique items in group list, generate pairs
             pairs = list(combinations(group, 2))
@@ -540,8 +540,8 @@ class Stats:
                 group2 = pair[1]
                 # Perform mwu
                 result = pg.mwu(
-                    self.df[(self.df[group_col] == group1)][value_col],
-                    self.df[(self.df[group_col] == group2)][value_col],
+                    self.data[(self.data[group_col] == group1)][value_col],
+                    self.data[(self.data[group_col] == group2)][value_col],
                     alternative=alternative,
                     **kwargs,
                 )
@@ -577,7 +577,7 @@ class Stats:
         """
 
         result_df = pg.kruskal(
-            data=self.df, dv=value_col, between=group_col, detailed=detailed
+            data=self.data, dv=value_col, between=group_col, detailed=detailed
         )
 
         # Add significance asterisk
@@ -602,10 +602,10 @@ class Stats:
 
         if subgroup_col:
             result_df = pg.cochran(
-                data=self.df, dv=value_col, within=subgroup_col, subject=group_col
+                data=self.data, dv=value_col, within=subgroup_col, subject=group_col
             )
         else:
-            result_df = pg.cochran(data=self.df, dv=value_col, within=group_col)
+            result_df = pg.cochran(data=self.data, dv=value_col, within=group_col)
 
         # Add significance asterisk
         pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -639,7 +639,7 @@ class Stats:
             )
 
         result_df = pg.friedman(
-            data=self.df,
+            data=self.data,
             dv=value_col,
             within=group_col,
             subject=subgroup_col,
@@ -685,7 +685,7 @@ class Stats:
         """
 
         result_df = pg.pairwise_tests(
-            data=self.df,
+            data=self.data,
             dv=value_col,
             between=group_col,
             within=within_subject_col,
@@ -729,7 +729,7 @@ class Stats:
         """
 
         result_df = pg.pairwise_tests(
-            data=self.df,
+            data=self.data,
             dv=value_col,
             between=group_col,
             within=within_subject_col,
@@ -773,7 +773,7 @@ class Stats:
         """
 
         result_df = pg.pairwise_tests(
-            data=self.df,
+            data=self.data,
             dv=value_col,
             between=group_col,
             within=within_subject_col,
@@ -957,7 +957,7 @@ class Plots(Stats):
         orient = orient.lower()
         if orient == "v":
             ax = sns.boxplot(
-                data=self.df,
+                data=self.data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -969,7 +969,7 @@ class Plots(Stats):
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=self.df,
+                data=self.data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -980,7 +980,7 @@ class Plots(Stats):
             )
         elif orient == "h":
             ax = sns.boxplot(
-                data=self.df,
+                data=self.data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -992,7 +992,7 @@ class Plots(Stats):
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=self.df,
+                data=self.data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1123,7 +1123,7 @@ class Plots(Stats):
         orient = orient.lower()
         if orient == "v":
             ax = sns.barplot(
-                data=self.df,
+                data=self.data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1136,7 +1136,7 @@ class Plots(Stats):
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=self.df,
+                data=self.data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1147,7 +1147,7 @@ class Plots(Stats):
             )
         elif orient == "h":
             ax = sns.barplot(
-                data=self.df,
+                data=self.data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1160,7 +1160,7 @@ class Plots(Stats):
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=self.df,
+                data=self.data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1287,7 +1287,7 @@ class Plots(Stats):
         orient = orient.lower()
         if orient == "v":
             ax = sns.violinplot(
-                data=self.df,
+                data=self.data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1298,7 +1298,7 @@ class Plots(Stats):
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=self.df,
+                data=self.data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1309,7 +1309,7 @@ class Plots(Stats):
             )
         elif orient == "h":
             ax = sns.violinplot(
-                data=self.df,
+                data=self.data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1320,7 +1320,7 @@ class Plots(Stats):
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=self.df,
+                data=self.data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1447,7 +1447,7 @@ class Plots(Stats):
         orient = orient.lower()
         if orient == "v":
             ax = sns.swarmplot(
-                data=self.df,
+                data=self.data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1458,7 +1458,7 @@ class Plots(Stats):
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=self.df,
+                data=self.data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1469,7 +1469,7 @@ class Plots(Stats):
             )
         elif orient == "h":
             ax = sns.swarmplot(
-                data=self.df,
+                data=self.data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1480,7 +1480,7 @@ class Plots(Stats):
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=self.df,
+                data=self.data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1616,7 +1616,7 @@ class Plots(Stats):
         # set orientation for plot and Annotator
         if orient == "v":
             ax = sns.lineplot(
-                data=self.df,
+                data=self.data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1629,7 +1629,7 @@ class Plots(Stats):
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=self.df,
+                data=self.data,
                 x=group_col,
                 y=value_col,
                 order=group_order,
@@ -1640,7 +1640,7 @@ class Plots(Stats):
             )
         elif orient == "h":
             ax = sns.lineplot(
-                data=self.df,
+                data=self.data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1653,7 +1653,7 @@ class Plots(Stats):
             annotator = Annotator(
                 ax,
                 pairs=pairs,
-                data=self.df,
+                data=self.data,
                 x=value_col,
                 y=group_col,
                 order=group_order,
@@ -1725,11 +1725,11 @@ class Plots(Stats):
         if cmap is None:
             cmap = ["1", "#fbd7d4", "#005a32", "#238b45", "#a1d99b"]
             fig = sp.sign_plot(
-                self.df, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
+                self.data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
             )
         else:
             fig = sp.sign_plot(
-                self.df, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
+                self.data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
             )
 
         # Display plot
@@ -1761,9 +1761,9 @@ class Plots(Stats):
         qq_kwargs = {key: value for key, value in kwargs.items() if key in valid_qq}
 
         if type == "histplot":
-            fig = sns.histplot(data=self.df, x=val_col, **hist_kwargs)
+            fig = sns.histplot(data=self.data, x=val_col, **hist_kwargs)
         elif type == "qqplot":
-            fig = pg.qqplot(self.df[val_col], dist="norm", **qq_kwargs)
+            fig = pg.qqplot(self.data[val_col], dist="norm", **qq_kwargs)
         else:
             raise ValueError(
                 "For test parameter, only 'histplot' or 'qqplot' available"
@@ -1800,7 +1800,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.pairwise_tukey)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.df).get_tukey(
+            stat_df = Stats(self.data).get_tukey(
                 value_col=value_col, group_col=group_col, **pg_kwargs
             )
 
@@ -1816,7 +1816,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.pairwise_gameshowell)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.df).get_gameshowell(
+            stat_df = Stats(self.data).get_gameshowell(
                 value_col=value_col, group_col=group_col, **pg_kwargs
             )
 
@@ -1833,7 +1833,7 @@ class Plots(Stats):
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
             print(pg_kwargs)
 
-            stat_df = Stats(self.df).get_pairwise_rm(
+            stat_df = Stats(self.data).get_pairwise_rm(
                 value_col=value_col,
                 group_col=group_col,
                 within_subject_col=within_subject_col,
@@ -1854,7 +1854,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.df).get_pairwise_mixed(
+            stat_df = Stats(self.data).get_pairwise_mixed(
                 value_col=value_col,
                 group_col=group_col,
                 within_subject_col=within_subject_col,
@@ -1875,7 +1875,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.df).get_pairwise_tests(
+            stat_df = Stats(self.data).get_pairwise_tests(
                 value_col=value_col,
                 group_col=group_col,
                 within_subject_col=within_subject_col,
@@ -1896,7 +1896,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.df).get_pairwise_tests(
+            stat_df = Stats(self.data).get_pairwise_tests(
                 value_col=value_col,
                 group_col=group_col,
                 within_subject_col=within_subject_col,
@@ -1917,7 +1917,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.wilcoxon)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.df).get_wilcoxon(
+            stat_df = Stats(self.data).get_wilcoxon(
                 value_col=value_col,
                 group_col=group_col,
                 subgroup_col=subgroup_col,
@@ -1936,7 +1936,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.mwu)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.df).get_mannu(
+            stat_df = Stats(self.data).get_mannu(
                 value_col=value_col,
                 group_col=group_col,
                 subgroup_col=subgroup_col,
@@ -1956,7 +1956,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.kruskal)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.df).get_kruskal(
+            stat_df = Stats(self.data).get_kruskal(
                 value_col=value_col, group_col=group_col, **pg_kwargs
             )
 
