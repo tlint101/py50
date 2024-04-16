@@ -10,37 +10,39 @@ from py50.calculator import Calculator
 
 class PlotCurve:
     # Will accept input DataFrame and output said DataFrame for double checking.
-    def __init__(self, df):
-        if not isinstance(df, pd.DataFrame):
-            raise ValueError("Input must be a DataFrame")
-        self.df = df
-
-    def show(self, rows=None):
-        """
-        show DataFrame
-
-        :param rows: Int
-            Indicate the number of rows to display. If none, automatically show 5.
-        :return: DataFrame
-        """
-
-        if rows is None:
-            return self.df.head()
-        elif isinstance(rows, int):
-            return self.df.head(rows)
-
-    def show_column(self, key):
-        """
-        View specific column from DataFrame
-
-        :param key: column header name.
-
-        :return: DataFrame
-        """
-
-        if key not in self.df.columns:
-            raise ValueError("Column not found")
-        return self.df[key]
+    def __init__(self, data):
+        super().__init__()
+        self.data = data
+    #     if not isinstance(data, pd.DataFrame):
+    #         raise ValueError("Input must be a DataFrame")
+    #     self.df = data
+    #
+    # def show(self, rows: int = None):
+    #     """
+    #     show DataFrame
+    #
+    #     :param rows: int
+    #         Indicate the number of rows to display. If none, automatically show 5.
+    #     :return: DataFrame
+    #     """
+    #
+    #     if rows is None:
+    #         return self.df.head()
+    #     elif isinstance(rows, int):
+    #         return self.df.head(rows)
+    #
+    # def show_column(self, key):
+    #     """
+    #     View specific column from DataFrame
+    #
+    #     :param key: column header name.
+    #
+    #     :return: DataFrame
+    #     """
+    #
+    #     if key not in self.df.columns:
+    #         raise ValueError("Column not found")
+    #     return self.df[key]
 
     # Filter input data based on Compound Name to generate single plot
     def filter_dataframe(self, drug_name):
@@ -52,43 +54,43 @@ class PlotCurve:
         :return: DataFrame
         """
         # Filter row based on drug name input. Row must match drug name somewhere
-        filtered_df = self.df[self.df.apply(lambda row: drug_name in str(row), axis=1)]
+        filtered_df = self.data[self.data.apply(lambda row: drug_name in str(row), axis=1)]
         return filtered_df
 
     # todo rename function to curve_plot
     # todo fix verbose issue - box info will also print
     def single_curve_plot(
-        self,
-        concentration_col,
-        response_col,
-        drug_name=None,
-        plot_title=None,
-        plot_title_size=16,
-        xlabel=None,
-        ylabel=None,
-        axis_fontsize=14,
-        conc_unit="nM",
-        xscale="log",
-        xscale_ticks=None,
-        ymax=None,
-        ymin=None,
-        line_color="black",
-        line_width=1.5,
-        marker=None,
-        legend=False,
-        legend_loc="best",
-        box=False,
-        box_color="gray",
-        box_intercept=50,
-        conc_target=None,
-        hline=None,
-        hline_color="gray",
-        vline=None,
-        vline_color="gray",
-        figsize=(6.4, 4.8),
-        output_filename=None,
-        verbose=None,
-        **kwargs,
+            self,
+            concentration_col,
+            response_col,
+            drug_name=None,
+            plot_title=None,
+            plot_title_size=16,
+            xlabel=None,
+            ylabel=None,
+            axis_fontsize=14,
+            conc_unit="nM",
+            xscale="log",
+            xscale_ticks=None,
+            ymax=None,
+            ymin=None,
+            line_color="black",
+            line_width=1.5,
+            marker=None,
+            legend=False,
+            legend_loc="best",
+            box=False,
+            box_color="gray",
+            box_intercept=50,
+            conc_target=None,
+            hline=None,
+            hline_color="gray",
+            vline=None,
+            vline_color="gray",
+            figsize=(6.4, 4.8),
+            output_filename=None,
+            verbose=None,
+            **kwargs,
     ):
         """
         Generate a dose-response curve for a single drug target. Because a data table can contain multiple drugs, user
@@ -182,8 +184,8 @@ class PlotCurve:
             xscale_unit, concentration, verbose=verbose
         )
 
-        reverse, params, covariance = calculator.calc_logic(
-            df=query,
+        reverse, params, covariance = calculator._calc_logic(
+            data=query,
             concentration=concentration,
             response_col=response_col,
             initial_guess=initial_guess,
@@ -196,7 +198,9 @@ class PlotCurve:
         # todo extract into a method
         # Calculate from parameters 4PL equation
         if reverse == 1:
-            y_fit = calculator.reverse_fourpl(x_fit, maximum, minimum, ic50, hill_slope)
+            y_fit = calculator._reverse_fourpl(
+                x_fit, maximum, minimum, ic50, hill_slope
+            )
             y_intersection = 50
             interpretation = interp1d(
                 y_fit, x_fit, kind="linear", fill_value="extrapolate"
@@ -205,15 +209,15 @@ class PlotCurve:
                 interpretation(y_intersection), 3
             )  # give results and round to 3 sig figs
             hill_slope = (
-                -1 * hill_slope
+                    -1 * hill_slope
             )  # ensure hill_slope is negative # may not be needed if fixed
         else:
-            y_fit = calculator.fourpl(x_fit, *params)
+            y_fit = calculator._fourpl(x_fit, *params)
             y_intersection = 50
             x_intersection = np.interp(y_intersection, y_fit, x_fit)
 
         # Confirm ic50 unit output
-        ic50, x_intersection, final_unit = calculator.unit_convert(
+        ic50, x_intersection, final_unit = calculator._unit_convert(
             ic50, x_intersection, conc_unit
         )
 
@@ -334,36 +338,36 @@ class PlotCurve:
     # todo include conc_target from single_curve_plot
     # todo include axis_fontsize as seen from other 2 plots
     def multi_curve_plot(
-        self,
-        concentration_col,
-        response_col,
-        name_col,
-        plot_title=None,
-        plot_title_size=12,
-        xlabel=None,
-        ylabel=None,
-        conc_unit="nM",
-        xscale="log",
-        xscale_ticks=None,
-        ymax=None,
-        ymin=None,
-        axis_fontsize=10,
-        line_color=CBPALETTE,
-        marker=CBMARKERS,
-        line_width=1.5,
-        legend=False,
-        legend_loc="best",
-        box_target=None,
-        box_color="gray",
-        box_intercept=50,
-        hline=None,
-        hline_color="gray",
-        vline=None,
-        vline_color="gray",
-        figsize=(6.4, 4.8),
-        output_filename=None,
-        verbose=None,
-        **kwargs,
+            self,
+            concentration_col,
+            response_col,
+            name_col,
+            plot_title=None,
+            plot_title_size=12,
+            xlabel=None,
+            ylabel=None,
+            conc_unit="nM",
+            xscale="log",
+            xscale_ticks=None,
+            ymax=None,
+            ymin=None,
+            axis_fontsize=10,
+            line_color=CBPALETTE,
+            marker=CBMARKERS,
+            line_width=1.5,
+            legend=False,
+            legend_loc="best",
+            box_target=None,
+            box_color="gray",
+            box_intercept=50,
+            hline=None,
+            hline_color="gray",
+            vline=None,
+            vline_color="gray",
+            figsize=(6.4, 4.8),
+            output_filename=None,
+            verbose=None,
+            **kwargs,
     ):
         """
         Generate a dose-response plot for multiple drug targets. Curves will be placed into a single plot.
@@ -406,7 +410,7 @@ class PlotCurve:
         :return: Figure
         """
         global response, x_fit, y_fit, y_intersection, x_intersection, reverse, params
-        name_list = np.unique(self.df[name_col])
+        name_list = np.unique(self.data[name_col])
 
         concentration_list = []
         response_list = []
@@ -449,8 +453,8 @@ class PlotCurve:
                 xscale_unit, concentration, verbose=verbose
             )
 
-            reverse, params, covariance = calculator.calc_logic(
-                df=query,
+            reverse, params, covariance = calculator._calc_logic(
+                data=query,
                 concentration=concentration,
                 response_col=response_col,
                 initial_guess=initial_guess,
@@ -462,7 +466,7 @@ class PlotCurve:
 
             # Calculate from parameters 4PL equation
             if reverse == 1:
-                y_fit = calculator.reverse_fourpl(
+                y_fit = calculator._reverse_fourpl(
                     x_fit, maximum, minimum, ic50, hill_slope
                 )
                 y_intersection = 50
@@ -473,12 +477,12 @@ class PlotCurve:
                     interpretation(y_intersection), 3
                 )  # give results and round to 3 sig figs
                 hill_slope = (
-                    -1 * hill_slope
+                        -1 * hill_slope
                 )  # ensure hill_slope is negative # may not be needed if fixed
                 y_fit_list.append(y_fit)
 
             else:
-                y_fit = calculator.fourpl(x_fit, *params)
+                y_fit = calculator._fourpl(x_fit, *params)
                 y_intersection = 50
                 x_intersection = np.interp(y_intersection, y_fit, x_fit)
                 y_fit_list.append(y_fit)
@@ -512,12 +516,12 @@ class PlotCurve:
             []
         )  # Store data for each line as a dictionary inside a list for the legend
         for i, (
-            y_fit_point,
-            concentration_point,
-            response_point,
-            name,
-            color,
-            mark,
+                y_fit_point,
+                concentration_point,
+                response_point,
+                name,
+                color,
+                mark,
         ) in enumerate(
             zip(
                 y_fit_list,
@@ -554,7 +558,7 @@ class PlotCurve:
         # Set y-axis limit
         # Y-axis limit will be limited to the largest response number and add 10 for spacing
         if ymax is None:
-            max_y = self.df[response_col].max()
+            max_y = self.data[response_col].max()
             max_value = max_y + 10
         else:
             max_value = ymax
@@ -594,7 +598,7 @@ class PlotCurve:
                         x_intersection = interpretation(y_intersection)
                     ymin = 0  # Starts at the bottom of the plot
                     ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
-                        plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
+                            plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
                     )
                     if verbose is True:
                         print(f"Box will target {box_target}")
@@ -629,7 +633,7 @@ class PlotCurve:
                         )
                     ymin = 0  # Starts at the bottom of the plot
                     ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
-                        plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
+                            plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
                     )
                     if verbose is True:
                         print(f"Box will target {box_target}")
@@ -689,33 +693,33 @@ class PlotCurve:
 
     # todo include conc_target from single_curve_plot
     def grid_curve_plot(
-        self,
-        concentration_col,
-        response_col,
-        name_col,
-        column_num=2,
-        plot_title=None,
-        plot_title_size=20,
-        xlabel=None,
-        ylabel=None,
-        conc_unit="nM",
-        xscale="log",
-        xscale_ticks=None,
-        ymax=None,
-        ymin=None,
-        line_color=CBPALETTE,
-        line_width=1.5,
-        box=False,
-        box_color="gray",
-        box_intercept=50,
-        hline=None,
-        hline_color="gray",
-        vline=None,
-        vline_color="gray",
-        figsize=(8.4, 4.8),
-        output_filename=None,
-        verbose=None,
-        **kwargs,
+            self,
+            concentration_col,
+            response_col,
+            name_col,
+            column_num=2,
+            plot_title=None,
+            plot_title_size=20,
+            xlabel=None,
+            ylabel=None,
+            conc_unit="nM",
+            xscale="log",
+            xscale_ticks=None,
+            ymax=None,
+            ymin=None,
+            line_color=CBPALETTE,
+            line_width=1.5,
+            box=False,
+            box_color="gray",
+            box_intercept=50,
+            hline=None,
+            hline_color="gray",
+            vline=None,
+            vline_color="gray",
+            figsize=(8.4, 4.8),
+            output_filename=None,
+            verbose=None,
+            **kwargs,
     ):
         """
         Generate a dose-response curve for mutliple drugs. Each curve will be placed in its own plot which is then
@@ -756,7 +760,7 @@ class PlotCurve:
         """
 
         global x_fit, reverse, params, response, concentration
-        name_list = np.unique(self.df[name_col])
+        name_list = np.unique(self.data[name_col])
 
         # Generate lists for modifying plots (vline, box, etc)
         concentration_list = []
@@ -802,8 +806,8 @@ class PlotCurve:
                 xscale_unit, concentration, verbose=verbose
             )
 
-            reverse, params, covariance = calculator.calc_logic(
-                df=query,
+            reverse, params, covariance = calculator._calc_logic(
+                data=query,
                 concentration=concentration,
                 response_col=response_col,
                 initial_guess=initial_guess,
@@ -815,7 +819,7 @@ class PlotCurve:
 
             # Calculate from parameters 4PL equation
             if reverse == 1:
-                y_fit = calculator.reverse_fourpl(
+                y_fit = calculator._reverse_fourpl(
                     x_fit, maximum, minimum, ic50, hill_slope
                 )
                 y_intersection = 50
@@ -826,11 +830,11 @@ class PlotCurve:
                     interpretation(y_intersection), 3
                 )  # give results and round to 3 sig figs
                 hill_slope = (
-                    -1 * hill_slope
+                        -1 * hill_slope
                 )  # ensure hill_slope is negative # may not be needed if fixed
                 y_fit_list.append(y_fit)
             else:
-                y_fit = calculator.fourpl(x_fit, *params)
+                y_fit = calculator._fourpl(x_fit, *params)
                 y_intersection = 50
                 x_intersection = np.interp(y_intersection, y_fit, x_fit)
                 y_fit_list.append(y_fit)
@@ -854,8 +858,8 @@ class PlotCurve:
                 # Extend the list of colors to match the length of names
                 extended_colors = line_color * ((len(name_list) // len(line_color)) + 1)
                 line_color = extended_colors[
-                    : len(name_list)
-                ]  # Trim the extended list to the same length as names
+                             : len(name_list)
+                             ]  # Trim the extended list to the same length as names
 
             # If user only gives a string of 1 color, duplicate color name to match length of drug names
             elif len(line_color) is not len(name_list):
@@ -899,16 +903,16 @@ class PlotCurve:
                 # Y-axis limit will be limited to the largest response number and add 10 for spacing
                 if ymax is None:
                     max_value = (
-                        np.amax([np.amax(max_value) for max_value in response_list])
-                        + 10
+                            np.amax([np.amax(max_value) for max_value in response_list])
+                            + 10
                     )
                 else:
                     max_value = ymax
                 # Y-axis minimum to the lowest response - 10 for better plotting
                 if ymin is None:
                     ymin = (
-                        np.amin([np.amin(max_value) for max_value in response_list])
-                        - 10
+                            np.amin([np.amin(max_value) for max_value in response_list])
+                            - 10
                     )
                 else:
                     ymin = ymin
@@ -930,7 +934,7 @@ class PlotCurve:
                         x_concentration = interpretation(y_intersection)
                         # Constrain box to 50% drug response
                         ymax_box = (y_intersection - axes[i, j].get_ylim()[0]) / (
-                            axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
+                                axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
                         )
 
                         axes[i, j].axvline(
@@ -960,9 +964,9 @@ class PlotCurve:
                             )
 
                     elif (
-                        box_intercept is not None
-                        and isinstance(box_intercept, (int, float))
-                        and reverse == 0
+                            box_intercept is not None
+                            and isinstance(box_intercept, (int, float))
+                            and reverse == 0
                     ):
                         y_intersection = box_intercept
 
@@ -974,7 +978,7 @@ class PlotCurve:
 
                         # Constrain box to 50% drug response
                         ymax_box = (y_intersection - axes[i, j].get_ylim()[0]) / (
-                            axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
+                                axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
                         )
 
                         axes[i, j].axvline(
