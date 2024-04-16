@@ -197,7 +197,7 @@ class Calculator:
             reverse, params, covariance = self._calc_logic(
                 data=query,
                 concentration=concentration,
-                response_col=response_col,  # todo use response instead of response_col?
+                response_col=response_col,
                 initial_guess=initial_guess,
                 response=response,
             )
