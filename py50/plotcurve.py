@@ -228,11 +228,11 @@ class PlotCurve:
         else:
             marker = "o"
 
-        # # Check for xscale label:
-        # if xscale == "log" or xscale == "linear":
-        #     pass
-        # else:
-        #     raise ValueError("xscale must be 'log' or 'linear'")
+        # Check for xscale label:
+        if xscale == "log" or xscale == "linear":
+            pass
+        else:
+            raise ValueError("xscale must be 'log' or 'linear'")
 
         # Create the plot
         fig, ax = plt.subplots(figsize=figsize)
@@ -546,11 +546,11 @@ class PlotCurve:
         else:
             marker = marker
 
-        # # Check for xscale label:
-        # if xscale == "log" or xscale == "linear":
-        #     pass
-        # else:
-        #     raise ValueError("xscale must be 'log' or 'linear'")
+        # Check for xscale label:
+        if xscale == "log" or xscale == "linear":
+            pass
+        else:
+            raise ValueError("xscale must be 'log' or 'linear'")
 
         # Plotting the data for each line
         legend_handles = (
@@ -932,6 +932,12 @@ class PlotCurve:
                 line_color = line_color_list
         else:
             pass
+
+        # Check for xscale label:
+        if xscale == "log" or xscale == "linear":
+            pass
+        else:
+            raise ValueError("xscale must be 'log' or 'linear'")
 
         # Generate figure in grid layout
         # Calculate the number of rows needed
