@@ -11,8 +11,21 @@ from py50.calculator import Calculator
 class PlotCurve:
     # Will accept input DataFrame and output said DataFrame for double checking.
     def __init__(self, data):
-        super().__init__()
         self.data = data
+
+    def show(self, rows: int = None):
+        """
+        show DataFrame
+
+        :param rows: int
+            Indicate the number of rows to display. If none, automatically show 5.
+        :return: DataFrame
+        """
+
+        if rows is None:
+            return self.data.head()
+        elif isinstance(rows, int):
+            return self.data.head(rows)
 
     # Filter input data based on Compound Name to generate single plot
     def _filter_dataframe(self, drug_name: str = None):
@@ -196,30 +209,17 @@ class PlotCurve:
         maximum, minimum, ic50, hill_slope = params
         # print(drug_name, ' IC50: ', ic50, 'µM') # For checking
 
-        # todo extract into a method
-        # Calculate from parameters 4PL equation
-        if reverse == 1:
-            y_fit = calculator._reverse_fourpl(
-                x_fit, maximum, minimum, ic50, hill_slope
+        hill_slope, ic50, final_unit, x_intersection, y_fit = (
+            calculator._reverse_absolute_calculation(
+                hill_slope,
+                ic50,
+                conc_unit,
+                maximum,
+                minimum,
+                params,
+                reverse,
+                x_fit,
             )
-            y_intersection = 50
-            interpretation = interp1d(
-                y_fit, x_fit, kind="linear", fill_value="extrapolate"
-            )
-            x_intersection = np.round(
-                interpretation(y_intersection), 3
-            )  # give results and round to 3 sig figs
-            hill_slope = (
-                -1 * hill_slope
-            )  # ensure hill_slope is negative # may not be needed if fixed
-        else:
-            y_fit = calculator._fourpl(x_fit, *params)
-            y_intersection = 50
-            x_intersection = np.interp(y_intersection, y_fit, x_fit)
-
-        # Confirm ic50 unit output
-        ic50, x_intersection, final_unit = calculator._unit_convert(
-            ic50, x_intersection, conc_unit
         )
 
         # Boolean check for marker
@@ -269,9 +269,6 @@ class PlotCurve:
             min_value = ymin
         ax.set_ylim(min_value, max_value)
 
-        # todo change box_intercept is None to box
-        # todo Only print the Box X and Y intersection if Box is True
-        # todo nest additional if/else statement for box_intercept to match input accordingly
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
         if box_intercept is None:
@@ -342,8 +339,6 @@ class PlotCurve:
 
         return fig
 
-    # todo include conc_target from single_curve_plot
-    # todo include axis_fontsize as seen from other 2 plots
     def multi_curve_plot(
         self,
         concentration_col: str = None,
@@ -617,7 +612,7 @@ class PlotCurve:
 
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
-        if box_intercept == None:
+        if box_intercept is None:
             y_intersection = 50
         else:
             y_intersection = box_intercept
@@ -732,7 +727,6 @@ class PlotCurve:
 
         return fig
 
-    # todo include conc_target from single_curve_plot
     def grid_curve_plot(
         self,
         concentration_col: str = None,

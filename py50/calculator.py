@@ -11,6 +11,7 @@ class Calculator:
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Input must be a DataFrame")
         self.data = data
+        self.calculation = None
 
     def show(self, rows: int = None):
         """
@@ -313,27 +314,17 @@ class Calculator:
                 verbose=verbose,
             )
 
-            # Calculate from parameters 4PL equation
-            if reverse == 1:
-                y_fit = self._reverse_fourpl(x_fit, maximum, minimum, ic50, hill_slope)
-                y_intersection = 50
-                interpretation = interp1d(
-                    y_fit, x_fit, kind="linear", fill_value="extrapolate"
+            hill_slope, ic50, input_units, x_intersection, y_fit = (
+                self._reverse_absolute_calculation(
+                    hill_slope,
+                    ic50,
+                    input_units,
+                    maximum,
+                    minimum,
+                    params,
+                    reverse,
+                    x_fit,
                 )
-                x_intersection = np.round(
-                    interpretation(y_intersection), 3
-                )  # give results and round to 3 sig figs
-                hill_slope = (
-                    -1 * hill_slope
-                )  # ensure hill_slope is negative # may not be needed if fixed
-            else:
-                y_fit = self._fourpl(x_fit, *params)
-                y_intersection = 50
-                x_intersection = np.interp(y_intersection, y_fit, x_fit)
-
-            # Confirm ic50 unit output
-            ic50, x_intersection, input_units = self._unit_convert(
-                ic50, x_intersection, input_units
             )
 
             # Logic to append concentration units to output DataFrame
@@ -356,6 +347,35 @@ class Calculator:
                 }
             )
         return values
+
+    def _reverse_absolute_calculation(
+        self, hill_slope, ic50, input_units, maximum, minimum, params, reverse, x_fit
+    ):
+        """
+        Support function to condense code. Script will allow the generation of reverse curves.
+        """
+        # Calculate from parameters 4PL equation
+        if reverse == 1:
+            y_fit = self._reverse_fourpl(x_fit, maximum, minimum, ic50, hill_slope)
+            y_intersection = 50
+            interpretation = interp1d(
+                y_fit, x_fit, kind="linear", fill_value="extrapolate"
+            )
+            x_intersection = np.round(
+                interpretation(y_intersection), 3
+            )  # give results and round to 3 sig figs
+            hill_slope = (
+                -1 * hill_slope
+            )  # ensure hill_slope is negative # may not be needed if fixed
+        else:
+            y_fit = self._fourpl(x_fit, *params)
+            y_intersection = 50
+            x_intersection = np.interp(y_intersection, y_fit, x_fit)
+        # Confirm ic50 unit output
+        ic50, x_intersection, input_units = self._unit_convert(
+            ic50, x_intersection, input_units
+        )
+        return hill_slope, ic50, input_units, x_intersection, y_fit
 
     # When data is reversed, program is not obtaining correct column.
     def _calc_logic(
@@ -436,8 +456,10 @@ class Calculator:
             name_col, concentration_col, response_col, input_units, verbose
         )
 
-        df = pd.DataFrame(values)
-        return df
+        result_df = pd.DataFrame(values)
+
+        self.calculation = result_df
+        return self.calculation
 
     def calculate_absolute_ic50(
         self,
@@ -472,9 +494,9 @@ class Calculator:
             input_units=input_units,
             verbose=verbose,
         )
-        df = pd.DataFrame(values)
+        result_df = pd.DataFrame(values)
 
-        return df
+        return result_df
 
     def calculate_pic50(
         self,
@@ -509,16 +531,24 @@ class Calculator:
             input_units=input_units,
             verbose=verbose,
         )
-        df = pd.DataFrame(values)
+        result_df = pd.DataFrame(values)
 
         if input_units is None or input_units == "nM":
-            df["relative pIC50"] = -np.log10(df["relative ic50 (nM)"] * 0.000000001)
-            df["absolute pIC50"] = -np.log10(df["absolute ic50 (nM)"] * 0.000000001)
+            result_df["relative pIC50"] = -np.log10(
+                result_df["relative ic50 (nM)"] * 0.000000001
+            )
+            result_df["absolute pIC50"] = -np.log10(
+                result_df["absolute ic50 (nM)"] * 0.000000001
+            )
         elif input_units == "µM":
-            df["relative pIC50"] = -np.log10(df["relative ic50 (µM)"] * 0.000001)
-            df["absolute pIC50"] = -np.log10(df["absolute ic50 (µM)"] * 0.000001)
+            result_df["relative pIC50"] = -np.log10(
+                result_df["relative ic50 (µM)"] * 0.000001
+            )
+            result_df["absolute pIC50"] = -np.log10(
+                result_df["absolute ic50 (µM)"] * 0.000001
+            )
 
-        return df
+        return result_df
 
 
 if __name__ == "__main__":
