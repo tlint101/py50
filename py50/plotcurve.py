@@ -13,129 +13,130 @@ class PlotCurve:
     def __init__(self, data):
         super().__init__()
         self.data = data
-    #     if not isinstance(data, pd.DataFrame):
-    #         raise ValueError("Input must be a DataFrame")
-    #     self.df = data
-    #
-    # def show(self, rows: int = None):
-    #     """
-    #     show DataFrame
-    #
-    #     :param rows: int
-    #         Indicate the number of rows to display. If none, automatically show 5.
-    #     :return: DataFrame
-    #     """
-    #
-    #     if rows is None:
-    #         return self.df.head()
-    #     elif isinstance(rows, int):
-    #         return self.df.head(rows)
-    #
-    # def show_column(self, key):
-    #     """
-    #     View specific column from DataFrame
-    #
-    #     :param key: column header name.
-    #
-    #     :return: DataFrame
-    #     """
-    #
-    #     if key not in self.df.columns:
-    #         raise ValueError("Column not found")
-    #     return self.df[key]
 
     # Filter input data based on Compound Name to generate single plot
-    def filter_dataframe(self, drug_name):
+    def _filter_dataframe(self, drug_name: str = None):
         """
         Filter input DataFrame by query drug name.
 
-        :param drug_name:
-
+        :param drug_name: str
+            Column name containing drug name.
         :return: DataFrame
         """
         # Filter row based on drug name input. Row must match drug name somewhere
-        filtered_df = self.data[self.data.apply(lambda row: drug_name in str(row), axis=1)]
+        filtered_df = self.data[
+            self.data.apply(lambda row: drug_name in str(row), axis=1)
+        ]
         return filtered_df
 
     # todo rename function to curve_plot
     # todo fix verbose issue - box info will also print
     def single_curve_plot(
-            self,
-            concentration_col,
-            response_col,
-            drug_name=None,
-            plot_title=None,
-            plot_title_size=16,
-            xlabel=None,
-            ylabel=None,
-            axis_fontsize=14,
-            conc_unit="nM",
-            xscale="log",
-            xscale_ticks=None,
-            ymax=None,
-            ymin=None,
-            line_color="black",
-            line_width=1.5,
-            marker=None,
-            legend=False,
-            legend_loc="best",
-            box=False,
-            box_color="gray",
-            box_intercept=50,
-            conc_target=None,
-            hline=None,
-            hline_color="gray",
-            vline=None,
-            vline_color="gray",
-            figsize=(6.4, 4.8),
-            output_filename=None,
-            verbose=None,
-            **kwargs,
+        self,
+        concentration_col: str = None,
+        response_col: str = None,
+        drug_name: str = None,
+        plot_title: str = None,
+        plot_title_size: int = 16,
+        xlabel: str = None,
+        ylabel: str = None,
+        axis_fontsize: int = 14,
+        conc_unit: str = "nM",
+        xscale: str = "log",
+        xscale_ticks: tuple = None,
+        ymax: int = None,
+        ymin: int = None,
+        line_color: str = "black",
+        line_width: int = 1.5,
+        marker: bool = None,
+        legend: bool = False,
+        legend_loc: str = "best",
+        box: bool = False,
+        box_color: str = "gray",
+        box_intercept: int = 50,
+        conc_target: int = None,
+        hline: int = None,
+        hline_color: str = "gray",
+        vline: int = None,
+        vline_color: str = "gray",
+        figsize: tuple = (6.4, 4.8),
+        output_filename: str = None,
+        verbose: bool = None,
+        **kwargs,
     ):
         """
         Generate a dose-response curve for a single drug target. Because a data table can contain multiple drugs, user
         must specify specific target.
 
-        :param concentration_col: Concentration column from DataFrame
-        :param response_col: Response column from DataFrame
-        :param drug_name: Name of drug for plotting
-        :param plot_title: Title of the figure
-        :param plot_title_size: Modify plot title font size
-        :param xlabel: Title of the X-axis
-        :param ylabel: Title of the Y-axis
-        :param axis_fontsize: Modify axis label font size
-        :param conc_unit: Input unit of concentration. Can accept nanomolar (nM) and micromolar (uM or µM). If the \
+        :param concentration_col: str
+            Concentration column from DataFrame
+        :param response_col: str
+            Response column from DataFrame
+        :param drug_name: str
+            Column containing drug name for plotting
+        :param plot_title: str
+            Title of the figure
+        :param plot_title_size: tuple
+            Modify plot title font size
+        :param xlabel: str
+            Title of the X-axis
+        :param ylabel: str
+            Title of the Y-axis
+        :param axis_fontsize: int
+            Modify axis label font size
+        :param conc_unit: str
+            Input unit of concentration. Can accept nanomolar (nM) and micromolar (uM or µM). If the \
         units are different, for example in the DataFrame units are in nM, but the units for the graph are µM, the \
         units from the DataFrame will be converted to match the conc_unit input. The final plot will scale based on \
         the conc_unit input. By default, it will assume input concentration will be in nM.
-        :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
-        :param xscale_ticks: Set the scale of the X-axis
-        :param ymax: Give a set maximum limit for the Y-Axis
-        :param ymin: Give a set minimum limit for the Y-Axis
-        :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name \
-        of colors or colors in hex code.
-        :param line_width: Set width of lines in plot.
-        :param marker: Optional. Takes a list of for point markers.
-        :param legend: Optional. Denotes a figure legend.
-        :param legend_loc: Determine legend location. Default is best. Matplotlib options can be found here \
+        :param xscale: int
+            Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
+        :param xscale_ticks: tuple
+            Set the scale of the X-axis
+        :param ymax: int
+            Give a set maximum limit for the Y-Axis
+        :param ymin: int
+            Give a set minimum limit for the Y-Axis
+        :param line_color: str.
+            Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of colors or colors in hex\
+        code.
+        :param line_width: int
+            Set width of lines in plot.
+        :param marker: Optional, list
+            Takes a list of for point markers.
+        :param legend: Optional, bool
+            Denotes a figure legend.
+        :param legend_loc: str
+        Determine legend location. Default is best. Matplotlib options can be found here \
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
-        :param box: Optional. Draw a box to highlight a specific location. If box = True, then the box_color, \
+        :param box: Optional bool.
+            Draw a box to highlight a specific location. If box = True, then the box_color, \
         box_intercept, and x_concentration MUST ALSO BE GIVEN.
-        :param box_color: Set color of box. Default is gray.
-        :param box_intercept: Set horizontal location of box. By default, it is set at 50% of the Y-axis.
-        :param conc_target: Set vertical location of the box. By default, this is set to None. For example, if the \
+        :param box_color: str
+            Set color of box. Default is gray.
+        :param box_intercept: int
+            Set horizontal location of box. By default, it is set at 50% of the Y-axis.
+        :param conc_target: int
+            Set vertical location of the box. By default, this is set to None. For example, if the \
         box_intercept is set to 50%, then the x_concentration must be the Absolute IC50 value. If there is an input to \
         x_concentration, it will override the box_intercept and the response data will move accordingly. Finally, the \
         number must be in the same unit as the X-axis. i.e., if the axis is in µM, then the number for the \
         x_concentration should be in µM and vice versa.
-        :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is \
+        :param hline: Int or float
+            Draw a horizontal line across the graph. This line will stretch across the length of the plot. This is \
         optional and set to 0 by default.
-        :param hline_color: Set color of horizontal line. Default color is gray.
-        :param vline: This line will stretch across the height of the plot. This is  optional and set to 0 by default.
-        :param vline_color: Set color of vertical line. Default color is gray.
-        :param figsize: Set figure size.
-        :param output_filename: File path for save location.
-        :param verbose: Output information about the plot.
+        :param hline_color: str
+            Set color of horizontal line. Default color is gray.
+        :param vline: int or float
+            This line will stretch across the height of the plot. This is  optional and set to 0 by default.
+        :param vline_color: str
+            Set color of vertical line. Default color is gray.
+        :param figsize: tuple
+            Set figure size.
+        :param output_filename: str
+            File path for save location.
+        :param verbose: bool
+            Output information about the plot.
 
 
         :return: Figure
@@ -143,7 +144,7 @@ class PlotCurve:
 
         global x_fit, drug_query, y_intersection, x_intersection, reverse
         if drug_name is not None:
-            drug_query = self.filter_dataframe(drug_name=drug_name)
+            drug_query = self._filter_dataframe(drug_name=drug_name)
             if len(drug_query) > 0:
                 pass
             elif len(drug_query) == 0:
@@ -209,7 +210,7 @@ class PlotCurve:
                 interpretation(y_intersection), 3
             )  # give results and round to 3 sig figs
             hill_slope = (
-                    -1 * hill_slope
+                -1 * hill_slope
             )  # ensure hill_slope is negative # may not be needed if fixed
         else:
             y_fit = calculator._fourpl(x_fit, *params)
@@ -226,6 +227,12 @@ class PlotCurve:
             marker = marker
         else:
             marker = "o"
+
+        # # Check for xscale label:
+        # if xscale == "log" or xscale == "linear":
+        #     pass
+        # else:
+        #     raise ValueError("xscale must be 'log' or 'linear'")
 
         # Create the plot
         fig, ax = plt.subplots(figsize=figsize)
@@ -338,74 +345,102 @@ class PlotCurve:
     # todo include conc_target from single_curve_plot
     # todo include axis_fontsize as seen from other 2 plots
     def multi_curve_plot(
-            self,
-            concentration_col,
-            response_col,
-            name_col,
-            plot_title=None,
-            plot_title_size=12,
-            xlabel=None,
-            ylabel=None,
-            conc_unit="nM",
-            xscale="log",
-            xscale_ticks=None,
-            ymax=None,
-            ymin=None,
-            axis_fontsize=10,
-            line_color=CBPALETTE,
-            marker=CBMARKERS,
-            line_width=1.5,
-            legend=False,
-            legend_loc="best",
-            box_target=None,
-            box_color="gray",
-            box_intercept=50,
-            hline=None,
-            hline_color="gray",
-            vline=None,
-            vline_color="gray",
-            figsize=(6.4, 4.8),
-            output_filename=None,
-            verbose=None,
-            **kwargs,
+        self,
+        concentration_col: str = None,
+        response_col: str = None,
+        name_col: str = None,
+        plot_title: str = None,
+        plot_title_size: int = 12,
+        xlabel: str = None,
+        ylabel: str = None,
+        conc_unit: str = "nM",
+        xscale: str = "log",
+        xscale_ticks: tuple = None,
+        ymax: int = None,
+        ymin: int = None,
+        axis_fontsize: int = 10,
+        line_color: list = CBPALETTE,
+        marker: list = CBMARKERS,
+        line_width: int = 1.5,
+        legend: bool = False,
+        legend_loc: str = "best",
+        box_target: str = None,
+        box_color: str = "gray",
+        box_intercept: int = 50,
+        hline: int = None,
+        hline_color: str = "gray",
+        vline: int = None,
+        vline_color: str = "gray",
+        figsize: tuple = (6.4, 4.8),
+        output_filename: str = None,
+        verbose: bool = None,
+        **kwargs,
     ):
         """
         Generate a dose-response plot for multiple drug targets. Curves will be placed into a single plot.
 
-        :param concentration_col: Concentration column from DataFrame
-        :param response_col: Response column from DataFrame
-        :param name_col: Name column from DataFrame
-        :param plot_title: Title of the figure
-        :param plot_title_size: Modify plot title font size
-        :param xlabel: Title of the X-axis
-        :param ylabel: Title of the Y-axis
-        :param conc_unit: Input will assume that the concentration will be in nM. \
+        :param concentration_col: str
+            Concentration column from DataFrame
+        :param response_col: str
+            Response column from DataFrame
+        :param name_col:
+            Column containing name of drug from DataFrame
+        :param plot_title: str
+            Title of the figure
+        :param plot_title_size: int
+            Modify plot title font size
+        :param xlabel: str
+            Title of the X-axis
+        :param ylabel: str
+            Title of the Y-axis
+        :param conc_unit: str
+            Input will assume that the concentration will be in nM. \
         Thus, it will be automatically converted into µM. \
         If xscale_unit is given as nM, no conversion will be performed.
-        :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
-        :param xscale_ticks: Set the scale of the X-axis
-        :param ymax: Give a set maximum limit for the Y-Axis
-        :param ymin: Give a set minimum limit for the Y-Axis
-        :param axis_fontsize: Modify axis label font size
-        :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of \
+        :param xscale: str
+            Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
+        :param xscale_ticks: tuple
+            Set the scale of the X-axis
+        :param ymax: int
+            Give a set maximum limit for the Y-Axis
+        :param ymin: int
+            Give a set minimum limit for the Y-Axis
+        :param axis_fontsize:int
+            Modify axis label font size
+        :param line_color: str
+        Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of \
         colors or colors in hex code.
-        :param line_width: Set width of lines in plot.
-        :param marker: Optional. Takes a list for point markers. Marker options can be found here: \
+        :param line_width: int
+            Set width of lines in plot.
+        :param marker: list
+        Takes a list for point markers. Marker options can be found here: \
         https://matplotlib.org/stable/api/markers_api.html
-        :param legend: Optional. Denotes a figure legend.
-        :param legend_loc: Determine legend location. Matplotlib options can be found here \
+        :param legend: bool
+            Denotes a figure legend.
+        :param legend_loc: str
+            Determine legend location. Matplotlib options can be found here \
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
-        :param box_target: Optional. Draw a box to highlight a specific location.
-        :param box_color: Set color of box. Default color is gray.
-        :param box_intercept: Set horizontal location of box. By default, it is set at Absolute IC50.
-        :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is \
+        :param box_target: str
+            Draw a box to highlight a specific drug curve. Must use specific drug name.
+        :param box_color: str
+            Set color of box. Default color is gray.
+        :param box_intercept: int
+            Set horizontal location of box. By default, it is set at Absolute IC50.
+        :param hline: int or float
+            Draw a horizontal line that will stretch across the length of the plot. This is \
         optional and set to 0 by default.
-        :param hline_color: Set color of horizontal line. Default color is gray.
-        :param vline: This line will stretch across the height of the plot. This is  optional and set to 0 by default.
-        :param vline_color: Set color of vertical line. Default color is gray.
-        :param figsize: Set figure size.
-        :param output_filename: File path for save location.
-        :param verbose: Output information about the plot.
+        :param hline_color: str
+            Set color of horizontal line. Default color is gray.
+        :param vline: int or float
+            Draw a line that will stretch across the height of the plot. This is  optional and set to 0 by default.
+        :param vline_color: str
+            Set color of vertical line. Default color is gray.
+        :param figsize: tuple
+            Set figure size.
+        :param output_filename: str
+            File path for save location.
+        :param verbose: bool
+            Output information about the plot.
 
         :return: Figure
         """
@@ -417,7 +452,7 @@ class PlotCurve:
         y_fit_list = []
 
         for drug in name_list:
-            drug_query = self.filter_dataframe(drug)
+            drug_query = self._filter_dataframe(drug)
 
             # Create variables for inputs. Extract column from Dataframe
             concentration = drug_query[concentration_col]
@@ -477,7 +512,7 @@ class PlotCurve:
                     interpretation(y_intersection), 3
                 )  # give results and round to 3 sig figs
                 hill_slope = (
-                        -1 * hill_slope
+                    -1 * hill_slope
                 )  # ensure hill_slope is negative # may not be needed if fixed
                 y_fit_list.append(y_fit)
 
@@ -511,17 +546,23 @@ class PlotCurve:
         else:
             marker = marker
 
+        # # Check for xscale label:
+        # if xscale == "log" or xscale == "linear":
+        #     pass
+        # else:
+        #     raise ValueError("xscale must be 'log' or 'linear'")
+
         # Plotting the data for each line
         legend_handles = (
             []
         )  # Store data for each line as a dictionary inside a list for the legend
         for i, (
-                y_fit_point,
-                concentration_point,
-                response_point,
-                name,
-                color,
-                mark,
+            y_fit_point,
+            concentration_point,
+            response_point,
+            name,
+            color,
+            mark,
         ) in enumerate(
             zip(
                 y_fit_list,
@@ -598,7 +639,7 @@ class PlotCurve:
                         x_intersection = interpretation(y_intersection)
                     ymin = 0  # Starts at the bottom of the plot
                     ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
-                            plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
+                        plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
                     )
                     if verbose is True:
                         print(f"Box will target {box_target}")
@@ -633,7 +674,7 @@ class PlotCurve:
                         )
                     ymin = 0  # Starts at the bottom of the plot
                     ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
-                            plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
+                        plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
                     )
                     if verbose is True:
                         print(f"Box will target {box_target}")
@@ -693,68 +734,92 @@ class PlotCurve:
 
     # todo include conc_target from single_curve_plot
     def grid_curve_plot(
-            self,
-            concentration_col,
-            response_col,
-            name_col,
-            column_num=2,
-            plot_title=None,
-            plot_title_size=20,
-            xlabel=None,
-            ylabel=None,
-            conc_unit="nM",
-            xscale="log",
-            xscale_ticks=None,
-            ymax=None,
-            ymin=None,
-            line_color=CBPALETTE,
-            line_width=1.5,
-            box=False,
-            box_color="gray",
-            box_intercept=50,
-            hline=None,
-            hline_color="gray",
-            vline=None,
-            vline_color="gray",
-            figsize=(8.4, 4.8),
-            output_filename=None,
-            verbose=None,
-            **kwargs,
+        self,
+        concentration_col: str = None,
+        response_col: str = None,
+        name_col: str = None,
+        column_num: int = 2,
+        plot_title: str = None,
+        plot_title_size: int = 20,
+        xlabel: str = None,
+        ylabel: str = None,
+        conc_unit: str = "nM",
+        xscale: str = "log",
+        xscale_ticks: tuple = None,
+        ymax: int = None,
+        ymin: int = None,
+        line_color: list = CBPALETTE,
+        line_width: int = 1.5,
+        box: bool = False,
+        box_color: str = "gray",
+        box_intercept: int = 50,
+        hline: int = None,
+        hline_color: str = "gray",
+        vline: int = None,
+        vline_color: str = "gray",
+        figsize: tuple = (8.4, 4.8),
+        output_filename: str = None,
+        verbose: bool = None,
+        **kwargs,
     ):
         """
         Generate a dose-response curve for mutliple drugs. Each curve will be placed in its own plot which is then
         placed in a grid.
 
-        :param concentration_col: Concentration column from DataFrame
-        :param response_col: Response column from DataFrame
-        :param name_col: Name column from DataFrame
-        :param column_num: Set number of column grid
-        :param plot_title: Title of the figure
-        :param plot_title_size: Modify plot title font size
-        :param xlabel: Title of the X-axis
-        :param ylabel: Title of the Y-axis
-        :param ymax: Give a set maximum limit for the Y-Axis
-        :param ymin: Give a set minimum limit for the Y-Axis
-        :param conc_unit: Input will assume that the concentration will be in nM. \
-        Thus, it will be automatically converted into µM. \
+        :param concentration_col: str
+            Concentration column from DataFrame
+        :param response_col: str
+            Response column from DataFrame
+        :param name_col: str
+            Name column from DataFrame
+        :param column_num: int
+            Set number of column grid
+        :param plot_title: str
+            Title of the figure
+        :param plot_title_size: int
+            Modify plot title font size
+        :param xlabel:str
+            Title of the X-axis
+        :param ylabel: str
+            Title of the Y-axis
+        :param ymax: int
+            Give a set maximum limit for the Y-Axis
+        :param ymin: int
+            Give a set minimum limit for the Y-Axis
+        :param conc_unit: str
+            Input will assume that the concentration will be in nM. Thus, it will be automatically converted into µM. \
         If xscale_unit is given as nM, no conversion will be performed.
-        :param xscale: Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
-        :param xscale_ticks: Set the scale of the X-axis
-        :param line_color: Optional. Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of \
+        :param xscale: str
+            Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
+        :param xscale_ticks: tuple
+            Set the scale of the X-axis
+        :param line_color: list
+            Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of \
         colors or colors in hex code.
-        :param line_width: Set width of lines in plot.
-        :param box: Optional. Draw a box to highlight a specific location. If box = True, then the box_color, \
-        and box_intercept MUST ALSO BE GIVEN.
-        :param box_color: Set color of box. Default color is gray.
-        :param box_intercept: Set horizontal location of box. By default, it is set at Absolute IC50.
-        :param hline: Int or float for horizontal line. This line will stretch across the length of the plot. This is \
-        optional and set to 0 by default.
-        :param hline_color: Set color of horizontal line. Default color is gray.
-        :param vline: This line will stretch across the height of the plot. This is  optional and set to 0 by default.
-        :param vline_color: Set color of vertical line. Default color is gray.
-        :param figsize: Set figure size for subplot.
-        :param output_filename: File path for save location.
-        :param verbose: Output information about the plot.
+        :param line_width: int
+            Set width of lines in plot.
+        :param box: bool
+        Draw a box to highlight a specific location. If box = True, then the box_color, and box_intercept MUST ALSO BE \
+        GIVEN.
+        :param box_color: str
+            Set color of box. Default color is gray.
+        :param box_intercept: int
+            Set horizontal location of box. By default, it is set at Absolute IC50.
+        :param hline: int or float
+            Draw horizontal line that will stretch across the length of the plot. This is optional and set to 0 by \
+            default.
+        :param hline_color: str
+            Set color of horizontal line. Default color is gray.
+        :param vline: int or float
+            Draw a line thatwill stretch across the height of the plot. This is  optional and set to 0 by default.
+        :param vline_color: str
+            Set color of vertical line. Default color is gray.
+        :param figsize: tuple
+            Set figure size for subplot.
+        :param output_filename: str
+            File path for save location.
+        :param verbose: bool
+            Output information about the plot.
 
         :return: Figure
         """
@@ -769,7 +834,7 @@ class PlotCurve:
         x_fit_list = []
 
         for drug in name_list:
-            drug_query = self.filter_dataframe(drug)
+            drug_query = self._filter_dataframe(drug)
 
             # Create variables for inputs. Extract column from Dataframe
             concentration = drug_query[concentration_col]
@@ -830,7 +895,7 @@ class PlotCurve:
                     interpretation(y_intersection), 3
                 )  # give results and round to 3 sig figs
                 hill_slope = (
-                        -1 * hill_slope
+                    -1 * hill_slope
                 )  # ensure hill_slope is negative # may not be needed if fixed
                 y_fit_list.append(y_fit)
             else:
@@ -858,8 +923,8 @@ class PlotCurve:
                 # Extend the list of colors to match the length of names
                 extended_colors = line_color * ((len(name_list) // len(line_color)) + 1)
                 line_color = extended_colors[
-                             : len(name_list)
-                             ]  # Trim the extended list to the same length as names
+                    : len(name_list)
+                ]  # Trim the extended list to the same length as names
 
             # If user only gives a string of 1 color, duplicate color name to match length of drug names
             elif len(line_color) is not len(name_list):
@@ -903,16 +968,16 @@ class PlotCurve:
                 # Y-axis limit will be limited to the largest response number and add 10 for spacing
                 if ymax is None:
                     max_value = (
-                            np.amax([np.amax(max_value) for max_value in response_list])
-                            + 10
+                        np.amax([np.amax(max_value) for max_value in response_list])
+                        + 10
                     )
                 else:
                     max_value = ymax
                 # Y-axis minimum to the lowest response - 10 for better plotting
                 if ymin is None:
                     ymin = (
-                            np.amin([np.amin(max_value) for max_value in response_list])
-                            - 10
+                        np.amin([np.amin(max_value) for max_value in response_list])
+                        - 10
                     )
                 else:
                     ymin = ymin
@@ -934,7 +999,7 @@ class PlotCurve:
                         x_concentration = interpretation(y_intersection)
                         # Constrain box to 50% drug response
                         ymax_box = (y_intersection - axes[i, j].get_ylim()[0]) / (
-                                axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
+                            axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
                         )
 
                         axes[i, j].axvline(
@@ -964,9 +1029,9 @@ class PlotCurve:
                             )
 
                     elif (
-                            box_intercept is not None
-                            and isinstance(box_intercept, (int, float))
-                            and reverse == 0
+                        box_intercept is not None
+                        and isinstance(box_intercept, (int, float))
+                        and reverse == 0
                     ):
                         y_intersection = box_intercept
 
@@ -978,7 +1043,7 @@ class PlotCurve:
 
                         # Constrain box to 50% drug response
                         ymax_box = (y_intersection - axes[i, j].get_ylim()[0]) / (
-                                axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
+                            axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
                         )
 
                         axes[i, j].axvline(
