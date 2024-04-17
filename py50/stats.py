@@ -854,7 +854,7 @@ class Plots(Stats):
     def list_test():
         """
         List all tests available for plotting
-        :param list:
+        :param list: Blank
         :return:
         """
         print(
@@ -1024,8 +1024,14 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
 
+        # Return DataFrame AND figure
         if return_df:
-            return stat_df  # return calculated df. Change name for more description
+            return (
+                stat_df,
+                annotator,
+            )  # return calculated df. Change name for more description
+
+        return annotator
 
     def barplot(
         self,
@@ -1192,8 +1198,14 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
 
+        # Return DataFrame AND figure
         if return_df:
-            return stat_df  # return calculated df. Change name for more description
+            return (
+                stat_df,
+                annotator,
+            )  # return calculated df. Change name for more description
+
+        return annotator
 
     def violinplot(
         self,
@@ -1352,8 +1364,14 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
 
+        # Return DataFrame AND figure
         if return_df:
-            return stat_df  # return calculated df. Change name for more description
+            return (
+                stat_df,
+                annotator,
+            )  # return calculated df. Change name for more description
+
+        return annotator
 
     def swarmplot(
         self,
@@ -1516,9 +1534,16 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
 
+        # Return DataFrame AND figure
         if return_df:
-            return stat_df  # return calculated df. Change name for more description
+            return (
+                stat_df,
+                annotator,
+            )  # return calculated df. Change name for more description
 
+        return annotator
+
+    # todo add support for lineplot
     def _lineplot(
         self,
         test=None,
@@ -1685,8 +1710,14 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
 
+        # Return DataFrame AND figure
         if return_df:
-            return stat_df  # return calculated df. Change name for more description
+            return (
+                stat_df,
+                annotator,
+            )  # return calculated df. Change name for more description
+
+        return annotator
 
     def p_matrix(
         self,
@@ -1725,11 +1756,19 @@ class Plots(Stats):
         if cmap is None:
             cmap = ["1", "#fbd7d4", "#005a32", "#238b45", "#a1d99b"]
             fig = sp.sign_plot(
-                self.data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
+                self.data,
+                cmap=cmap,
+                linewidths=linewidths,
+                linecolor=linecolor,
+                **kwargs,
             )
         else:
             fig = sp.sign_plot(
-                self.data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs
+                self.data,
+                cmap=cmap,
+                linewidths=linewidths,
+                linecolor=linecolor,
+                **kwargs,
             )
 
         # Display plot
