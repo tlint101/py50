@@ -39,10 +39,10 @@ class Stats:
         returned_df = self.data
 
         if rows is None:
-            print("rows is none")
+            # print("rows is none") # for troubleshooting
             return returned_df.head()
         elif isinstance(rows, int):
-            print("rows are given!")
+            # print("rows are given!") # for troubleshooting
             return returned_df.head(rows)
 
     def get_normality(self, value_col=None, group_col=None, method="shapiro", **kwargs):
