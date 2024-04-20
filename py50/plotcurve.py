@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
-import pandas as pd
 import itertools
 from scipy.interpolate import interp1d
 from py50.plot_settings import CBMARKERS, CBPALETTE, CurveSettings

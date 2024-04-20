@@ -31,7 +31,7 @@ class Calculator:
         """
         View specific column from DataFrame
 
-        :param  String
+        :param  key: String
             Input column header. Must be a column header found in class input DataFrame.
 
         :return: DataFrame

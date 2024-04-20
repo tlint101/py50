@@ -854,7 +854,7 @@ class Plots(Stats):
     def list_test():
         """
         List all tests available for plotting
-        :param list: Blank
+
         :return:
         """
         print(

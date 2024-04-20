@@ -56,7 +56,6 @@ def get_pairs(df, group_col=None, value_col=None, pairs=2):
 def tukey_plot_logic(test_value):
     """
 
-    :param stat:
     :param test_value:
     :return:
     """
@@ -67,7 +66,6 @@ def tukey_plot_logic(test_value):
 def gameshowell_plot_logic(test_value):
     """
 
-    :param stat:
     :param test_value:
     :return:
     """
@@ -186,7 +184,6 @@ def single_group(df, group_col=None, test=None):
     :param test:
     :param df:
     :param group_col:
-    :param p_col:
     :return:
     """
     if test is None:
