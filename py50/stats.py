@@ -1026,10 +1026,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (
-                stat_df,
-                annotator
-            )
+            return (stat_df, annotator)
 
         return annotator
 
@@ -1200,10 +1197,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (
-                stat_df,
-                annotator
-            )
+            return (stat_df, annotator)
 
         return annotator
 
@@ -1366,10 +1360,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (
-                stat_df,
-                annotator
-            )
+            return (stat_df, annotator)
 
         return annotator
 
@@ -1536,10 +1527,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (
-                stat_df,
-                annotator
-            )
+            return (stat_df, annotator)
 
         return annotator
 
@@ -1706,10 +1694,174 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (
-                stat_df,
-                annotator
+            return (stat_df, annotator)
+
+        return annotator
+
+    def boxenplot(
+        self,
+        test=None,
+        group_col=None,
+        value_col=None,
+        group_order=None,
+        subgroup_col=None,
+        subject_col=None,
+        within_subject_col=None,
+        pairs=None,
+        pvalue_label=None,
+        palette=None,
+        orient="v",
+        loc="inside",
+        return_df=None,
+        **kwargs,
+    ):
+        """
+        Draw a boxplot from the input DataFrame.
+
+        :param test: String
+            Name of test for calculations. Names must match the test names from the py50.Stats()
+        :param group_col: String
+            Name of column containing groups. This should be the between depending on the selected test.
+        :param value_col: String
+            Name of the column containing the values. This is the dependent variable.
+        :param group_order: List.
+            Place the groups in a specific order on the plot.
+        :param subgroup_col: String
+            Name of the column containing the subgroup for the group column. This is associated with the hue parameters
+            in Seaborn.
+        :param subject_col: String
+            Name of the column containing the subject column.
+        :param within_subject_col: String
+            Name of the column containing the within subject column.
+        :param pairs: List
+            A list containing specific pairings for annotation on the plot.
+        :param pvalue_label: List.
+            A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param palette: String or List.
+            Color palette used for the plot. Can be given as common color name or in hex code.
+        :param orient: String
+            Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
+        :param loc: String
+            Set location of annotations. Only "inside" or "outside" are supported.
+        :param return_df: Boolean
+            Returns a DataFrame of calculated results. If pairs used, only return rows with annotated pairs.
+
+        :return:
+        """
+
+        global stat_df
+        # separate kwargs for sns and sns
+        valid_sns = utils.get_kwargs(sns.boxenplot)
+        valid_annot = utils.get_kwargs(Annotator)
+
+        sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
+        annot_kwargs = {
+            key: value for key, value in kwargs.items() if key in valid_annot
+        }
+
+        # Perform Stat calculations and get pairs and pvalue for annotation
+        pairs, pvalue, stat_df = Plots._get_test(
+            self,
+            group_col,
+            kwargs,
+            pairs,
+            subgroup_col,
+            subject_col,
+            within_subject_col,
+            test,
+            value_col,
+        )
+
+        # Set kwargs dictionary for line annotations
+        annotate_kwargs = {}
+        if "line_offset_to_group" in kwargs and "line_offset" in kwargs:
+            # Get kwargs from input
+            line_offset_to_group = kwargs["line_offset_to_group"]
+            line_offset = kwargs["line_offset"]
+            # Add to dictionary
+            annotate_kwargs["line_offset_to_group"] = line_offset_to_group
+            annotate_kwargs["line_offset"] = line_offset
+
+        # Set order for groups on plot
+        if group_order:
+            group_order = group_order
+
+        # set orientation for plot and Annotator
+        orient = orient.lower()
+        if orient == "v":
+            ax = sns.boxenplot(
+                data=self.data,
+                x=group_col,
+                y=value_col,
+                order=group_order,
+                palette=palette,
+                hue=subgroup_col,
+                **sns_kwargs,
             )
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=self.data,
+                x=group_col,
+                y=value_col,
+                order=group_order,
+                verbose=False,
+                orient="v",
+                hue=subgroup_col,
+                **annot_kwargs,
+            )
+        elif orient == "h":
+            ax = sns.boxenplot(
+                data=self.data,
+                x=value_col,
+                y=group_col,
+                order=group_order,
+                palette=palette,
+                hue=subgroup_col,
+                **sns_kwargs,
+            )
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=self.data,
+                x=value_col,
+                y=group_col,
+                order=group_order,
+                verbose=False,
+                orient="h",
+                hue=subgroup_col,
+                **annot_kwargs,
+            )
+        else:
+            raise ValueError("Orientation must be 'v' or 'h'!")
+
+        # optional input for custom annotations
+        if pvalue_label:
+            pvalue = pvalue_label
+
+        # # For debugging pairs and pvalue list orders
+        # print(pairs)
+        # print(pvalue)
+
+        # Location of annotations
+        if loc not in ["inside", "outside"]:
+            raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
+
+        if loc == "inside":
+            annotator.configure(loc=loc, test=None)
+        else:
+            annotator.configure(loc=loc, test=None)
+
+        # Make sure the pairs and pvalue lists match
+        if len(pairs) != len(pvalue):
+            raise Exception("pairs and pvalue_order length does not match!")
+        else:
+            annotator.set_custom_annotations(pvalue)
+            annotator.annotate(**annotate_kwargs)
+
+        # Return DataFrame AND figure
+        if return_df:
+            return (stat_df, annotator)
 
         return annotator
 
@@ -1882,10 +2034,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (
-                stat_df,
-                annotator
-            )
+            return (stat_df, annotator)
 
         return annotator
 
