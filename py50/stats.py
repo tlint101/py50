@@ -1044,7 +1044,7 @@ class Plots(Stats):
         palette=None,
         orient="v",
         loc="inside",
-        ci="sd",
+        errorbar="sd",
         capsize=0.1,
         return_df=None,
         **kwargs,
@@ -1077,7 +1077,7 @@ class Plots(Stats):
             Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
         :param loc: String
             Set location of annotations. Only "inside" or "outside" are supported.
-        :param ci: String
+        :param errorbar: String
             Set confidence interval on plot.
         :param capsize: Int
             Set cap size on plot.
@@ -1132,7 +1132,7 @@ class Plots(Stats):
                 order=group_order,
                 palette=palette,
                 hue=subgroup_col,
-                ci=ci,  # errorbar
+                errorbar=errorbar,  # errorbar
                 capsize=capsize,  # errorbar
                 **sns_kwargs,
             )
@@ -1156,7 +1156,7 @@ class Plots(Stats):
                 order=group_order,
                 palette=palette,
                 hue=subgroup_col,
-                ci=ci,  # errorbar
+                errorbar=errorbar,  # errorbar
                 capsize=capsize,  # errorbar
                 **sns_kwargs,
             )
@@ -1415,6 +1415,9 @@ class Plots(Stats):
         :return:
         """
 
+        # remove palette/hue warning
+        warnings.filterwarnings("ignore", category=FutureWarning)
+
         global stat_df
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxplot)
@@ -1581,6 +1584,9 @@ class Plots(Stats):
 
         :return:
         """
+
+        # remove palette/hue warning
+        warnings.filterwarnings("ignore", category=FutureWarning)
 
         global stat_df
         # separate kwargs for sns and sns
