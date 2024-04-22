@@ -42,33 +42,134 @@ class Calculator:
 
     """Functions for calculations below"""
 
-    def _unit_convert(
-        self, ic50: int = None, x_intersection: int = None, input_units: str = None
+    def calculate_ic50(
+        self,
+        name_col: str = None,
+        concentration_col: str = None,
+        response_col: str = None,
+        input_units: str = None,
+        verbose: bool = None,
     ):
         """
-        Converts ic50 to desired input units for the plot_curve class
+        Calculations previously performed in relative_calculation(). The dictionary results are converted into into a
+        pandas DataFrame
 
-        :param ic50: int
-            IC50 value for conversion. Obtained from the curve parameter values.
-        :param x_intersection: int
-            This value will correspond to the absolute ic50 value. This is calculated from the curve_fit.
+        :param name_col: str
+            Name column from DataFrame
+        :param concentration_col: str
+            Concentration column from DataFrame
+        :param response_col: str
+            Response column from DataFrame
         :param input_units: str
-            Unites for the converted IC50 value. Only "nM" or "µM" are supported.
-        :return:
+            Units of input dataset. Default is nM.
+        :param verbose: bool
+            Output drug concentration units.
+
+        :return: DataFrame generated from the list from the relative_calculation method
         """
-        # convert ic50 by input units
-        if input_units == "nM":
-            return ic50, x_intersection, input_units
-        elif input_units == "µM" or input_units == "uM":
-            ic50 = ic50 / 1000
-            if x_intersection is not None:
-                x_intersection = x_intersection / 1000
-            return ic50, x_intersection, input_units
-        elif input_units is None:
-            input_units = "nM"
-            return ic50, x_intersection, input_units
-        else:
-            print("Need to be in 'nM' (Nanomolar) or 'µM' (Micromolar) concentrations!")
+
+        # Set variables from funtion and convert name_col to np array
+        values = self._relative_calculation(
+            name_col, concentration_col, response_col, input_units, verbose
+        )
+
+        result_df = pd.DataFrame(values)
+
+        self.calculation = result_df
+        return self.calculation
+
+    def calculate_absolute_ic50(
+        self,
+        name_col: str = None,
+        concentration_col: str = None,
+        response_col: str = None,
+        input_units: str = None,
+        verbose: bool = None,
+    ):
+        """
+        Calculations previously performed in absolute_calculation(). The dictionary results are converted into a
+        pandas DataFrame
+
+        :param name_col: str
+            Name column from DataFrame
+        :param concentration_col: str
+            Concentration column from DataFrame
+        :param response_col: str
+            Response column from DataFrame
+        :param input_units: str
+            Units of input dataset. Default is nM.
+        :param verbose: bool
+            Output drug concentration units.
+
+        :return: DataFrame generated from the list from the absolute_calculation method
+        """
+
+        values = self._absolute_calculation(
+            name_col=name_col,
+            concentration_col=concentration_col,
+            response_col=response_col,
+            input_units=input_units,
+            verbose=verbose,
+        )
+        result_df = pd.DataFrame(values)
+
+        self.calculation = result_df
+        return self.calculation
+
+    def calculate_pic50(
+        self,
+        name_col: str = None,
+        concentration_col: str = None,
+        response_col: str = None,
+        input_units: str = None,
+        verbose: bool = None,
+    ):
+        """
+        Convert IC50 into pIC50 values. Calculation is performed using the absolute_calculation. As such, two columns
+        will be appended - relative pIC50 and absolute pIC50. Conversion is performed by convert the IC50 values from nM
+        to M levels and then taking the negative log value of said number.
+
+        :param name_col: str
+            Name column from DataFrame
+        :param concentration_col: str
+            Concentration column from DataFrame
+        :param response_col: str
+            Response column from DataFrame
+        :param input_units: str
+            Units of input dataset. Default is nM.
+        :param verbose: bool
+            Output drug concentration units.
+
+        :return: DataFrame from calculate_absolute_ic50 along with the pIC50 values
+        """
+        values = self._absolute_calculation(
+            name_col=name_col,
+            concentration_col=concentration_col,
+            response_col=response_col,
+            input_units=input_units,
+            verbose=verbose,
+        )
+        result_df = pd.DataFrame(values)
+
+        if input_units is None or input_units == "nM":
+            result_df["relative pIC50"] = -np.log10(
+                result_df["relative ic50 (nM)"] * 0.000000001
+            )
+            result_df["absolute pIC50"] = -np.log10(
+                result_df["absolute ic50 (nM)"] * 0.000000001
+            )
+        elif input_units == "µM":
+            result_df["relative pIC50"] = -np.log10(
+                result_df["relative ic50 (µM)"] * 0.000001
+            )
+            result_df["absolute pIC50"] = -np.log10(
+                result_df["absolute ic50 (µM)"] * 0.000001
+            )
+
+        self.calculation = result_df
+        return self.calculation
+
+    """Support functions below"""
 
     """Define the 4-parameter logistic (4PL) equation"""
 
@@ -425,130 +526,33 @@ class Calculator:
             reverse = 0  # Tag direction of sigmoid curve
         return reverse, params, covariance
 
-    def calculate_ic50(
-        self,
-        name_col: str = None,
-        concentration_col: str = None,
-        response_col: str = None,
-        input_units: str = None,
-        verbose: bool = None,
+    def _unit_convert(
+        self, ic50: int = None, x_intersection: int = None, input_units: str = None
     ):
         """
-        Calculations previously performed in relative_calculation(). The dictionary results are converted into into a
-        pandas DataFrame
+        Converts ic50 to desired input units for the plot_curve class
 
-        :param name_col: str
-            Name column from DataFrame
-        :param concentration_col: str
-            Concentration column from DataFrame
-        :param response_col: str
-            Response column from DataFrame
+        :param ic50: int
+            IC50 value for conversion. Obtained from the curve parameter values.
+        :param x_intersection: int
+            This value will correspond to the absolute ic50 value. This is calculated from the curve_fit.
         :param input_units: str
-            Units of input dataset. Default is nM.
-        :param verbose: bool
-            Output drug concentration units.
-
-        :return: DataFrame generated from the list from the relative_calculation method
+            Unites for the converted IC50 value. Only "nM" or "µM" are supported.
+        :return:
         """
-
-        # Set variables from funtion and convert name_col to np array
-        values = self._relative_calculation(
-            name_col, concentration_col, response_col, input_units, verbose
-        )
-
-        result_df = pd.DataFrame(values)
-
-        self.calculation = result_df
-        return self.calculation
-
-    def calculate_absolute_ic50(
-        self,
-        name_col: str = None,
-        concentration_col: str = None,
-        response_col: str = None,
-        input_units: str = None,
-        verbose: bool = None,
-    ):
-        """
-        Calculations previously performed in absolute_calculation(). The dictionary results are converted into a
-        pandas DataFrame
-
-        :param name_col: str
-            Name column from DataFrame
-        :param concentration_col: str
-            Concentration column from DataFrame
-        :param response_col: str
-            Response column from DataFrame
-        :param input_units: str
-            Units of input dataset. Default is nM.
-        :param verbose: bool
-            Output drug concentration units.
-
-        :return: DataFrame generated from the list from the absolute_calculation method
-        """
-
-        values = self._absolute_calculation(
-            name_col=name_col,
-            concentration_col=concentration_col,
-            response_col=response_col,
-            input_units=input_units,
-            verbose=verbose,
-        )
-        result_df = pd.DataFrame(values)
-
-        return result_df
-
-    def calculate_pic50(
-        self,
-        name_col: str = None,
-        concentration_col: str = None,
-        response_col: str = None,
-        input_units: str = None,
-        verbose: bool = None,
-    ):
-        """
-        Convert IC50 into pIC50 values. Calculation is performed using the absolute_calculation. As such, two columns
-        will be appended - relative pIC50 and absolute pIC50. Conversion is performed by convert the IC50 values from nM
-        to M levels and then taking the negative log value of said number.
-
-        :param name_col: str
-            Name column from DataFrame
-        :param concentration_col: str
-            Concentration column from DataFrame
-        :param response_col: str
-            Response column from DataFrame
-        :param input_units: str
-            Units of input dataset. Default is nM.
-        :param verbose: bool
-            Output drug concentration units.
-
-        :return: DataFrame from calculate_absolute_ic50 along with the pIC50 values
-        """
-        values = self._absolute_calculation(
-            name_col=name_col,
-            concentration_col=concentration_col,
-            response_col=response_col,
-            input_units=input_units,
-            verbose=verbose,
-        )
-        result_df = pd.DataFrame(values)
-
-        if input_units is None or input_units == "nM":
-            result_df["relative pIC50"] = -np.log10(
-                result_df["relative ic50 (nM)"] * 0.000000001
-            )
-            result_df["absolute pIC50"] = -np.log10(
-                result_df["absolute ic50 (nM)"] * 0.000000001
-            )
-        elif input_units == "µM":
-            result_df["relative pIC50"] = -np.log10(
-                result_df["relative ic50 (µM)"] * 0.000001
-            )
-            result_df["absolute pIC50"] = -np.log10(
-                result_df["absolute ic50 (µM)"] * 0.000001
-            )
-
-        return result_df
+        # convert ic50 by input units
+        if input_units == "nM":
+            return ic50, x_intersection, input_units
+        elif input_units == "µM" or input_units == "uM":
+            ic50 = ic50 / 1000
+            if x_intersection is not None:
+                x_intersection = x_intersection / 1000
+            return ic50, x_intersection, input_units
+        elif input_units is None:
+            input_units = "nM"
+            return ic50, x_intersection, input_units
+        else:
+            print("Need to be in 'nM' (Nanomolar) or 'µM' (Micromolar) concentrations!")
 
 
 if __name__ == "__main__":
