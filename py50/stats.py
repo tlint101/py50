@@ -1026,7 +1026,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (stat_df, annotator)
+            return stat_df, annotator
 
         return annotator
 
@@ -1197,7 +1197,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (stat_df, annotator)
+            return stat_df, annotator
 
         return annotator
 
@@ -1360,7 +1360,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (stat_df, annotator)
+            return stat_df, annotator
 
         return annotator
 
@@ -1455,6 +1455,11 @@ class Plots(Stats):
         if group_order:
             group_order = group_order
 
+        # To color code plots:
+        subgroup_col_plot = None
+        if subgroup_col is None:
+            subgroup_col_plot = group_col
+
         # set orientation for plot and Annotator
         orient = orient.lower()
         if orient == "v":
@@ -1464,7 +1469,7 @@ class Plots(Stats):
                 y=value_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup_col,
+                hue=subgroup_col_plot,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1486,7 +1491,7 @@ class Plots(Stats):
                 y=group_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup_col,
+                hue=subgroup_col_plot,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1528,9 +1533,12 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
 
+        # Turn off legend by default. Can be assessed outside using hte plt.legend()
+        plt.legend().set_visible(False)
+
         # Return DataFrame AND figure
         if return_df:
-            return (stat_df, annotator)
+            return stat_df, annotator
 
         return annotator
 
@@ -1625,6 +1633,11 @@ class Plots(Stats):
         if group_order:
             group_order = group_order
 
+        # To color code plots:
+        subgroup_col_plot = None
+        if subgroup_col is None:
+            subgroup_col_plot = group_col
+
         # set orientation for plot and Annotator
         orient = orient.lower()
         if orient == "v":
@@ -1634,7 +1647,7 @@ class Plots(Stats):
                 y=value_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup_col,
+                hue=subgroup_col_plot,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1656,7 +1669,7 @@ class Plots(Stats):
                 y=group_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup_col,
+                hue=subgroup_col_plot,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1698,9 +1711,12 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
 
+        # Turn off legend by default. Can be assessed outside using hte plt.legend()
+        plt.legend().set_visible(False)
+
         # Return DataFrame AND figure
         if return_df:
-            return (stat_df, annotator)
+            return stat_df, annotator
 
         return annotator
 
@@ -1867,7 +1883,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (stat_df, annotator)
+            return stat_df, annotator
 
         return annotator
 
@@ -2040,7 +2056,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return (stat_df, annotator)
+            return stat_df, annotator
 
         return annotator
 
