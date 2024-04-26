@@ -1024,6 +1024,12 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
 
+        # Adjust title and title fontsize from kwargs
+        if "title" in kwargs:
+            plt.title(kwargs["title"])
+        if "title" and "fontsize" in kwargs:
+            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+
         # Return DataFrame AND figure
         if return_df:
             return stat_df, annotator
@@ -1195,6 +1201,12 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
 
+        # Adjust title and title fontsize from kwargs
+        if "title" in kwargs:
+            plt.title(kwargs["title"])
+        if "title" and "fontsize" in kwargs:
+            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+
         # Return DataFrame AND figure
         if return_df:
             return stat_df, annotator
@@ -1357,6 +1369,12 @@ class Plots(Stats):
         else:
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
+
+        # Adjust title and title fontsize from kwargs
+        if "title" in kwargs:
+            plt.title(kwargs["title"])
+        if "title" and "fontsize" in kwargs:
+            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
 
         # Return DataFrame AND figure
         if return_df:
@@ -1536,6 +1554,12 @@ class Plots(Stats):
         # Turn off legend by default. Can be assessed outside using hte plt.legend()
         plt.legend().set_visible(False)
 
+        # Adjust title and title fontsize from kwargs
+        if "title" in kwargs:
+            plt.title(kwargs["title"])
+        if "title" and "fontsize" in kwargs:
+            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+
         # Return DataFrame AND figure
         if return_df:
             return stat_df, annotator
@@ -1714,6 +1738,12 @@ class Plots(Stats):
         # Turn off legend by default. Can be assessed outside using hte plt.legend()
         plt.legend().set_visible(False)
 
+        # Adjust title and title fontsize from kwargs
+        if "title" in kwargs:
+            plt.title(kwargs["title"])
+        if "title" and "fontsize" in kwargs:
+            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+
         # Return DataFrame AND figure
         if return_df:
             return stat_df, annotator
@@ -1880,6 +1910,12 @@ class Plots(Stats):
         else:
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
+
+        # Adjust title and title fontsize from kwargs
+        if "title" in kwargs:
+            plt.title(kwargs["title"])
+        if "title" and "fontsize" in kwargs:
+            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
 
         # Return DataFrame AND figure
         if return_df:
@@ -2053,6 +2089,12 @@ class Plots(Stats):
         else:
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
+
+        # Adjust title and title fontsize from kwargs
+        if "title" in kwargs:
+            plt.title(kwargs["title"])
+        if "title" and "fontsize" in kwargs:
+            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
 
         # Return DataFrame AND figure
         if return_df:
