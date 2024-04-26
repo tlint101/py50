@@ -68,7 +68,7 @@ class Calculator:
         :return: DataFrame generated from the list from the relative_calculation method
         """
 
-        # Set variables from funtion and convert name_col to np array
+        # Set variables from function and convert name_col to np array
         values = self._relative_calculation(
             name_col, concentration_col, response_col, input_units, verbose
         )
