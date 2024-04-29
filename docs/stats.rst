@@ -5,6 +5,10 @@ Stat Settings
 
 Calculate and Plot Statistics
 
-.. automodule:: stats
+.. automodule:: stats.Stats
+   :members:
+   :undoc-members:
+
+.. automodule:: stats.Plots
    :members:
    :undoc-members:
