@@ -27,3 +27,4 @@ py50 can be installed by using pip:
    calculator
    plotcurve
    plot_settings
+   stats
