@@ -5,12 +5,12 @@ Stat Settings
 
 Calculate and Plot Statistics
 
-.. automodule:: stats.Stats
+.. autoclass:: stats.Stats
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: stats.Plots
+.. autoclass:: stats.Plots
    :members:
    :undoc-members:
    :show-inheritance:
