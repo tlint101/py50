@@ -2253,7 +2253,7 @@ class Plots(Stats):
             # Get kwargs for pingouin
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
-            print(pg_kwargs)
+            # print(pg_kwargs)
 
             stat_df = Stats(self.data).get_pairwise_rm(
                 value_col=value_col,
