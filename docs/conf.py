@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath('../py50/'))
 project = 'py50'
 copyright = '2023, Tony Eight Lin'
 author = 'Tony Eight Lin'
-release = 'v0.1.0'
+release = 'v1.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
