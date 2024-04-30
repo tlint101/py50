@@ -29,11 +29,6 @@ The statistics and annotated plots is a wrapper for [Pingouin](https://github.co
 This may have been done inelegantly and will be updated based on my use or recommendations by other users. As things
 stand, this project meets my and the needs of my classmates/coworkers. Hopefully it can meet the needs of others.
 
-**NOTE:** As of this writing, Statannotations is at v0.6. It is incompatible with Seaborn ≥v0.12 or with Pandas ≥v.2.0. 
-py50 will install Seaborn v0.12. I did this because I wanted to have options to modify errorbars on the barplots. I 
-would love to be able to bcontribute to Statannotations and bump it up to match the Seaborn updates, but it seems to be 
-a daunting challenge and will require time on my part. 🤞Hopefully soon!🤞 
-
 ## Installation
 
 ```
@@ -44,6 +39,18 @@ Pacakge can be upgraded specifically using pip with the following:
 ```
 pip install py50 -U
 ```
+
+**Warning:** As of this writing, Statannotations is at v0.6. It is incompatible with Seaborn ≥v0.12 or with Pandas ≥v.2.0. 
+During testing, I found that Seaborn v0.12.2 had no issues. This is advantages because v0.12 allows better control of 
+error bars for the bar plot. Unfortunately, the python packaging system I use, Poetry, will not successfully build if
+there are conflicts. Thus, the py50 installation will install Seaborn v0.11.2 instead. As written, py50 will not work 
+with bar plots for Seaborn ≤ v0.12.0. I recommend manually installing Seaborn v0.12.2 manually afterward using:
+```
+pip install seaborn==0.12.2
+```
+I would love contribute to the main Statannotations branch and bump it up to match the Seaborn updates, but it seems to 
+be a daunting challenge and will require time on my part. 🤞Hopefully the main maintainers and 
+contributors can get to it sooner!🤞 
 
 ## Tutorial
 Documentation can be found [here](https://py50.readthedocs.io/en/latest/).
