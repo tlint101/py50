@@ -19,10 +19,9 @@ py50 can be installed by using pip:
 
    pip install py50
 
-
 .. toctree::
    :caption: Contents
-   :maxdepth: 1
+   :maxdepth: 2
 
    calculator
    plotcurve
