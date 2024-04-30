@@ -97,10 +97,10 @@ class PlotCurve:
         :param axis_fontsize: int
             Modify axis label font size
         :param conc_unit: str
-            Input unit of concentration. Can accept nanomolar (nM) and micromolar (uM or µM). If the \
-        units are different, for example in the DataFrame units are in nM, but the units for the graph are µM, the \
-        units from the DataFrame will be converted to match the conc_unit input. The final plot will scale based on \
-        the conc_unit input. By default, it will assume input concentration will be in nM.
+            Input unit of concentration. Can accept nanomolar (nM) and micromolar (uM or µM). If the units are
+            different, for example in the DataFrame units are in nM, but the units for the graph are µM, the units from
+            the DataFrame will be converted to match the conc_unit input. The final plot will scale based on the
+            conc_unit input. By default, it will assume input concentration will be in nM.
         :param xscale: int
             Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
         :param xscale_ticks: tuple
@@ -110,8 +110,8 @@ class PlotCurve:
         :param ymin: int
             Give a set minimum limit for the Y-Axis
         :param line_color: str.
-            Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of colors or colors in hex\
-        code.
+            Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of colors or colors in hex
+            code.
         :param line_width: int
             Set width of lines in plot.
         :param marker: Optional, list
@@ -119,24 +119,24 @@ class PlotCurve:
         :param legend: Optional, bool
             Denotes a figure legend.
         :param legend_loc: str
-        Determine legend location. Default is best. Matplotlib options can be found here \
+        Determine legend location. Default is best. Matplotlib options can be found here
         https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
         :param box: Optional bool.
-            Draw a box to highlight a specific location. If box = True, then the box_color, \
-        box_intercept, and x_concentration MUST ALSO BE GIVEN.
+            Draw a box to highlight a specific location. If box = True, then the box_color, box_intercept, and
+            x_concentration MUST ALSO BE GIVEN.
         :param box_color: str
             Set color of box. Default is gray.
         :param box_intercept: int
             Set horizontal location of box. By default, it is set at 50% of the Y-axis.
         :param conc_target: int
-            Set vertical location of the box. By default, this is set to None. For example, if the \
-        box_intercept is set to 50%, then the x_concentration must be the Absolute IC50 value. If there is an input to \
-        x_concentration, it will override the box_intercept and the response data will move accordingly. Finally, the \
-        number must be in the same unit as the X-axis. i.e., if the axis is in µM, then the number for the \
-        x_concentration should be in µM and vice versa.
+            Set vertical location of the box. By default, this is set to None. For example, if the box_intercept is set
+            to 50%, then the x_concentration must be the Absolute IC50 value. If there is an input to x_concentration,
+            it will override the box_intercept and the response data will move accordingly. Finally, the number must be
+            in the same unit as the X-axis. i.e., if the axis is in µM, then the number for the x_concentration should
+            be in µM and vice versa.
         :param hline: Int or float
-            Draw a horizontal line across the graph. This line will stretch across the length of the plot. This is \
-        optional and set to 0 by default.
+            Draw a horizontal line across the graph. This line will stretch across the length of the plot. This is
+            optional and set to 0 by default.
         :param hline_color: str
             Set color of horizontal line. Default color is gray.
         :param vline: int or float
@@ -388,9 +388,8 @@ class PlotCurve:
         :param ylabel: str
             Title of the Y-axis
         :param conc_unit: str
-            Input will assume that the concentration will be in nM. \
-        Thus, it will be automatically converted into µM. \
-        If xscale_unit is given as nM, no conversion will be performed.
+            Input will assume that the concentration will be in nM. Thus, it will be automatically converted into µM. If
+            xscale_unit is given as nM, no conversion will be performed.
         :param xscale: str
             Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
         :param xscale_ticks: tuple
@@ -402,18 +401,17 @@ class PlotCurve:
         :param axis_fontsize:int
             Modify axis label font size
         :param line_color: str
-        Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of \
-        colors or colors in hex code.
+        Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of colors or colors in hex
+        code.
         :param line_width: int
             Set width of lines in plot.
         :param marker: list
-        Takes a list for point markers. Marker options can be found here: \
-        https://matplotlib.org/stable/api/markers_api.html
+        Takes a list for point markers. Marker options can be found here: https://matplotlib.org/stable/api/markers_api.html
         :param legend: bool
             Denotes a figure legend.
         :param legend_loc: str
-            Determine legend location. Matplotlib options can be found here \
-        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
+            Determine legend location. Matplotlib options can be found here
+            https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
         :param box_target: str
             Draw a box to highlight a specific drug curve. Must use specific drug name.
         :param box_color: str
@@ -421,8 +419,8 @@ class PlotCurve:
         :param box_intercept: int
             Set horizontal location of box. By default, it is set at Absolute IC50.
         :param hline: int or float
-            Draw a horizontal line that will stretch across the length of the plot. This is \
-        optional and set to 0 by default.
+            Draw a horizontal line that will stretch across the length of the plot. This is optional and set to 0 by
+            default.
         :param hline_color: str
             Set color of horizontal line. Default color is gray.
         :param vline: int or float
@@ -780,31 +778,31 @@ class PlotCurve:
         :param ymin: int
             Give a set minimum limit for the Y-Axis
         :param conc_unit: str
-            Input will assume that the concentration will be in nM. Thus, it will be automatically converted into µM. \
-        If xscale_unit is given as nM, no conversion will be performed.
+            Input will assume that the concentration will be in nM. Thus, it will be automatically converted into µM. If
+            xscale_unit is given as nM, no conversion will be performed.
         :param xscale: str
             Set the scale of the X-axis as logarithmic or linear. It is logarithmic by default.
         :param xscale_ticks: tuple
             Set the scale of the X-axis
         :param line_color: list
-            Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of \
-        colors or colors in hex code.
+            Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of
+            colors or colors in hex code.
         :param line_width: int
             Set width of lines in plot.
         :param box: bool
-        Draw a box to highlight a specific location. If box = True, then the box_color, and box_intercept MUST ALSO BE \
+        Draw a box to highlight a specific location. If box = True, then the box_color, and box_intercept MUST ALSO BE
         GIVEN.
         :param box_color: str
             Set color of box. Default color is gray.
         :param box_intercept: int
             Set horizontal location of box. By default, it is set at Absolute IC50.
         :param hline: int or float
-            Draw horizontal line that will stretch across the length of the plot. This is optional and set to 0 by \
+            Draw horizontal line that will stretch across the length of the plot. This is optional and set to 0 by
             default.
         :param hline_color: str
             Set color of horizontal line. Default color is gray.
         :param vline: int or float
-            Draw a line thatwill stretch across the height of the plot. This is  optional and set to 0 by default.
+            Draw a line that will stretch across the height of the plot. This is  optional and set to 0 by default.
         :param vline_color: str
             Set color of vertical line. Default color is gray.
         :param figsize: tuple

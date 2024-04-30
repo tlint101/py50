@@ -1,4 +1,5 @@
 sphinx
 sphinx_rtd_theme
 nbsphinx
+scikit-posthocs
 py50==1.0.0
