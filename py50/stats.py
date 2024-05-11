@@ -873,6 +873,7 @@ class Plots(Stats):
         within_subject_col=None,
         pairs=None,
         pvalue_label=None,
+        no_sigfig=False,
         palette=None,
         orient="v",
         loc="inside",
@@ -902,6 +903,8 @@ class Plots(Stats):
             A list containing specific pairings for annotation on the plot.
         :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param no_sigfig: bool
+            Automatically hide groups with no significance from plot.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
         :param orient: String
@@ -952,6 +955,19 @@ class Plots(Stats):
         # Set order for groups on plot
         if group_order:
             group_order = group_order
+
+        # If set to True, only show plots with significance
+        if no_sigfig is True:
+            # Filter n.s. from pvalue and pairs
+            hidden_sigfig_data = [
+                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+            ]
+
+            # Unzip the hidden_sigfig_data and separate into pvalue and pairs
+            pvalue, pairs = zip(*hidden_sigfig_data)
+            # # to trouble shoot
+            # print(pvalue)
+            # print(pairs)
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1056,7 +1072,7 @@ class Plots(Stats):
         **kwargs,
     ):
         """
-        Draw a boxplot from the input DataFrame.
+        Draw a barplot from the input DataFrame.
 
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
@@ -1231,7 +1247,7 @@ class Plots(Stats):
         **kwargs,
     ):
         """
-        Draw a boxplot from the input DataFrame.
+        Draw a biolinplot from the input DataFrame.
 
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
@@ -1400,7 +1416,7 @@ class Plots(Stats):
         **kwargs,
     ):
         """
-        Draw a boxplot from the input DataFrame.
+        Draw a swarmplot from the input DataFrame.
 
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
@@ -1584,7 +1600,7 @@ class Plots(Stats):
         **kwargs,
     ):
         """
-        Draw a boxplot from the input DataFrame.
+        Draw a stripplot from the input DataFrame.
 
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
@@ -1768,7 +1784,7 @@ class Plots(Stats):
         **kwargs,
     ):
         """
-        Draw a boxplot from the input DataFrame.
+        Draw a boxenplot from the input DataFrame.
 
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
@@ -1944,7 +1960,7 @@ class Plots(Stats):
         **kwargs,
     ):
         """
-        Draw a boxplot from the input DataFrame.
+        Draw a lineplot from the input DataFrame.
 
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
