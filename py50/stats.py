@@ -54,7 +54,8 @@ class Stats:
         :param group_col: String
             Name of columnName of column containing the grouping variable.
         :param method: String
-            Normality test. ‘shapiro’ (default). Additional tests can be found with [pingouin.normality()](https://pingouin-stats.org/build/html/generated/pingouin.normality.html)
+            Normality test. ‘shapiro’ (default). Additional tests can be found with
+            [pingouin.normality()](https://pingouin-stats.org/build/html/generated/pingouin.normality.html)
         :param kwargs: optional
             Other options available with pingouin.normality()
         :return: Pandas.DataFrame
@@ -76,7 +77,8 @@ class Stats:
         :param group_col: String
             Name of columnName of column containing the grouping variable.
         :param method: String
-            Statistical test. ‘levene’ (default). Additional tests can be found with [pingouin.homoscedasticity()](https://pingouin-stats.org/build/html/generated/pingouin.homoscedasticity.html#pingouin.homoscedasticity)
+            Statistical test. ‘levene’ (default). Additional tests can be found with
+            [pingouin.homoscedasticity()](https://pingouin-stats.org/build/html/generated/pingouin.homoscedasticity.html#pingouin.homoscedasticity)
         :param kwargs: optional
             Other options available with pingouin.homoscedasticity()
         :return: Pandas.DataFrame
@@ -100,7 +102,8 @@ class Stats:
         :param group_col: String or list of strings
             Name of columnName of column containing the grouping variable.
         :param kwarts: optional
-            Other options available with [pingouin.anova()](https://pingouin-stats.org/build/html/generated/pingouin.anova.html)
+            Other options available with
+            [pingouin.anova()](https://pingouin-stats.org/build/html/generated/pingouin.anova.html)
         :return: Pandas.DataFrame
         """
 
@@ -195,7 +198,8 @@ class Stats:
         :param subject_col:
             Name of column containing the between-subject identifier.
         :param kwargs: optional
-            Other options available with [pingouin.mixed_anova()](https://pingouin-stats.org/build/html/generated/pingouin.mixed_anova.html)
+            Other options available with
+            [pingouin.mixed_anova()](https://pingouin-stats.org/build/html/generated/pingouin.mixed_anova.html)
         :return: Pandas.DataFrame
         """
 
@@ -223,7 +227,8 @@ class Stats:
         :param group_col: String
             Name of columnName of column containing the between factor.
         :param effsize: String or None
-            Effect size. Additional methods can be found with [pingouin.pairwise_tukey()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tukey.html)
+            Effect size. Additional methods can be found with
+            [pingouin.pairwise_tukey()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tukey.html)
         :return: Pandas.DataFrame
         """
 
@@ -246,7 +251,8 @@ class Stats:
         :param group_col: String
             Name of columnName of column containing the between factor.
         :param effsize: String or None
-            Effect size. Additional methods can be found with [pingouin.pairwise_gameshowell()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_gameshowell.html)
+            Effect size. Additional methods can be found with
+            [pingouin.pairwise_gameshowell()](https://pingouin-stats.org/build/html/generated/pingouin.pairwise_gameshowell.html)
         :return: Pandas.DataFrame
         """
 
@@ -285,7 +291,8 @@ class Stats:
             Defines the alternative hypothesis, or tail of the test. Must be one of “two-sided”. Must be one of
             “two-sided” (default), “greater” or “less”.
         :param kwargs: Optional
-            Other options available with [pingouin.wilcoxon()](https://pingouin-stats.org/build/html/generated/pingouin.wilcoxon.html)
+            Other options available with
+            [pingouin.wilcoxon()](https://pingouin-stats.org/build/html/generated/pingouin.wilcoxon.html)
         :return: Pandas.DataFrame
         """
 
@@ -873,7 +880,7 @@ class Plots(Stats):
         within_subject_col=None,
         pairs=None,
         pvalue_label=None,
-        no_sigfig=False,
+        hide_ns=False,
         palette=None,
         orient="v",
         loc="inside",
@@ -903,7 +910,7 @@ class Plots(Stats):
             A list containing specific pairings for annotation on the plot.
         :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
-        :param no_sigfig: bool
+        :param hide_ns: bool
             Automatically hide groups with no significance from plot.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
@@ -957,13 +964,13 @@ class Plots(Stats):
             group_order = group_order
 
         # If set to True, only show plots with significance
-        if no_sigfig is True:
+        if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
                 (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
             ]
 
-            # Unzip the hidden_sigfig_data and separate into pvalue and pairs
+            # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
             pvalue, pairs = zip(*hidden_sigfig_data)
             # # to trouble shoot
             # print(pvalue)
@@ -1063,6 +1070,7 @@ class Plots(Stats):
         within_subject_col=None,
         pairs=None,
         pvalue_label=None,
+        hide_ns=False,
         palette=None,
         orient="v",
         loc="inside",
@@ -1093,6 +1101,8 @@ class Plots(Stats):
             A list containing specific pairings for annotation on the plot.
         :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param hide_ns: bool
+            Automatically hide groups with no significance from plot.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
         :param orient: String
@@ -1143,6 +1153,19 @@ class Plots(Stats):
         # Set order for groups on plot
         if group_order:
             group_order = group_order
+
+        # If set to True, only show plots with significance
+        if hide_ns is True:
+            # Filter n.s. from pvalue and pairs
+            hidden_sigfig_data = [
+                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+            ]
+
+            # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
+            pvalue, pairs = zip(*hidden_sigfig_data)
+            # # to trouble shoot
+            # print(pvalue)
+            # print(pairs)
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1240,6 +1263,7 @@ class Plots(Stats):
         within_subject_col=None,
         pairs=None,
         pvalue_label=None,
+        hide_ns=False,
         palette=None,
         orient="v",
         loc="inside",
@@ -1268,6 +1292,8 @@ class Plots(Stats):
             A list containing specific pairings for annotation on the plot.
         :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param hide_ns: bool
+            Automatically hide groups with no significance from plot.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
         :param orient: String
@@ -1316,6 +1342,19 @@ class Plots(Stats):
         # Set order for groups on plot
         if group_order:
             group_order = group_order
+
+        # If set to True, only show plots with significance
+        if hide_ns is True:
+            # Filter n.s. from pvalue and pairs
+            hidden_sigfig_data = [
+                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+            ]
+
+            # Unzip the hidden_sigfig_data and separate into pvalue and pairs
+            pvalue, pairs = zip(*hidden_sigfig_data)
+            # # to trouble shoot
+            # print(pvalue)
+            # print(pairs)
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1395,8 +1434,8 @@ class Plots(Stats):
         # Return DataFrame AND figure
         if return_df:
             return stat_df, annotator
-
-        return annotator
+        else:
+            return annotator
 
     def swarmplot(
         self,
@@ -1409,6 +1448,7 @@ class Plots(Stats):
         within_subject_col=None,
         pairs=None,
         pvalue_label=None,
+        hide_ns=False,
         palette=None,
         orient="v",
         loc="inside",
@@ -1437,6 +1477,8 @@ class Plots(Stats):
             A list containing specific pairings for annotation on the plot.
         :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param hide_ns: bool
+            Automatically hide groups with no significance from plot.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
         :param orient: String
@@ -1488,6 +1530,19 @@ class Plots(Stats):
         # Set order for groups on plot
         if group_order:
             group_order = group_order
+
+        # If set to True, only show plots with significance
+        if hide_ns is True:
+            # Filter n.s. from pvalue and pairs
+            hidden_sigfig_data = [
+                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+            ]
+
+            # Unzip the hidden_sigfig_data and separate into pvalue and pairs
+            pvalue, pairs = zip(*hidden_sigfig_data)
+            # # to trouble shoot
+            # print(pvalue)
+            # print(pairs)
 
         # To color code plots:
         subgroup_col_plot = None
@@ -1593,6 +1648,7 @@ class Plots(Stats):
         within_subject_col=None,
         pairs=None,
         pvalue_label=None,
+        hide_ns=False,
         palette=None,
         orient="v",
         loc="inside",
@@ -1621,6 +1677,8 @@ class Plots(Stats):
             A list containing specific pairings for annotation on the plot.
         :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param hide_ns: bool
+            Automatically hide groups with no significance from plot.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
         :param orient: String
@@ -1672,6 +1730,19 @@ class Plots(Stats):
         # Set order for groups on plot
         if group_order:
             group_order = group_order
+
+        # If set to True, only show plots with significance
+        if hide_ns is True:
+            # Filter n.s. from pvalue and pairs
+            hidden_sigfig_data = [
+                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+            ]
+
+            # Unzip the hidden_sigfig_data and separate into pvalue and pairs
+            pvalue, pairs = zip(*hidden_sigfig_data)
+            # # to trouble shoot
+            # print(pvalue)
+            # print(pairs)
 
         # To color code plots:
         subgroup_col_plot = None
@@ -1777,6 +1848,7 @@ class Plots(Stats):
         within_subject_col=None,
         pairs=None,
         pvalue_label=None,
+        hide_ns=False,
         palette=None,
         orient="v",
         loc="inside",
@@ -1805,6 +1877,8 @@ class Plots(Stats):
             A list containing specific pairings for annotation on the plot.
         :param pvalue_label: List.
             A list containing specific pvalue labels. This order must match the length of pairs list.
+        :param hide_ns: bool
+            Automatically hide groups with no significance from plot.
         :param palette: String or List.
             Color palette used for the plot. Can be given as common color name or in hex code.
         :param orient: String
@@ -1853,6 +1927,19 @@ class Plots(Stats):
         # Set order for groups on plot
         if group_order:
             group_order = group_order
+
+        # If set to True, only show plots with significance
+        if hide_ns is True:
+            # Filter n.s. from pvalue and pairs
+            hidden_sigfig_data = [
+                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+            ]
+
+            # Unzip the hidden_sigfig_data and separate into pvalue and pairs
+            pvalue, pairs = zip(*hidden_sigfig_data)
+            # # to trouble shoot
+            # print(pvalue)
+            # print(pairs)
 
         # set orientation for plot and Annotator
         orient = orient.lower()
