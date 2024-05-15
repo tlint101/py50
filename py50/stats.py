@@ -101,7 +101,7 @@ class Stats:
             Name of column containing the dependent variable.
         :param group_col: String or list of strings
             Name of columnName of column containing the grouping variable.
-        :param kwarts: optional
+        :param kwargs: optional
             Other options available with
             [pingouin.anova()](https://pingouin-stats.org/build/html/generated/pingouin.anova.html)
         :return: Pandas.DataFrame
@@ -579,7 +579,7 @@ class Stats:
         :param group_col: String
             Name of column containing the between factor.
         :param detailed: Boolean
-            Ouput additional details from Kruskal-Wallis H-test.
+            Output additional details from Kruskal-Wallis H-test.
         :return: Pandas.DataFrame
         """
 
@@ -1622,7 +1622,7 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
 
-        # Turn off legend by default. Can be assessed outside using hte plt.legend()
+        # Turn off legend by default. Can be assessed outside using the plt.legend()
         plt.legend().set_visible(False)
 
         # Adjust title and title fontsize from kwargs
