@@ -320,8 +320,8 @@ class Stats:
             results_list = []
             for pair in pairs:
                 # Get items from pair list and split by hyphen
-                group1, subgroup1 = pair[0].split("-")
-                group2, subgroup2 = pair[1].split("-")
+                group1, subgroup1 = pair[0].split("-", 1)
+                group2, subgroup2 = pair[1].split("-", 1)
 
                 # # For troubleshooting
                 # print("first:", data[(data[group_col] == group1)][value_col].shape)
@@ -372,8 +372,8 @@ class Stats:
             result_df = pd.DataFrame(results_list)
 
             # Split values into and separate by comma
-            result_df["A"] = result_df["A"].apply(lambda x: tuple(x.split("-")))
-            result_df["B"] = result_df["B"].apply(lambda x: tuple(x.split("-")))
+            result_df["A"] = result_df["A"].apply(lambda x: tuple(x.split("-", 1)))
+            result_df["B"] = result_df["B"].apply(lambda x: tuple(x.split("-", 1)))
 
             return result_df
         else:
@@ -488,9 +488,11 @@ class Stats:
 
             results_list = []
             for pair in pairs:
+                print('this is the pair:', pair)
+                print('this is the pairs:', pairs)
                 # Get items from pair list and split by hyphen
-                group1, subgroup1 = pair[0].split("-")
-                group2, subgroup2 = pair[1].split("-")
+                group1, subgroup1 = pair[0].split("-", 1)
+                group2, subgroup2 = pair[1].split("-", 1)
 
                 # Perform mwu
                 result = pg.mwu(
@@ -526,8 +528,8 @@ class Stats:
             df = pd.DataFrame(results_list)
 
             # Split values into and separate by comma
-            df["A"] = df["A"].apply(lambda x: tuple(x.split("-")))
-            df["B"] = df["B"].apply(lambda x: tuple(x.split("-")))
+            df["A"] = df["A"].apply(lambda x: tuple(x.split("-", 1)))
+            df["B"] = df["B"].apply(lambda x: tuple(x.split("-", 1)))
 
             return df
         else:
