@@ -488,8 +488,8 @@ class Stats:
 
             results_list = []
             for pair in pairs:
-                print('this is the pair:', pair)
-                print('this is the pairs:', pairs)
+                # print('this is the pair:', pair)  # for troubleshooting
+                # print('this is the pairs:', pairs)
                 # Get items from pair list and split by hyphen
                 group1, subgroup1 = pair[0].split("-", 1)
                 group2, subgroup2 = pair[1].split("-", 1)
