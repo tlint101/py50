@@ -972,11 +972,16 @@ class Plots(Stats):
                 (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
             ]
 
-            # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-            pvalue, pairs = zip(*hidden_sigfig_data)
-            # # to trouble shoot
-            # print(pvalue)
-            # print(pairs)
+            try:
+                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
+                pvalue, pairs = zip(*hidden_sigfig_data)
+                # # to troubleshoot
+                # print(pvalue)
+                # print(pairs)
+            except:
+                warnings.warn("No Significant Values. hide_ns will be set to False!")
+                if all(sigfig == "n.s." for sigfig in pvalue):
+                    hide_ns = False
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1163,11 +1168,16 @@ class Plots(Stats):
                 (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
             ]
 
-            # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-            pvalue, pairs = zip(*hidden_sigfig_data)
-            # # to trouble shoot
-            # print(pvalue)
-            # print(pairs)
+            try:
+                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
+                pvalue, pairs = zip(*hidden_sigfig_data)
+                # # to troubleshoot
+                # print(pvalue)
+                # print(pairs)
+            except:
+                warnings.warn("No Significant Values. hide_ns will be set to False!")
+                if all(sigfig == "n.s." for sigfig in pvalue):
+                    hide_ns = False
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1352,11 +1362,16 @@ class Plots(Stats):
                 (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
             ]
 
-            # Unzip the hidden_sigfig_data and separate into pvalue and pairs
-            pvalue, pairs = zip(*hidden_sigfig_data)
-            # # to trouble shoot
-            # print(pvalue)
-            # print(pairs)
+            try:
+                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
+                pvalue, pairs = zip(*hidden_sigfig_data)
+                # # to troubleshoot
+                # print(pvalue)
+                # print(pairs)
+            except:
+                warnings.warn("No Significant Values. hide_ns will be set to False!")
+                if all(sigfig == "n.s." for sigfig in pvalue):
+                    hide_ns = False
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1540,11 +1555,16 @@ class Plots(Stats):
                 (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
             ]
 
-            # Unzip the hidden_sigfig_data and separate into pvalue and pairs
-            pvalue, pairs = zip(*hidden_sigfig_data)
-            # # to trouble shoot
-            # print(pvalue)
-            # print(pairs)
+            try:
+                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
+                pvalue, pairs = zip(*hidden_sigfig_data)
+                # # to troubleshoot
+                # print(pvalue)
+                # print(pairs)
+            except:
+                warnings.warn("No Significant Values. hide_ns will be set to False!")
+                if all(sigfig == "n.s." for sigfig in pvalue):
+                    hide_ns = False
 
         # To color code plots:
         subgroup_col_plot = None
@@ -1740,11 +1760,16 @@ class Plots(Stats):
                 (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
             ]
 
-            # Unzip the hidden_sigfig_data and separate into pvalue and pairs
-            pvalue, pairs = zip(*hidden_sigfig_data)
-            # # to trouble shoot
-            # print(pvalue)
-            # print(pairs)
+            try:
+                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
+                pvalue, pairs = zip(*hidden_sigfig_data)
+                # # to troubleshoot
+                # print(pvalue)
+                # print(pairs)
+            except:
+                warnings.warn("No Significant Values. hide_ns will be set to False!")
+                if all(sigfig == "n.s." for sigfig in pvalue):
+                    hide_ns = False
 
         # To color code plots:
         subgroup_col_plot = None
@@ -1937,11 +1962,16 @@ class Plots(Stats):
                 (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
             ]
 
-            # Unzip the hidden_sigfig_data and separate into pvalue and pairs
-            pvalue, pairs = zip(*hidden_sigfig_data)
-            # # to trouble shoot
-            # print(pvalue)
-            # print(pairs)
+            try:
+                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
+                pvalue, pairs = zip(*hidden_sigfig_data)
+                # # to troubleshoot
+                # print(pvalue)
+                # print(pairs)
+            except:
+                warnings.warn("No Significant Values. hide_ns will be set to False!")
+                if all(sigfig == "n.s." for sigfig in pvalue):
+                    hide_ns = False
 
         # set orientation for plot and Annotator
         orient = orient.lower()
