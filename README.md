@@ -7,7 +7,7 @@
 [![Documentation Status](https://readthedocs.org/projects/py50/badge/?version=latest)](https://py50.readthedocs.io/en/latest/?badge=latest)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.29.0-FF4B4B.svg?style=flat&logo=Streamlit&logoColor=white)](https://py50-app.streamlit.app)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.34.0-FF4B4B.svg?style=flat&logo=Streamlit&logoColor=white)](https://py50-app.streamlit.app)
 
 ## Summary
 
@@ -86,7 +86,7 @@ py50 for the foreseeable future. As such, my current "To-Do" list (in no particu
 
 - [ ] Complete To-Do notes in Python script
 - [ ] Update Tutorials for clarity
-- [ ] Update py50 Streamlit to version 1.0.0
+- [X] Update py50 Streamlit to version 1.0.0
 - [ ] Refactor code for maintainability
 - [ ] **Add error messages!**
 - [ ] (Bonus Points) Provide KNIME workflow?
