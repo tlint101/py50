@@ -6,6 +6,8 @@ from scipy.interpolate import interp1d
 from py50.plot_settings import CBMARKERS, CBPALETTE, CurveSettings
 from py50.calculator import Calculator
 
+__all__ = ["PlotCurve"]
+
 
 class PlotCurve:
     # Will accept input DataFrame and output said DataFrame for double checking.

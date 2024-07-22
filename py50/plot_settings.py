@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
 
+__all__ = ["CurveSettings"]
+
 """
 Color and Marker schemes and functions for plotting
 """
