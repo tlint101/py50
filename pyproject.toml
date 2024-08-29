@@ -1,23 +1,25 @@
 [tool.poetry]
 name = "py50"
-version = "1.0.6"
+version = "1.0.7"
 description = "Generate Dose-Response Curves"
 documentation = "https://py50.readthedocs.io/en/latest/"
 authors = ["Tony Eight Lin <tonyelin@tmu.edu.tw>"]
 license = "GPL-3.0"
-readme = "README_pypi.md"
+readme = "README.md" #change README_pypi.md to README.md for consistency
 packages = [{ include = "py50"}]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.13"
 pandas = "==1.5.0"
 numpy = ">=1.26.2"
-matplotlib = ">=3.8.1"
+matplotlib = "==3.8.1"
 scipy = ">=1.11.3"
-seaborn = "<=0.12.2"
+seaborn = "==0.12.1"
 scikit-posthocs = ">=0.7.0"
 pingouin = ">=0.5.4"
-statannotations = ">=0.6.0"
+py50-statannotations = ">=0.0.1"
+# Change for future release
+# statannotations = ">=0.6.0"
 
 [build-system]
 requires = ["poetry-core"]
