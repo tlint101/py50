@@ -155,17 +155,24 @@ class Calculator:
 
         if input_units is None or input_units == "nM":
             result_df["relative pIC50"] = -np.log10(
-                result_df["relative ic50 (nM)"] * 0.000000001
+                result_df["relative ic50 (nM)"] * 1e-9
             )
             result_df["absolute pIC50"] = -np.log10(
-                result_df["absolute ic50 (nM)"] * 0.000000001
+                result_df["absolute ic50 (nM)"] * 1e-9
             )
         elif input_units == "µM":
             result_df["relative pIC50"] = -np.log10(
-                result_df["relative ic50 (µM)"] * 0.000001
+                result_df["relative ic50 (µM)"] * 1e-6
             )
             result_df["absolute pIC50"] = -np.log10(
-                result_df["absolute ic50 (µM)"] * 0.000001
+                result_df["absolute ic50 (µM)"] * 1e-6
+            )
+        elif input_units == "pM":
+            result_df["relative pIC50"] = -np.log10(
+                result_df["relative ic50 (nM)"] * 1e-12
+            )
+            result_df["absolute pIC50"] = -np.log10(
+                result_df["absolute ic50 (nM)"] * 1e-12
             )
 
         self.calculation = result_df
@@ -217,12 +224,12 @@ class Calculator:
         """
         Logic function to calculate unit concentration for Relative and Absolute IC50 calculation. Information will
         detail drug name and concentration unit. Units available a
-        re nanomolar (nM) or micromolar (µM or uM).
+        re nanomolar (nM), micromolar (µM or uM), or picomolar (pM).
 
         :param drug: str
             Input drug name.
         :param input_units: str
-            Input drug concentration. Units available are nanomolar (nM) or micromolar (uM or µM)
+            Input drug concentration. Units available are nanomolar (nM), micromolar (uM or µM), or picomolar (pM).
         :param verbose: bool
             Print out information regarding the concentration unit.
 
@@ -234,8 +241,10 @@ class Calculator:
             # Logic to append concentration units to output DataFrame
             if input_units is None:
                 conc_unit = "nM"
-            elif input_units == "uM" or input_units == "µM":
+            elif input_units == "uM" or input_units == "µM" or input_units == "um":
                 conc_unit = "µM"
+            elif input_units == "pM" or input_units == "pm":
+                conc_unit = "pM"
             else:
                 conc_unit = input_units
             print(f"{drug} concentration is in {conc_unit}!")
@@ -326,6 +335,8 @@ class Calculator:
                 conc_unit = "nM"
             elif input_units == "uM" or input_units == "µM":
                 conc_unit = "µM"
+            elif input_units == "pM" or input_units == "pm":
+                conc_unit = "pM"
 
             # Generate DataFrame from parameters
             values.append(
@@ -437,6 +448,8 @@ class Calculator:
                 conc_unit = "nM"
             elif input_units == "uM" or input_units == "µM":
                 conc_unit = "µM"
+            elif input_units == "pM" or input_units == "pm":
+                conc_unit = "pM"
 
             # Generate DataFrame from parameters
             values.append(
@@ -539,20 +552,29 @@ class Calculator:
         :param x_intersection: int
             This value will correspond to the absolute ic50 value. This is calculated from the curve_fit.
         :param input_units: str
-            Unites for the converted IC50 value. Only "nM" or "µM" are supported.
+            Unites for the converted IC50 value. Only "nM", "µM", or "pM" are supported.
         :return:
         """
         # convert ic50 by input units
-        if input_units == "nM":
+        if input_units == "nM" or input_units == "nm":
             return ic50, x_intersection, input_units
-        elif input_units == "µM" or input_units == "uM":
+
+        elif input_units == "µM" or input_units == "uM" or input_units == "um":
             ic50 = ic50 / 1000
             if x_intersection is not None:
                 x_intersection = x_intersection / 1000
             return ic50, x_intersection, input_units
+
+        elif input_units == "pM" or input_units == "pM" or input_units == "pm":
+            ic50 = ic50 * 1000
+            if x_intersection is not None:
+                x_intersection = x_intersection * 1000
+            return ic50, x_intersection, input_units
+
         elif input_units is None:
             input_units = "nM"
             return ic50, x_intersection, input_units
+
         else:
             print("Need to be in 'nM' (Nanomolar) or 'µM' (Micromolar) concentrations!")
 
