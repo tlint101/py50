@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
 
-__all__ = ["CurveSettings"]
+__all__ = ["CurveSettings", "CBPALETTE", "CBMARKERS"]
 
 """
 Color and Marker schemes and functions for plotting
@@ -38,6 +38,7 @@ class CurveSettings:
         :param xscale_ticks: Range to scale the line curve. This will also influence the X-axis length
         :param verbose: Ouput information about drug query and its concentration
         """
+        # nanomolar
         if xscale_unit == "nM" and xscale_ticks is None:
             x_fit = np.logspace(0, 5, 1000)
             if verbose is True:
@@ -50,24 +51,47 @@ class CurveSettings:
             if verbose is True:
                 print(f"{drug_name} concentration will be in {xscale_unit}!")
             return x_fit, xscale_unit
-        elif (xscale_unit == "µM" or xscale_unit == "uM") and xscale_ticks is None:
+
+        # micromolar
+        elif (xscale_unit == "µM" or xscale_unit == "uM" or xscale_unit == "um") and xscale_ticks is None:
             x_fit = np.logspace(0, 5, 1000)
             # convert uM to µM
-            if xscale_unit == "uM":
+            if xscale_unit == "uM" or xscale_unit == "um":
                 xscale_unit = "µM"
             if verbose is True:
                 print(f"{drug_name} concentration will be in {xscale_unit}!")
             return x_fit, xscale_unit
-        elif (xscale_unit == "µM" or xscale_unit == "uM") and xscale_ticks is not None:
+        elif (xscale_unit == "µM" or xscale_unit == "uM" or xscale_unit == "um") and xscale_ticks is not None:
             # uses np.logspace tuple to control line length
             # If xscale_ticks is none, this format will break. See first 2 if/else above
             x_fit = np.logspace(xscale_ticks[0], xscale_ticks[1], 1000)
             # convert uM to µM
-            if xscale_unit == "uM":
+            if xscale_unit == "uM" or xscale_unit == "um":
                 xscale_unit = "µM"
             if verbose is True:
                 print(f"{drug_name} concentration will be in {xscale_unit}!")
             return x_fit, xscale_unit
+
+        # picomolar
+        elif (xscale_unit == "pm" or xscale_unit == "pM") and xscale_ticks is None:
+            x_fit = np.logspace(0, 5, 1000)
+            # convert uM to µM
+            if xscale_unit == "pm" or xscale_unit == "pM":
+                xscale_unit = "pM"
+            if verbose is True:
+                print(f"{drug_name} concentration will be in {xscale_unit}!")
+            return x_fit, xscale_unit
+        elif (xscale_unit == "pm" or xscale_unit == "pM") and xscale_ticks is not None:
+            # uses np.logspace tuple to control line length
+            # If xscale_ticks is none, this format will break. See first 2 if/else above
+            x_fit = np.logspace(xscale_ticks[0], xscale_ticks[1], 1000)
+            # convert uM to µM
+            if xscale_unit == "pm" or xscale_unit == "pM":
+                xscale_unit = "pM"
+            if verbose is True:
+                print(f"{drug_name} concentration will be in {xscale_unit}!")
+            return x_fit, xscale_unit
+
         elif xscale_unit is None and xscale_ticks is None:
             x_fit = np.logspace(0, 5, 1000)
             if verbose is True:
@@ -87,11 +111,19 @@ class CurveSettings:
             if verbose is True:
                 print("Concentration on X-axis will be in nM")
             return concentration
-        elif xscale_unit == "uM" or xscale_unit == "µM":
+
+        elif xscale_unit == "uM" or xscale_unit == "µM" or xscale_unit == "um":
             if verbose is True:
                 print("Concentration on X-axis will be in µM")
             concentration = concentration / 1000  # convert drug concentration to µM
             return concentration
+
+        elif xscale_unit == "pm" or xscale_unit == "pM":
+            if verbose is True:
+                print("Concentration on X-axis will be in pM")
+            concentration = concentration * 1000  # convert drug concentration to µM
+            return concentration
+
         else:
             print(f"Assume concentration will be in nM")
 
