@@ -12,8 +12,9 @@ from statannotations.Annotator import Annotator
 from py50 import utils
 import warnings
 
-sns.set_style("ticks")
+__all__ = ["Stats", "Plots"]
 
+sns.set_style("ticks")
 
 class Stats:
     """

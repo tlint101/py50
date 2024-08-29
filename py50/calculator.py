@@ -4,7 +4,7 @@ from scipy.optimize import curve_fit
 from scipy.interpolate import interp1d
 from py50.plot_settings import CurveSettings
 
-__all__ = ["Calculator", ]
+__all__ = ["Calculator"]
 
 
 class Calculator:
