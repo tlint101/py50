@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scikit_posthocs as sp
 import pingouin as pg
-from statannotations.Annotator import Annotator
+from py50_statannotations.Annotator import Annotator # replace with statannotations in future
 from py50 import utils
 import warnings
 
