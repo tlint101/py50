@@ -169,10 +169,10 @@ class Calculator:
             )
         elif input_units == "pM":
             result_df["relative pIC50"] = -np.log10(
-                result_df["relative ic50 (nM)"] * 1e-12
+                result_df["relative ic50 (pM)"] * 1e-12
             )
             result_df["absolute pIC50"] = -np.log10(
-                result_df["absolute ic50 (nM)"] * 1e-12
+                result_df["absolute ic50 (pM)"] * 1e-12
             )
 
         self.calculation = result_df
