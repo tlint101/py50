@@ -8,13 +8,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scikit_posthocs as sp
 import pingouin as pg
-from py50_statannotations.Annotator import Annotator # replace with statannotations in future
+from py50_statannotations.Annotator import (
+    Annotator,
+)  # replace with statannotations in future
 from py50 import utils
 import warnings
 
 __all__ = ["Stats", "Plots"]
 
 sns.set_style("ticks")
+
 
 class Stats:
     """
@@ -1132,7 +1135,9 @@ class Plots(Stats):
             valid_sns = utils.get_kwargs(sns.barplot)
             valid_annot = utils.get_kwargs(Annotator)
 
-            sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
+            sns_kwargs = {
+                key: value for key, value in kwargs.items() if key in valid_sns
+            }
             annot_kwargs = {
                 key: value for key, value in kwargs.items() if key in valid_annot
             }
@@ -1168,7 +1173,9 @@ class Plots(Stats):
             if hide_ns is True:
                 # Filter n.s. from pvalue and pairs
                 hidden_sigfig_data = [
-                    (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+                    (item1, item2)
+                    for item1, item2 in zip(pvalue, pairs)
+                    if item1 != "n.s."
                 ]
 
                 try:
@@ -1178,7 +1185,9 @@ class Plots(Stats):
                     # print(pvalue)
                     # print(pairs)
                 except:
-                    warnings.warn("No Significant Values. hide_ns will be set to False!")
+                    warnings.warn(
+                        "No Significant Values. hide_ns will be set to False!"
+                    )
                     if all(sigfig == "n.s." for sigfig in pvalue):
                         hide_ns = False
 
@@ -1241,7 +1250,9 @@ class Plots(Stats):
 
             # Location of annotations
             if loc not in ["inside", "outside"]:
-                raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
+                raise ValueError(
+                    "Invalid loc! Only 'inside' or 'outside' are accepted!"
+                )
 
             if loc == "inside":
                 annotator.configure(loc=loc, test=None)
@@ -1267,8 +1278,10 @@ class Plots(Stats):
 
             return annotator
         except AttributeError as e:
-            if 'errorbar' in str(e):
-                print("Issue is errorbar! Try installing a specific version of seaborn (pip install seaborn==0.12.2)")
+            if "errorbar" in str(e):
+                print(
+                    "Issue is errorbar! Try installing a specific version of seaborn (pip install seaborn==0.12.2)"
+                )
             else:
                 raise
 
@@ -2280,6 +2293,7 @@ class Plots(Stats):
             plt.title(title, fontsize=title_fontsize)
 
         if cmap is None:
+            # cmap list for 1, NS, 0.001, 0.01, 0.05
             cmap = ["1", "#fbd7d4", "#005a32", "#238b45", "#a1d99b"]
             fig = sp.sign_plot(
                 self.data,
