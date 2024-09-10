@@ -11,7 +11,7 @@ packages = [{ include = "py50"}]
 [tool.poetry.dependencies]
 python = "^3.9,<3.13"
 pandas = "==1.5.0"
-numpy = ">=1.26.2"
+numpy = "==1.26.4"
 matplotlib = "==3.8.1"
 scipy = ">=1.11.3"
 seaborn = "==0.12.2"
