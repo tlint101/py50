@@ -11,8 +11,10 @@ __all__ = ["PlotCurve"]
 
 class PlotCurve:
     # Will accept input DataFrame and output said DataFrame for double checking.
-    def __init__(self, data):
+    def __init__(self, data, concentration_col: str = None, response_col: str = None):
         self.data = data
+        self.concentration_col = concentration_col
+        self.response_col = response_col
 
     def show(self, rows: int = None):
         """
@@ -167,6 +169,11 @@ class PlotCurve:
             print("Drug not found!")
 
         # Create variables for inputs. Extract column from Dataframe
+        if concentration_col is None:
+            concentration_col = self.concentration_col
+        if response_col is None:
+            response_col = self.response_col
+
         concentration = drug_query[concentration_col]
         response = drug_query[response_col]
 
@@ -449,6 +456,11 @@ class PlotCurve:
             drug_query = self._filter_dataframe(drug)
 
             # Create variables for inputs. Extract column from Dataframe
+            if concentration_col is None:
+                concentration_col = self.concentration_col
+            if response_col is None:
+                response_col = self.response_col
+
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
 
@@ -830,6 +842,11 @@ class PlotCurve:
             drug_query = self._filter_dataframe(drug)
 
             # Create variables for inputs. Extract column from Dataframe
+            if concentration_col is None:
+                concentration_col = self.concentration_col
+            if response_col is None:
+                response_col = self.response_col
+
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
 
