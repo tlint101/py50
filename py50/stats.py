@@ -989,53 +989,43 @@ class Plots(Stats):
         # set orientation for plot and Annotator
         orient = orient.lower()
         if orient == "v":
-            ax = sns.boxplot(
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                palette=palette,
-                hue=group_col,
-                whis=whis,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                verbose=False,
-                orient="v",
-                hue=group_col,
-                **annot_kwargs,
-            )
+            x_input = group_col
+            y_input = value_col
         elif orient == "h":
-            ax = sns.boxplot(
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                palette=palette,
-                hue=group_col,
-                whis=whis,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                verbose=False,
-                orient="h",
-                hue=group_col,
-                **annot_kwargs,
-            )
+            x_input = value_col
+            y_input = group_col
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
+
+        # set optional subgroup_col
+        if subgroup_col:
+            subgroup_hue = subgroup_col
+        else:
+            subgroup_hue = group_col
+
+        # plot
+        ax = sns.boxplot(
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            palette=palette,
+            hue=subgroup_hue,
+            whis=whis,
+            **sns_kwargs,
+        )
+        annotator = Annotator(
+            ax,
+            pairs=pairs,
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            verbose=False,
+            orient=orient,
+            hue=subgroup_hue,
+            **annot_kwargs,
+        )
 
         # Optional input to make custom labels
         if pvalue_label:
@@ -1188,8 +1178,8 @@ class Plots(Stats):
             x_input = group_col
             y_input = value_col
         elif orient == "h":
-            x_input = group_col
-            y_input = value_col
+            x_input = value_col
+            y_input = group_col
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
@@ -1199,6 +1189,7 @@ class Plots(Stats):
         else:
             subgroup_hue = group_col
 
+        # plot
         ax = sns.barplot(
             data=self.data,
             x=x_input,
@@ -1218,7 +1209,7 @@ class Plots(Stats):
             y=y_input,
             order=group_order,
             verbose=False,
-            orient="v",
+            orient=orient,
             hue=subgroup_hue,
             **annot_kwargs,
         )
@@ -1369,8 +1360,8 @@ class Plots(Stats):
             x_input = group_col
             y_input = value_col
         elif orient == "h":
-            x_input = group_col
-            y_input = value_col
+            x_input = value_col
+            y_input = group_col
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
@@ -1380,6 +1371,7 @@ class Plots(Stats):
         else:
             subgroup_hue = group_col
 
+        # plot
         ax = sns.violinplot(
             data=self.data,
             x=x_input,
@@ -1395,10 +1387,10 @@ class Plots(Stats):
             data=self.data,
             x=x_input,
             y=y_input,
-            order=subgroup_hue,
+            order=group_order,
             verbose=False,
-            orient="h",
-            hue=group_col,
+            orient=orient,
+            hue=subgroup_hue,
             **annot_kwargs,
         )
 
@@ -1453,7 +1445,7 @@ class Plots(Stats):
         **kwargs,
     ):
         """
-        Draw a swarmplot from the input DataFrame.
+        Draw a swarm plot from the input DataFrame.
 
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
@@ -1492,7 +1484,7 @@ class Plots(Stats):
         warnings.filterwarnings("ignore", category=FutureWarning)
 
         # separate kwargs for sns and sns
-        valid_sns = utils.get_kwargs(sns.boxplot)
+        valid_sns = utils.get_kwargs(sns.swarmplot)
         valid_annot = utils.get_kwargs(Annotator)
 
         sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
@@ -1545,60 +1537,45 @@ class Plots(Stats):
             except:
                 warnings.warn("No Significant Values. hide_ns will be set to False!")
 
-        # todo remove subgroup_col_pot?
-        # To color code plots:
-        subgroup_col_plot = None
-        if subgroup_col is None:
-            subgroup_col_plot = group_col
-
         # set orientation for plot and Annotator
         orient = orient.lower()
         if orient == "v":
-            ax = sns.swarmplot(
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                palette=palette,
-                hue=group_col,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                verbose=False,
-                orient="v",
-                hue=group_col,
-                **annot_kwargs,
-            )
+            x_input = group_col
+            y_input = value_col
         elif orient == "h":
-            ax = sns.swarmplot(
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                palette=palette,
-                hue=group_col,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                verbose=False,
-                orient="h",
-                hue=group_col,
-                **annot_kwargs,
-            )
+            x_input = value_col
+            y_input = group_col
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
+
+        # set optional subgroup_col
+        if subgroup_col:
+            subgroup_hue = subgroup_col
+        else:
+            subgroup_hue = group_col
+
+        # plot
+        ax = sns.swarmplot(
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            palette=palette,
+            hue=subgroup_hue,
+            **sns_kwargs,
+        )
+        annotator = Annotator(
+            ax,
+            pairs=pairs,
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            verbose=False,
+            orient=orient,
+            hue=subgroup_hue,
+            **annot_kwargs,
+        )
 
         # optional input for custom annotations
         if pvalue_label:
@@ -1747,59 +1724,45 @@ class Plots(Stats):
             except:
                 warnings.warn("No Significant Values. hide_ns will be set to False!")
 
-        # To color code plots:
-        subgroup_col_plot = None
-        if subgroup_col is None:
-            subgroup_col_plot = group_col
-
         # set orientation for plot and Annotator
         orient = orient.lower()
         if orient == "v":
-            ax = sns.stripplot(
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                palette=palette,
-                hue=subgroup_col_plot,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                verbose=False,
-                orient="v",
-                hue=subgroup_col,
-                **annot_kwargs,
-            )
+            x_input = group_col
+            y_input = value_col
         elif orient == "h":
-            ax = sns.stripplot(
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                palette=palette,
-                hue=subgroup_col_plot,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                verbose=False,
-                orient="h",
-                hue=subgroup_col,
-                **annot_kwargs,
-            )
+            x_input = value_col
+            y_input = group_col
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
+
+        # set optional subgroup_col
+        if subgroup_col:
+            subgroup_hue = subgroup_col
+        else:
+            subgroup_hue = group_col
+
+        # plot
+        ax = sns.stripplot(
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            palette=palette,
+            hue=subgroup_hue,
+            **sns_kwargs,
+        )
+        annotator = Annotator(
+            ax,
+            pairs=pairs,
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            verbose=False,
+            orient=orient,
+            hue=subgroup_hue,
+            **annot_kwargs,
+        )
 
         # optional input for custom annotations
         if pvalue_label:
@@ -1948,51 +1911,42 @@ class Plots(Stats):
         # set orientation for plot and Annotator
         orient = orient.lower()
         if orient == "v":
-            ax = sns.boxenplot(
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                palette=palette,
-                hue=subgroup_col,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                verbose=False,
-                orient="v",
-                hue=subgroup_col,
-                **annot_kwargs,
-            )
+            x_input = group_col
+            y_input = value_col
         elif orient == "h":
-            ax = sns.boxenplot(
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                palette=palette,
-                hue=subgroup_col,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                verbose=False,
-                orient="h",
-                hue=subgroup_col,
-                **annot_kwargs,
-            )
+            x_input = value_col
+            y_input = group_col
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
+
+        # set optional subgroup_col
+        if subgroup_col:
+            subgroup_hue = subgroup_col
+        else:
+            subgroup_hue = group_col
+
+        # plot
+        ax = sns.boxenplot(
+                data=self.data,
+                x=x_input,
+                y=y_input,
+                order=group_order,
+                palette=palette,
+                hue=subgroup_hue,
+                **sns_kwargs,
+        )
+        annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=self.data,
+                x=x_input,
+                y=y_input,
+                order=group_order,
+                verbose=False,
+                orient=orient,
+                hue=subgroup_hue,
+                **annot_kwargs,
+        )
 
         # optional input for custom annotations
         if pvalue_label:
