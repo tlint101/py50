@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scikit_posthocs as sp
 import pingouin as pg
-from py50_statannotations.Annotator import (
+from statannotations.Annotator import (
     Annotator,
 )  # replace with statannotations in future
 from py50 import utils
@@ -996,7 +996,7 @@ class Plots(Stats):
                 y=value_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup_col,
+                hue=group_col,
                 whis=whis,
                 **sns_kwargs,
             )
@@ -1009,7 +1009,7 @@ class Plots(Stats):
                 order=group_order,
                 verbose=False,
                 orient="v",
-                hue=subgroup_col,
+                hue=group_col,
                 **annot_kwargs,
             )
         elif orient == "h":
@@ -1019,7 +1019,7 @@ class Plots(Stats):
                 y=group_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup_col,
+                hue=group_col,
                 whis=whis,
                 **sns_kwargs,
             )
@@ -1032,7 +1032,7 @@ class Plots(Stats):
                 order=group_order,
                 verbose=False,
                 orient="h",
-                hue=subgroup_col,
+                hue=group_col,
                 **annot_kwargs,
             )
         else:
@@ -1200,7 +1200,7 @@ class Plots(Stats):
                     y=value_col,
                     order=group_order,
                     palette=palette,
-                    hue=subgroup_col,
+                    hue=group_col,
                     errorbar=errorbar,  # errorbar
                     capsize=capsize,  # errorbar
                     **sns_kwargs,
@@ -1214,7 +1214,7 @@ class Plots(Stats):
                     order=group_order,
                     verbose=False,
                     orient="v",
-                    hue=subgroup_col,
+                    hue=group_col,
                     **annot_kwargs,
                 )
             elif orient == "h":
@@ -1224,7 +1224,7 @@ class Plots(Stats):
                     y=group_col,
                     order=group_order,
                     palette=palette,
-                    hue=subgroup_col,
+                    hue=group_col,
                     errorbar=errorbar,  # errorbar
                     capsize=capsize,  # errorbar
                     **sns_kwargs,
@@ -1238,7 +1238,7 @@ class Plots(Stats):
                     order=group_order,
                     verbose=False,
                     orient="h",
-                    hue=subgroup_col,
+                    hue=group_col,
                     **annot_kwargs,
                 )
             else:
@@ -1403,7 +1403,7 @@ class Plots(Stats):
                 y=value_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup_col,
+                hue=group_col,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1415,7 +1415,7 @@ class Plots(Stats):
                 order=group_order,
                 verbose=False,
                 orient="v",
-                hue=subgroup_col,
+                hue=group_col,
                 **annot_kwargs,
             )
         elif orient == "h":
@@ -1425,7 +1425,7 @@ class Plots(Stats):
                 y=group_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup_col,
+                hue=group_col,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1437,7 +1437,7 @@ class Plots(Stats):
                 order=group_order,
                 verbose=False,
                 orient="h",
-                hue=subgroup_col,
+                hue=group_col,
                 **annot_kwargs,
             )
         else:
@@ -1587,6 +1587,7 @@ class Plots(Stats):
                 if all(sigfig == "n.s." for sigfig in pvalue):
                     hide_ns = False
 
+        # todo remove subgroup_col_pot?
         # To color code plots:
         subgroup_col_plot = None
         if subgroup_col is None:
@@ -1601,7 +1602,7 @@ class Plots(Stats):
                 y=value_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup_col_plot,
+                hue=group_col,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1613,7 +1614,7 @@ class Plots(Stats):
                 order=group_order,
                 verbose=False,
                 orient="v",
-                hue=subgroup_col,
+                hue=group_col,
                 **annot_kwargs,
             )
         elif orient == "h":
@@ -1623,7 +1624,7 @@ class Plots(Stats):
                 y=group_col,
                 order=group_order,
                 palette=palette,
-                hue=subgroup_col_plot,
+                hue=group_col,
                 **sns_kwargs,
             )
             annotator = Annotator(
@@ -1635,7 +1636,7 @@ class Plots(Stats):
                 order=group_order,
                 verbose=False,
                 orient="h",
-                hue=subgroup_col,
+                hue=group_col,
                 **annot_kwargs,
             )
         else:
@@ -1664,9 +1665,6 @@ class Plots(Stats):
         else:
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
-
-        # Turn off legend by default. Can be assessed outside using the plt.legend()
-        plt.legend().set_visible(False)
 
         # Adjust title and title fontsize from kwargs
         if "title" in kwargs:
@@ -1869,9 +1867,6 @@ class Plots(Stats):
         else:
             annotator.set_custom_annotations(pvalue)
             annotator.annotate(**annotate_kwargs)
-
-        # Turn off legend by default. Can be assessed outside using hte plt.legend()
-        plt.legend().set_visible(False)
 
         # Adjust title and title fontsize from kwargs
         if "title" in kwargs:
