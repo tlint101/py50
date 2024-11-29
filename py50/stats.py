@@ -972,7 +972,9 @@ class Plots(Stats):
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
-                (item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."
+                (item1, item2)
+                for item1, item2 in zip(pvalue_plot, pairs)
+                if item1 != "n.s."
             ]
 
             try:
@@ -1126,147 +1128,132 @@ class Plots(Stats):
 
         :return:
         """
-        # add AttributeError exception for barplot to notify update for seaborn is needed!
-        try:
-            # separate kwargs for sns and sns
-            valid_sns = utils.get_kwargs(sns.barplot)
-            valid_annot = utils.get_kwargs(Annotator)
 
-            sns_kwargs = {
-                key: value for key, value in kwargs.items() if key in valid_sns
-            }
-            annot_kwargs = {
-                key: value for key, value in kwargs.items() if key in valid_annot
-            }
+        valid_sns = utils.get_kwargs(sns.barplot)
+        valid_annot = utils.get_kwargs(Annotator)
 
-            # Perform Stat calculations and get pairs and pvalue for annotation
-            pairs, pvalue_plot, stat_df_result = Plots._get_test(
-                self,
-                group_col,
-                kwargs,
-                pairs,
-                subgroup_col,
-                subject_col,
-                within_subject_col,
-                test,
-                value_col,
-            )
+        sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
+        annot_kwargs = {
+            key: value for key, value in kwargs.items() if key in valid_annot
+        }
 
-            # Set kwargs dictionary for line annotations
-            annotate_kwargs = {}
-            if "line_offset_to_group" in kwargs and "line_offset" in kwargs:
-                # Get kwargs from input
-                line_offset_to_group = kwargs["line_offset_to_group"]
-                line_offset = kwargs["line_offset"]
-                # Add to dictionary
-                annotate_kwargs["line_offset_to_group"] = line_offset_to_group
-                annotate_kwargs["line_offset"] = line_offset
+        # Perform Stat calculations and get pairs and pvalue for annotation
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(
+            self,
+            group_col,
+            kwargs,
+            pairs,
+            subgroup_col,
+            subject_col,
+            within_subject_col,
+            test,
+            value_col,
+        )
 
-            # Set order for groups on plot
-            if group_order:
-                group_order = group_order
+        # Set kwargs dictionary for line annotations
+        annotate_kwargs = {}
+        if "line_offset_to_group" in kwargs and "line_offset" in kwargs:
+            # Get kwargs from input
+            line_offset_to_group = kwargs["line_offset_to_group"]
+            line_offset = kwargs["line_offset"]
+            # Add to dictionary
+            annotate_kwargs["line_offset_to_group"] = line_offset_to_group
+            annotate_kwargs["line_offset"] = line_offset
 
-            # If set to True, only show plots with significance
-            if hide_ns is True:
-                # Filter n.s. from pvalue and pairs
-                hidden_sigfig_data = [
-                    (item1, item2)
-                    for item1, item2 in zip(pvalue_plot, pairs)
-                    if item1 != "n.s."
-                ]
+        # Set order for groups on plot
+        if group_order:
+            group_order = group_order
 
-                try:
-                    # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                    pvalue_plot, pairs = zip(*hidden_sigfig_data)
-                    # # to troubleshoot
-                    # print(pvalue)
-                    # print(pairs)
-                except:
-                    warnings.warn(
-                        "No Significant Values. hide_ns will be set to False!"
-                    )
+        # If set to True, only show plots with significance
+        if hide_ns is True:
+            # Filter n.s. from pvalue and pairs
+            hidden_sigfig_data = [
+                (item1, item2)
+                for item1, item2 in zip(pvalue_plot, pairs)
+                if item1 != "n.s."
+            ]
 
-            # set orientation for plot and Annotator
-            orient = orient.lower()
-            if orient == "v":
-                x_input = group_col
-                y_input = value_col
-            elif orient == "h":
-                x_input = group_col
-                y_input = value_col
-            else:
-                raise ValueError("Orientation must be 'v' or 'h'!")
+            try:
+                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
+                pvalue_plot, pairs = zip(*hidden_sigfig_data)
+                # # to troubleshoot
+                # print(pvalue)
+                # print(pairs)
+            except:
+                warnings.warn("No Significant Values. hide_ns will be set to False!")
 
-            # set optional subgroup_col
-            if subgroup_col:
-                subgroup_hue = subgroup_col
-            else:
-                subgroup_hue = group_col
+        # set orientation for plot and Annotator
+        orient = orient.lower()
+        if orient == "v":
+            x_input = group_col
+            y_input = value_col
+        elif orient == "h":
+            x_input = group_col
+            y_input = value_col
+        else:
+            raise ValueError("Orientation must be 'v' or 'h'!")
 
-            ax = sns.barplot(
-                data=self.data,
-                x=x_input,
-                y=y_input,
-                order=group_order,
-                palette=palette,
-                hue=subgroup_hue,
-                errorbar=errorbar,  # errorbar
-                capsize=capsize,  # errorbar
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=x_input,
-                y=y_input,
-                order=group_order,
-                verbose=False,
-                orient="v",
-                hue=subgroup_hue,
-                **annot_kwargs,
-            )
+        # set optional subgroup_col
+        if subgroup_col:
+            subgroup_hue = subgroup_col
+        else:
+            subgroup_hue = group_col
 
-            # optional input for custom annotations
-            if pvalue_label:
-                pvalue_plot = pvalue_label
+        ax = sns.barplot(
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            palette=palette,
+            hue=subgroup_hue,
+            errorbar=errorbar,  # errorbar
+            capsize=capsize,  # errorbar
+            **sns_kwargs,
+        )
+        annotator = Annotator(
+            ax,
+            pairs=pairs,
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            verbose=False,
+            orient="v",
+            hue=subgroup_hue,
+            **annot_kwargs,
+        )
 
-            # Location of annotations
-            if loc not in ["inside", "outside"]:
-                raise ValueError(
-                    "Invalid loc! Only 'inside' or 'outside' are accepted!"
-                )
+        # optional input for custom annotations
+        if pvalue_label:
+            pvalue_plot = pvalue_label
 
-            if loc == "inside":
-                annotator.configure(loc=loc, test=None)
-            else:
-                annotator.configure(loc=loc, test=None)
+        # Location of annotations
+        if loc not in ["inside", "outside"]:
+            raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
 
-            # Make sure the pairs and pvalue lists match
-            if len(pairs) != len(pvalue_plot):
-                raise Exception("pairs and pvalue_order length does not match!")
-            else:
-                annotator.set_custom_annotations(pvalue_plot)
-                annotator.annotate(**annotate_kwargs)
+        if loc == "inside":
+            annotator.configure(loc=loc, test=None)
+        else:
+            annotator.configure(loc=loc, test=None)
 
-            # Adjust title and title fontsize from kwargs
-            if "title" in kwargs:
-                plt.title(kwargs["title"])
-            if "title" and "fontsize" in kwargs:
-                plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+        # Make sure the pairs and pvalue lists match
+        if len(pairs) != len(pvalue_plot):
+            raise Exception("pairs and pvalue_order length does not match!")
+        else:
+            annotator.set_custom_annotations(pvalue_plot)
+            annotator.annotate(**annotate_kwargs)
 
-            # Return DataFrame AND figure
-            if return_df:
-                return stat_df_result, annotator
+        # Adjust title and title fontsize from kwargs
+        if "title" in kwargs:
+            plt.title(kwargs["title"])
+        if "title" and "fontsize" in kwargs:
+            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
 
-            return annotator
-        except AttributeError as e:
-            if "errorbar" in str(e):
-                print(
-                    "Issue is errorbar! Try installing a specific version of seaborn (pip install seaborn==0.12.2)"
-                )
-            else:
-                raise
+        # Return DataFrame AND figure
+        if return_df:
+            return stat_df_result, annotator
+
+        return annotator
 
     def violinplot(
         self,
@@ -1362,7 +1349,9 @@ class Plots(Stats):
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
-                (item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."
+                (item1, item2)
+                for item1, item2 in zip(pvalue_plot, pairs)
+                if item1 != "n.s."
             ]
 
             try:
@@ -1542,7 +1531,9 @@ class Plots(Stats):
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
-                (item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."
+                (item1, item2)
+                for item1, item2 in zip(pvalue_plot, pairs)
+                if item1 != "n.s."
             ]
 
             try:
@@ -1742,7 +1733,9 @@ class Plots(Stats):
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
-                (item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."
+                (item1, item2)
+                for item1, item2 in zip(pvalue_plot, pairs)
+                if item1 != "n.s."
             ]
 
             try:
@@ -1938,7 +1931,9 @@ class Plots(Stats):
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
-                (item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."
+                (item1, item2)
+                for item1, item2 in zip(pvalue_plot, pairs)
+                if item1 != "n.s."
             ]
 
             try:
