@@ -1,27 +1,41 @@
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
+import seaborn as sns
 import itertools
 from scipy.interpolate import interp1d
 from py50.plot_settings import CBMARKERS, CBPALETTE, CurveSettings
 from py50.calculator import Calculator
+from typing import Union
 
 __all__ = ["PlotCurve"]
 
 
 class PlotCurve:
     # Will accept input DataFrame and output said DataFrame for double checking.
-    def __init__(self, data, concentration_col: str = None, response_col: str = None):
-        self.data = data
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        name_col: str = None,
+        concentration_col: str = None,
+        response_col: Union[str, list] = None,
+    ):
+        if not isinstance(data, pd.DataFrame):
+            raise ValueError("Input must be a DataFrame")
+        else:
+            self.data = data
+        self.name_col = name_col
         self.concentration_col = concentration_col
         self.response_col = response_col
+        self.calculation = None
 
     def show(self, rows: int = None):
         """
         show DataFrame
 
         :param rows: int
-            Indicate the number of rows to display. If none, automatically show 5.
+            Indicates the number of rows to display. If none, automatically show 5.
         :return: DataFrame
         """
 
@@ -45,13 +59,12 @@ class PlotCurve:
         ]
         return filtered_df
 
-    # todo rename function to curve_plot
     # todo fix verbose issue - box info will also print
-    def single_curve_plot(
+    def curve_plot(
         self,
         concentration_col: str = None,
         response_col: str = None,
-        drug_name: str = None,
+        name_col: str = None,
         plot_title: str = None,
         plot_title_size: int = 16,
         xlabel: str = None,
@@ -64,7 +77,9 @@ class PlotCurve:
         ymin: int = None,
         line_color: str = "black",
         line_width: int = 1.5,
+        errorbar: str = "sd",
         marker: bool = None,
+        markersize: int = 8,
         legend: bool = False,
         legend_loc: str = "best",
         box: bool = False,
@@ -88,7 +103,7 @@ class PlotCurve:
             Concentration column from DataFrame.
         :param response_col: str
             Response column from DataFrame.
-        :param drug_name: str
+        :param name_col: str
             Column containing drug name for plotting.
         :param plot_title: str
             Title of the figure.
@@ -118,8 +133,12 @@ class PlotCurve:
             code.
         :param line_width: int
             Set width of lines in plot.
+        :param errorbar: str
+             Set the type of seaborn errorbar to use. Defaults to 'sd'.
         :param marker: Optional, list
             Takes a list of for point markers.
+        :param markersize: int
+            Set the marker size.
         :param legend: Optional, bool
             Denotes a figure legend.
         :param legend_loc: str
@@ -157,10 +176,17 @@ class PlotCurve:
 
         :return: Figure
         """
+        global x_fit, drug_query, y_intersection, x_intersection, reverse, data, response_col_is_list
+        # set instance variables
+        if name_col is None:
+            name_col = self.name_col
+        if concentration_col is None:
+            concentration_col = self.concentration_col
+        if response_col is None:
+            response_col = self.response_col
 
-        global x_fit, drug_query, y_intersection, x_intersection, reverse
-        if drug_name is not None:
-            drug_query = self._filter_dataframe(drug_name=drug_name)
+        if name_col is not None:
+            drug_query = self._filter_dataframe(drug_name=name_col)
             if len(drug_query) > 0:
                 pass
             elif len(drug_query) == 0:
@@ -168,11 +194,22 @@ class PlotCurve:
         else:
             print("Drug not found!")
 
-        # Create variables for inputs. Extract column from Dataframe
-        if concentration_col is None:
-            concentration_col = self.concentration_col
-        if response_col is None:
-            response_col = self.response_col
+        # if response_col is a list, table will be reformated to produce a column with average values
+        if isinstance(response_col, list):
+            response_col_is_list = True
+            reshape_data = pd.melt(
+                self.data,
+                id_vars=[name_col, concentration_col],
+                value_vars=response_col,
+                value_name="inhibition_average",
+            )
+            # drop the variable column
+            drug_query = reshape_data.drop(
+                columns=["variable"]
+            )  # reset table to reshaped table
+            response_col = "inhibition_average"  # reset response_col input
+        else:
+            response_col_is_list = False
 
         concentration = drug_query[concentration_col]
         response = drug_query[response_col]
@@ -198,7 +235,7 @@ class PlotCurve:
 
         # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
         x_fit, xscale_unit = CurveSettings().scale_units(
-            drug_name, conc_unit, xscale_ticks, verbose
+            name_col, conc_unit, xscale_ticks, verbose
         )
 
         # Function to scale the concentration by nM or µM
@@ -244,13 +281,43 @@ class PlotCurve:
 
         # Create the plot
         fig, ax = plt.subplots(figsize=figsize)
-        ax.set_ylim(top=100)  # Set maximum y axis limit
-        ax.scatter(concentration, response, marker=marker, color=line_color)
-        ax.plot(x_fit, y_fit, color=line_color, linewidth=line_width)
-        ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
-        ax.set_xlabel(xlabel, fontsize=axis_fontsize)
-        ax.set_ylabel(ylabel, fontsize=axis_fontsize)
-        ax.set_title(plot_title, fontsize=plot_title_size)
+        if response_col_is_list is True: # for error bars
+            ax.set_ylim(top=100)  # Set maximum y axis limit
+            sns.lineplot(
+                data=drug_query,
+                x=concentration,
+                y=response,
+                errorbar=errorbar,
+                marker=marker,
+                markersize=markersize,
+                err_style="bars",
+                linestyle='',
+                label="data_points",
+                color=line_color
+            )
+            ax.plot(
+                x_fit, y_fit, color=line_color, linewidth=line_width, label="fit_line"
+            )
+            ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
+            ax.set_xlabel(xlabel, fontsize=axis_fontsize)
+            ax.set_ylabel(ylabel, fontsize=axis_fontsize)
+            ax.set_title(plot_title, fontsize=plot_title_size)
+        else:
+            ax.set_ylim(top=100)  # Set maximum y axis limit
+            ax.scatter(
+                concentration,
+                response,
+                marker=marker,
+                color=line_color,
+                label="data_points",
+            )
+            ax.plot(
+                x_fit, y_fit, color=line_color, linewidth=line_width, label="fit_line"
+            )
+            ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
+            ax.set_xlabel(xlabel, fontsize=axis_fontsize)
+            ax.set_ylabel(ylabel, fontsize=axis_fontsize)
+            ax.set_title(plot_title, fontsize=plot_title_size)
 
         # Set grid lines to False by default
         plt.grid(kwargs.get("grid", False))
@@ -331,7 +398,7 @@ class PlotCurve:
             ax.legend(
                 handles=[
                     plt.Line2D(
-                        [0], [0], color=line_color, marker=marker, label=drug_name
+                        [0], [0], color=line_color, marker=marker, label=name_col
                     ),
                 ],
                 loc=legend_loc,
@@ -928,7 +995,7 @@ class PlotCurve:
                 cycle_color = itertools.cycle(line_color)
                 line_color = tuple([next(cycle_color) for _ in range(len(name_list))])
 
-            # if user uses list and it doesn ot match the length of the drug names
+            # if user uses list and it does not match the length of the drug names
             elif isinstance(line_color, list) and len(line_color) != len(name_list):
                 # Extend the list of colors to match the length of names
                 extended_colors = line_color * ((len(name_list) // len(line_color)) + 1)
