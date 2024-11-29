@@ -85,21 +85,21 @@ class PlotCurve:
         must specify specific target.
 
         :param concentration_col: str
-            Concentration column from DataFrame
+            Concentration column from DataFrame.
         :param response_col: str
-            Response column from DataFrame
+            Response column from DataFrame.
         :param drug_name: str
-            Column containing drug name for plotting
+            Column containing drug name for plotting.
         :param plot_title: str
-            Title of the figure
+            Title of the figure.
         :param plot_title_size: tuple
-            Modify plot title font size
+            Modify plot title font size.
         :param xlabel: str
-            Title of the X-axis
+            Title of the X-axis.
         :param ylabel: str
-            Title of the Y-axis
+            Title of the Y-axis.
         :param axis_fontsize: int
-            Modify axis label font size
+            Modify axis label font size.
         :param conc_unit: str
             Input unit of concentration. Can accept nanomolar (nM) and micromolar (uM or µM). If the units are
             different, for example in the DataFrame units are in nM, but the units for the graph are µM, the units from
@@ -123,8 +123,8 @@ class PlotCurve:
         :param legend: Optional, bool
             Denotes a figure legend.
         :param legend_loc: str
-        Determine legend location. Default is best. Matplotlib options can be found here
-        https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
+            Determine legend location. Default is best. Matplotlib options can be found here
+            https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
         :param box: Optional bool.
             Draw a box to highlight a specific location. If box = True, then the box_color, box_intercept, and
             x_concentration MUST ALSO BE GIVEN.
@@ -410,12 +410,12 @@ class PlotCurve:
         :param axis_fontsize:int
             Modify axis label font size
         :param line_color: str
-        Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of colors or colors in hex
-        code.
+            Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of colors or colors in hex
+            code.
         :param line_width: int
             Set width of lines in plot.
         :param marker: list
-        Takes a list for point markers. Marker options can be found here: https://matplotlib.org/stable/api/markers_api.html
+            Takes a list for point markers. Marker options can be found here: https://matplotlib.org/stable/api/markers_api.html
         :param legend: bool
             Denotes a figure legend.
         :param legend_loc: str
@@ -804,8 +804,8 @@ class PlotCurve:
         :param line_width: int
             Set width of lines in plot.
         :param box: bool
-        Draw a box to highlight a specific location. If box = True, then the box_color, and box_intercept MUST ALSO BE
-        GIVEN.
+            Draw a box to highlight a specific location. If box = True, then the box_color, and box_intercept MUST ALSO
+            BE GIVEN.
         :param box_color: str
             Set color of box. Default color is gray.
         :param box_intercept: int
