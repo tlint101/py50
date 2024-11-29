@@ -2043,7 +2043,7 @@ class Plots(Stats):
         """
 
         # separate kwargs for sns and sns
-        valid_sns = utils.get_kwargs(sns.boxplot)
+        valid_sns = utils.get_kwargs(sns.lineplot)
         valid_annot = utils.get_kwargs(Annotator)
 
         sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
@@ -2079,56 +2079,46 @@ class Plots(Stats):
             group_order = group_order
 
         # set orientation for plot and Annotator
+        orient = orient.lower()
         if orient == "v":
-            ax = sns.lineplot(
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                palette=palette,
-                hue=subgroup_col,
-                ci=ci,  # errorbar
-                capsize=capsize,  # errorbar
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                verbose=False,
-                orient="v",
-                hue=subgroup_col,
-                **annot_kwargs,
-            )
+            x_input = group_col
+            y_input = value_col
         elif orient == "h":
-            ax = sns.lineplot(
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                palette=palette,
-                hue=subgroup_col,
-                ci=ci,  # errorbar
-                capsize=capsize,  # errorbar
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                verbose=False,
-                orient="h",
-                hue=subgroup_col,
-                **annot_kwargs,
-            )
+            x_input = value_col
+            y_input = group_col
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
+
+        # set optional subgroup_col
+        if subgroup_col:
+            subgroup_hue = subgroup_col
+        else:
+            subgroup_hue = group_col
+
+        # plot
+        ax = sns.lineplot(
+                    data=self.data,
+                    x=x_input,
+                    y=y_input,
+                    order=group_order,
+                    palette=palette,
+                    hue=subgroup_hue,
+                    ci=ci,  # errorbar
+                    capsize=capsize,  # errorbar
+                    **sns_kwargs,
+                )
+        annotator = Annotator(
+                    ax,
+                    pairs=pairs,
+                    data=self.data,
+                    x=x_input,
+                    y=y_input,
+                    order=group_order,
+                    verbose=False,
+                    orient=orient,
+                    hue=subgroup_hue,
+                    **annot_kwargs,
+                )
 
         # optional input for custom annotations
         if pvalue_label:
