@@ -59,7 +59,7 @@ class Calculator:
         self,
         name_col: str = None,
         concentration_col: str = None,
-        response_col: str = None,
+        response_col: Union[str, list] = None,
         input_units: str = None,
         verbose: bool = None,
     ):
@@ -71,8 +71,9 @@ class Calculator:
             Name column from DataFrame
         :param concentration_col: str
             Concentration column from DataFrame
-        :param response_col: str
-            Response column from DataFrame
+        :param response_col: Union[str, list]
+            Response column from DataFrame. Can be a single column (i.e. already a calculated average) or a list of
+            columns to be averaged. The columns will be averaged internally within the function.
         :param input_units: str
             Units of input dataset. Default is nM.
         :param verbose: bool
@@ -80,6 +81,26 @@ class Calculator:
 
         :return: DataFrame generated from the list from the relative_calculation method
         """
+
+        # set instance variables
+        if name_col is None:
+            name_col = self.name_col
+        if concentration_col is None:
+            concentration_col = self.concentration_col
+        if response_col is None:
+            response_col = self.response_col
+
+        # if response_col is a list, table will be reformated to produce a column with average values
+        if isinstance(response_col, list):
+            reshape_data = pd.melt(
+                self.data,
+                id_vars=[name_col, concentration_col],
+                value_vars=response_col,
+                value_name="inhibition_average",
+            )
+            # drop the variable column
+            self.data = reshape_data.drop(columns=["variable"])
+            response_col = "inhibition_average"  # reset response_col input
 
         # Set variables from function and convert name_col to np array
         values = self._relative_calculation(
@@ -95,7 +116,7 @@ class Calculator:
         self,
         name_col: str = None,
         concentration_col: str = None,
-        response_col: str = None,
+        response_col: Union[str, list] = None,
         input_units: str = None,
         verbose: bool = None,
     ):
@@ -107,8 +128,9 @@ class Calculator:
             Name column from DataFrame
         :param concentration_col: str
             Concentration column from DataFrame
-        :param response_col: str
-            Response column from DataFrame
+        :param response_col: Union[str, list]
+            Response column from DataFrame. Can be a single column (i.e. already a calculated average) or a list of
+            columns to be averaged. The columns will be averaged internally within the function.
         :param input_units: str
             Units of input dataset. Default is nM.
         :param verbose: bool
@@ -116,6 +138,25 @@ class Calculator:
 
         :return: DataFrame generated from the list from the absolute_calculation method
         """
+        # set instance variables
+        if name_col is None:
+            name_col = self.name_col
+        if concentration_col is None:
+            concentration_col = self.concentration_col
+        if response_col is None:
+            response_col = self.response_col
+
+        # if response_col is a list, table will be reformated to produce a column with average values
+        if isinstance(response_col, list):
+            reshape_data = pd.melt(
+                self.data,
+                id_vars=[name_col, concentration_col],
+                value_vars=response_col,
+                value_name="inhibition_average",
+            )
+            # drop the variable column
+            self.data = reshape_data.drop(columns=["variable"])
+            response_col = "inhibition_average"  # reset response_col input
 
         values = self._absolute_calculation(
             name_col=name_col,
@@ -133,7 +174,7 @@ class Calculator:
         self,
         name_col: str = None,
         concentration_col: str = None,
-        response_col: str = None,
+        response_col: Union[str, list] = None,
         input_units: str = None,
         verbose: bool = None,
     ):
@@ -146,8 +187,9 @@ class Calculator:
             Name column from DataFrame
         :param concentration_col: str
             Concentration column from DataFrame
-        :param response_col: str
-            Response column from DataFrame
+        :param response_col: Union[str, list]
+            Response column from DataFrame. Can be a single column (i.e. already a calculated average) or a list of
+            columns to be averaged. The columns will be averaged internally within the function.
         :param input_units: str
             Units of input dataset. Default is nM.
         :param verbose: bool
@@ -155,6 +197,27 @@ class Calculator:
 
         :return: DataFrame from calculate_absolute_ic50 along with the pIC50 values
         """
+
+        # set instance variables
+        if name_col is None:
+            name_col = self.name_col
+        if concentration_col is None:
+            concentration_col = self.concentration_col
+        if response_col is None:
+            response_col = self.response_col
+
+        # if response_col is a list, table will be reformated to produce a column with average values
+        if isinstance(response_col, list):
+            reshape_data = pd.melt(
+                self.data,
+                id_vars=[name_col, concentration_col],
+                value_vars=response_col,
+                value_name="inhibition_average",
+            )
+            # drop the variable column
+            self.data = reshape_data.drop(columns=["variable"])
+            response_col = "inhibition_average"  # reset response_col input
+
         values = self._absolute_calculation(
             name_col=name_col,
             concentration_col=concentration_col,
@@ -313,9 +376,6 @@ class Calculator:
             # set a new coy of the DataFrame to avoid warnings
             query = drug_query.copy()
             query.sort_values(by=concentration_col, inplace=True)
-
-            # todo Calculate standard deviations from the covariance matrix
-            # std_dev = np.sqrt(np.diag(covariance))
 
             # tag response col to determine direction of fourpl equation and fit to 4PL equation
             reverse, params, covariance = self._calc_logic(
