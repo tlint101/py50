@@ -1,3 +1,4 @@
+from typing import Union
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
@@ -9,10 +10,20 @@ __all__ = ["Calculator"]
 
 class Calculator:
     # Will accept input DataFrame and output said DataFrame for double checking.
-    def __init__(self, data):
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        name_col: str = None,
+        concentration_col: str = None,
+        response_col: Union[str, list] = None,
+    ):
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Input must be a DataFrame")
-        self.data = data
+        else:
+            self.data = data
+        self.name_col = name_col
+        self.concentration_col = concentration_col
+        self.response_col = response_col
         self.calculation = None
 
     def show(self, rows: int = None):
