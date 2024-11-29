@@ -114,8 +114,8 @@ class Stats:
         result_df = pg.anova(data=self.data, dv=value_col, between=group_col, **kwargs)
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
-        result_df["significance"] = pvalue
+        pvalue_result = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue_result
 
         return result_df
 
@@ -133,8 +133,8 @@ class Stats:
         result_df = pg.welch_anova(data=self.data, dv=value_col, between=group_col)
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
-        result_df["significance"] = pvalue
+        pvalue_result = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue_result
 
         return result_df
 
@@ -177,8 +177,8 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
-        result_df["significance"] = pvalue
+        pvalue_result = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue_result
 
         return result_df
 
@@ -217,8 +217,8 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
-        result_df["significance"] = pvalue
+        pvalue_result = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue_result
 
         return result_df
 
@@ -241,8 +241,8 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-tukey"]]
-        result_df["significance"] = pvalue
+        pvalue_result = [utils.star_value(value) for value in result_df["p-tukey"]]
+        result_df["significance"] = pvalue_result
 
         return result_df
 
@@ -265,8 +265,8 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["pval"]]
-        result_df["significance"] = pvalue
+        pvalue_result = [utils.star_value(value) for value in result_df["pval"]]
+        result_df["significance"] = pvalue_result
 
         return result_df
 
@@ -357,7 +357,7 @@ class Stats:
                 )
 
                 # Convert significance by pvalue
-                pvalue = [utils.star_value(value) for value in result["p-val"]]
+                pvalue_output = [utils.star_value(value) for value in result["p-val"]]
 
                 # Store the results in the list
                 results_list.append(
@@ -366,7 +366,7 @@ class Stats:
                         "B": f"{group2}-{subgroup2}",
                         "W-val": result["W-val"].iloc[0],
                         "p-val": result["p-val"].iloc[0],
-                        "significance": pvalue[0],
+                        "significance": pvalue_output[0],
                         "RBC": result["RBC"].iloc[0],
                         "CLES": result["CLES"].iloc[0],
                     }
@@ -418,14 +418,14 @@ class Stats:
                     alternative=alternative,
                     **kwargs,
                 )
-                pvalue = [utils.star_value(value) for value in result["p-val"]]
+                pvalue_output = [utils.star_value(value) for value in result["p-val"]]
                 results_list.append(
                     {
                         "A": group1,
                         "B": group2,
                         "W-val": result["W-val"].iloc[0],
                         "p-val": result["p-val"].iloc[0],
-                        "significance": pvalue[0],
+                        "significance": pvalue_output[0],
                         "RBC": result["RBC"].iloc[0],
                         "CLES": result["CLES"].iloc[0],
                     }
@@ -435,8 +435,8 @@ class Stats:
             result_df = pd.DataFrame(results_list)
 
             # Add significance asterisk
-            pvalue = [utils.star_value(value) for value in result_df["p-val"]]
-            result_df["significance"] = pvalue
+            pvalue_output = [utils.star_value(value) for value in result_df["p-val"]]
+            result_df["significance"] = pvalue_output
 
             return result_df
 
@@ -513,7 +513,7 @@ class Stats:
                 )
 
                 # Convert significance by pvalue
-                pvalue = [utils.star_value(value) for value in result["p-val"]]
+                pvalue_output = [utils.star_value(value) for value in result["p-val"]]
 
                 # Store the results in the list
                 results_list.append(
@@ -522,7 +522,7 @@ class Stats:
                         "B": f"{group2}-{subgroup2}",
                         "U-val": result["U-val"].iloc[0],
                         "p-val": result["p-val"].iloc[0],
-                        "significance": pvalue[0],
+                        "significance": pvalue_output[0],
                         "RBC": result["RBC"].iloc[0],
                         "CLES": result["CLES"].iloc[0],
                     }
@@ -558,14 +558,14 @@ class Stats:
                     alternative=alternative,
                     **kwargs,
                 )
-                pvalue = [utils.star_value(value) for value in result["p-val"]]
+                pvalue_output = [utils.star_value(value) for value in result["p-val"]]
                 results_list.append(
                     {
                         "A": group1,
                         "B": group2,
                         "U-val": result["U-val"].iloc[0],
                         "p-val": result["p-val"].iloc[0],
-                        "significance": pvalue[0],
+                        "significance": pvalue_output[0],
                         "RBC": result["RBC"].iloc[0],
                         "CLES": result["CLES"].iloc[0],
                     }
@@ -594,8 +594,8 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
-        result_df["significance"] = pvalue
+        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue_output
 
         return result_df
 
@@ -621,8 +621,8 @@ class Stats:
             result_df = pg.cochran(data=self.data, dv=value_col, within=group_col)
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
-        result_df["significance"] = pvalue
+        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue_output
 
         return result_df
 
@@ -660,8 +660,8 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
-        result_df["significance"] = pvalue
+        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue_output
 
         return result_df
 
@@ -708,8 +708,8 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
-        result_df["significance"] = pvalue
+        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue_output
 
         return result_df
 
@@ -752,8 +752,8 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
-        result_df["significance"] = pvalue
+        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue_output
 
         return result_df
 
@@ -796,8 +796,8 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue = [utils.star_value(value) for value in result_df["p-unc"]]
-        result_df["significance"] = pvalue
+        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        result_df["significance"] = pvalue_output
 
         return result_df
 
@@ -932,7 +932,6 @@ class Plots(Stats):
         :return: Fig
         """
 
-        global stat_df
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxplot)
         valid_annot = utils.get_kwargs(Annotator)
@@ -943,7 +942,7 @@ class Plots(Stats):
         }
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue, stat_df = Plots._get_test(
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(
             self,
             group_col,
             kwargs,
@@ -973,19 +972,17 @@ class Plots(Stats):
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
-                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+                (item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."
             ]
 
             try:
                 # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue, pairs = zip(*hidden_sigfig_data)
+                pvalue_plot, pairs = zip(*hidden_sigfig_data)
                 # # to troubleshoot
                 # print(pvalue)
                 # print(pairs)
             except:
                 warnings.warn("No Significant Values. hide_ns will be set to False!")
-                if all(sigfig == "n.s." for sigfig in pvalue):
-                    hide_ns = False
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1040,7 +1037,7 @@ class Plots(Stats):
 
         # Optional input to make custom labels
         if pvalue_label:
-            pvalue = pvalue_label
+            pvalue_plot = pvalue_label
 
         # Location of annotations
         if loc not in ["inside", "outside"]:
@@ -1052,10 +1049,10 @@ class Plots(Stats):
             annotator.configure(loc=loc, test=None)
 
         # Make sure the pairs and pvalue lists match
-        if len(pairs) != len(pvalue):
+        if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
         else:
-            annotator.set_custom_annotations(pvalue)
+            annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
         # Adjust title and title fontsize from kwargs
@@ -1066,7 +1063,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return stat_df, annotator
+            return stat_df_result, annotator
 
         return annotator
 
@@ -1143,7 +1140,7 @@ class Plots(Stats):
             }
 
             # Perform Stat calculations and get pairs and pvalue for annotation
-            pairs, pvalue, stat_df = Plots._get_test(
+            pairs, pvalue_plot, stat_df_result = Plots._get_test(
                 self,
                 group_col,
                 kwargs,
@@ -1174,13 +1171,13 @@ class Plots(Stats):
                 # Filter n.s. from pvalue and pairs
                 hidden_sigfig_data = [
                     (item1, item2)
-                    for item1, item2 in zip(pvalue, pairs)
+                    for item1, item2 in zip(pvalue_plot, pairs)
                     if item1 != "n.s."
                 ]
 
                 try:
                     # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                    pvalue, pairs = zip(*hidden_sigfig_data)
+                    pvalue_plot, pairs = zip(*hidden_sigfig_data)
                     # # to troubleshoot
                     # print(pvalue)
                     # print(pairs)
@@ -1188,65 +1185,51 @@ class Plots(Stats):
                     warnings.warn(
                         "No Significant Values. hide_ns will be set to False!"
                     )
-                    if all(sigfig == "n.s." for sigfig in pvalue):
-                        hide_ns = False
 
             # set orientation for plot and Annotator
             orient = orient.lower()
             if orient == "v":
-                ax = sns.barplot(
-                    data=self.data,
-                    x=group_col,
-                    y=value_col,
-                    order=group_order,
-                    palette=palette,
-                    hue=group_col,
-                    errorbar=errorbar,  # errorbar
-                    capsize=capsize,  # errorbar
-                    **sns_kwargs,
-                )
-                annotator = Annotator(
-                    ax,
-                    pairs=pairs,
-                    data=self.data,
-                    x=group_col,
-                    y=value_col,
-                    order=group_order,
-                    verbose=False,
-                    orient="v",
-                    hue=group_col,
-                    **annot_kwargs,
-                )
+                x_input = group_col
+                y_input = value_col
             elif orient == "h":
-                ax = sns.barplot(
-                    data=self.data,
-                    x=value_col,
-                    y=group_col,
-                    order=group_order,
-                    palette=palette,
-                    hue=group_col,
-                    errorbar=errorbar,  # errorbar
-                    capsize=capsize,  # errorbar
-                    **sns_kwargs,
-                )
-                annotator = Annotator(
-                    ax,
-                    pairs=pairs,
-                    data=self.data,
-                    x=value_col,
-                    y=group_col,
-                    order=group_order,
-                    verbose=False,
-                    orient="h",
-                    hue=group_col,
-                    **annot_kwargs,
-                )
+                x_input = group_col
+                y_input = value_col
             else:
                 raise ValueError("Orientation must be 'v' or 'h'!")
 
+            # set optional subgroup_col
+            if subgroup_col:
+                subgroup_hue = subgroup_col
+            else:
+                subgroup_hue = group_col
+
+            ax = sns.barplot(
+                data=self.data,
+                x=x_input,
+                y=y_input,
+                order=group_order,
+                palette=palette,
+                hue=subgroup_hue,
+                errorbar=errorbar,  # errorbar
+                capsize=capsize,  # errorbar
+                **sns_kwargs,
+            )
+            annotator = Annotator(
+                ax,
+                pairs=pairs,
+                data=self.data,
+                x=x_input,
+                y=y_input,
+                order=group_order,
+                verbose=False,
+                orient="v",
+                hue=subgroup_hue,
+                **annot_kwargs,
+            )
+
             # optional input for custom annotations
             if pvalue_label:
-                pvalue = pvalue_label
+                pvalue_plot = pvalue_label
 
             # Location of annotations
             if loc not in ["inside", "outside"]:
@@ -1260,10 +1243,10 @@ class Plots(Stats):
                 annotator.configure(loc=loc, test=None)
 
             # Make sure the pairs and pvalue lists match
-            if len(pairs) != len(pvalue):
+            if len(pairs) != len(pvalue_plot):
                 raise Exception("pairs and pvalue_order length does not match!")
             else:
-                annotator.set_custom_annotations(pvalue)
+                annotator.set_custom_annotations(pvalue_plot)
                 annotator.annotate(**annotate_kwargs)
 
             # Adjust title and title fontsize from kwargs
@@ -1274,7 +1257,7 @@ class Plots(Stats):
 
             # Return DataFrame AND figure
             if return_df:
-                return stat_df, annotator
+                return stat_df_result, annotator
 
             return annotator
         except AttributeError as e:
@@ -1339,7 +1322,6 @@ class Plots(Stats):
         :return:
         """
 
-        global stat_df
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.violinplot)
         valid_annot = utils.get_kwargs(Annotator)
@@ -1350,7 +1332,7 @@ class Plots(Stats):
         }
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue, stat_df = Plots._get_test(
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(
             self,
             group_col,
             kwargs,
@@ -1380,72 +1362,60 @@ class Plots(Stats):
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
-                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+                (item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."
             ]
 
             try:
                 # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue, pairs = zip(*hidden_sigfig_data)
+                pvalue_plot, pairs = zip(*hidden_sigfig_data)
                 # # to troubleshoot
                 # print(pvalue)
                 # print(pairs)
             except:
                 warnings.warn("No Significant Values. hide_ns will be set to False!")
-                if all(sigfig == "n.s." for sigfig in pvalue):
-                    hide_ns = False
 
         # set orientation for plot and Annotator
         orient = orient.lower()
         if orient == "v":
-            ax = sns.violinplot(
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                palette=palette,
-                hue=group_col,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=group_col,
-                y=value_col,
-                order=group_order,
-                verbose=False,
-                orient="v",
-                hue=group_col,
-                **annot_kwargs,
-            )
+            x_input = group_col
+            y_input = value_col
         elif orient == "h":
-            ax = sns.violinplot(
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                palette=palette,
-                hue=group_col,
-                **sns_kwargs,
-            )
-            annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=value_col,
-                y=group_col,
-                order=group_order,
-                verbose=False,
-                orient="h",
-                hue=group_col,
-                **annot_kwargs,
-            )
+            x_input = group_col
+            y_input = value_col
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
+        # set optional subgroup_col
+        if subgroup_col:
+            subgroup_hue = subgroup_col
+        else:
+            subgroup_hue = group_col
+
+        ax = sns.violinplot(
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            palette=palette,
+            hue=subgroup_hue,
+            **sns_kwargs,
+        )
+        annotator = Annotator(
+            ax,
+            pairs=pairs,
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=subgroup_hue,
+            verbose=False,
+            orient="h",
+            hue=group_col,
+            **annot_kwargs,
+        )
+
         # optional input for custom annotations
         if pvalue_label:
-            pvalue = pvalue_label
+            pvalue_plot = pvalue_label
 
         # Location of annotations
         if loc not in ["inside", "outside"]:
@@ -1457,10 +1427,10 @@ class Plots(Stats):
             annotator.configure(loc=loc, test=None)
 
         # Make sure the pairs and pvalue lists match
-        if len(pairs) != len(pvalue):
+        if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
         else:
-            annotator.set_custom_annotations(pvalue)
+            annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
         # Adjust title and title fontsize from kwargs
@@ -1471,7 +1441,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return stat_df, annotator
+            return stat_df_result, annotator
         else:
             return annotator
 
@@ -1532,7 +1502,6 @@ class Plots(Stats):
         # remove palette/hue warning
         warnings.filterwarnings("ignore", category=FutureWarning)
 
-        global stat_df
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxplot)
         valid_annot = utils.get_kwargs(Annotator)
@@ -1543,7 +1512,7 @@ class Plots(Stats):
         }
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue, stat_df = Plots._get_test(
+        pairs, pvalue_plot, stat_df = Plots._get_test(
             self,
             group_col,
             kwargs,
@@ -1573,19 +1542,17 @@ class Plots(Stats):
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
-                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+                (item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."
             ]
 
             try:
                 # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue, pairs = zip(*hidden_sigfig_data)
+                pvalue_plot, pairs = zip(*hidden_sigfig_data)
                 # # to troubleshoot
                 # print(pvalue)
                 # print(pairs)
             except:
                 warnings.warn("No Significant Values. hide_ns will be set to False!")
-                if all(sigfig == "n.s." for sigfig in pvalue):
-                    hide_ns = False
 
         # todo remove subgroup_col_pot?
         # To color code plots:
@@ -1644,7 +1611,7 @@ class Plots(Stats):
 
         # optional input for custom annotations
         if pvalue_label:
-            pvalue = pvalue_label
+            pvalue_plot = pvalue_label
 
         # # For debugging pairs and pvalue list orders
         # print(pairs)
@@ -1660,10 +1627,10 @@ class Plots(Stats):
             annotator.configure(loc=loc, test=None)
 
         # Make sure the pairs and pvalue lists match
-        if len(pairs) != len(pvalue):
+        if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
         else:
-            annotator.set_custom_annotations(pvalue)
+            annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
         # Adjust title and title fontsize from kwargs
@@ -1735,7 +1702,6 @@ class Plots(Stats):
         # remove palette/hue warning
         warnings.filterwarnings("ignore", category=FutureWarning)
 
-        global stat_df
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.stripplot)
         valid_annot = utils.get_kwargs(Annotator)
@@ -1746,7 +1712,7 @@ class Plots(Stats):
         }
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue, stat_df = Plots._get_test(
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(
             self,
             group_col,
             kwargs,
@@ -1776,19 +1742,17 @@ class Plots(Stats):
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
-                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+                (item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."
             ]
 
             try:
                 # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue, pairs = zip(*hidden_sigfig_data)
+                pvalue_plot, pairs = zip(*hidden_sigfig_data)
                 # # to troubleshoot
                 # print(pvalue)
                 # print(pairs)
             except:
                 warnings.warn("No Significant Values. hide_ns will be set to False!")
-                if all(sigfig == "n.s." for sigfig in pvalue):
-                    hide_ns = False
 
         # To color code plots:
         subgroup_col_plot = None
@@ -1846,7 +1810,7 @@ class Plots(Stats):
 
         # optional input for custom annotations
         if pvalue_label:
-            pvalue = pvalue_label
+            pvalue_plot = pvalue_label
 
         # # For debugging pairs and pvalue list orders
         # print(pairs)
@@ -1862,10 +1826,10 @@ class Plots(Stats):
             annotator.configure(loc=loc, test=None)
 
         # Make sure the pairs and pvalue lists match
-        if len(pairs) != len(pvalue):
+        if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
         else:
-            annotator.set_custom_annotations(pvalue)
+            annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
         # Adjust title and title fontsize from kwargs
@@ -1876,7 +1840,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return stat_df, annotator
+            return stat_df_result, annotator
 
         return annotator
 
@@ -1934,7 +1898,6 @@ class Plots(Stats):
         :return:
         """
 
-        global stat_df
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxenplot)
         valid_annot = utils.get_kwargs(Annotator)
@@ -1945,7 +1908,7 @@ class Plots(Stats):
         }
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue, stat_df = Plots._get_test(
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(
             self,
             group_col,
             kwargs,
@@ -1975,19 +1938,17 @@ class Plots(Stats):
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
             hidden_sigfig_data = [
-                (item1, item2) for item1, item2 in zip(pvalue, pairs) if item1 != "n.s."
+                (item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."
             ]
 
             try:
                 # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue, pairs = zip(*hidden_sigfig_data)
+                pvalue_plot, pairs = zip(*hidden_sigfig_data)
                 # # to troubleshoot
                 # print(pvalue)
                 # print(pairs)
             except:
                 warnings.warn("No Significant Values. hide_ns will be set to False!")
-                if all(sigfig == "n.s." for sigfig in pvalue):
-                    hide_ns = False
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -2040,7 +2001,7 @@ class Plots(Stats):
 
         # optional input for custom annotations
         if pvalue_label:
-            pvalue = pvalue_label
+            pvalue_plot = pvalue_label
 
         # # For debugging pairs and pvalue list orders
         # print(pairs)
@@ -2056,10 +2017,10 @@ class Plots(Stats):
             annotator.configure(loc=loc, test=None)
 
         # Make sure the pairs and pvalue lists match
-        if len(pairs) != len(pvalue):
+        if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
         else:
-            annotator.set_custom_annotations(pvalue)
+            annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
         # Adjust title and title fontsize from kwargs
@@ -2070,7 +2031,7 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return stat_df, annotator
+            return stat_df_result, annotator
 
         return annotator
 
@@ -2132,7 +2093,6 @@ class Plots(Stats):
         :return:
         """
 
-        global stat_df
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.boxplot)
         valid_annot = utils.get_kwargs(Annotator)
@@ -2143,7 +2103,7 @@ class Plots(Stats):
         }
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue, stat_df = Plots._get_test(
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(
             self,
             group_col,
             kwargs,
@@ -2223,7 +2183,7 @@ class Plots(Stats):
 
         # optional input for custom annotations
         if pvalue_label:
-            pvalue = pvalue_label
+            pvalue_plot = pvalue_label
 
         # Location of annotations
         if loc not in ["inside", "outside"]:
@@ -2235,10 +2195,10 @@ class Plots(Stats):
             annotator.configure(loc=loc, test=None)
 
         # Make sure the pairs and pvalue lists match
-        if len(pairs) != len(pvalue):
+        if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
         else:
-            annotator.set_custom_annotations(pvalue)
+            annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
         # Adjust title and title fontsize from kwargs
@@ -2249,13 +2209,13 @@ class Plots(Stats):
 
         # Return DataFrame AND figure
         if return_df:
-            return stat_df, annotator
+            return stat_df_result, annotator
 
         return annotator
 
     def p_matrix(
         self,
-        # data,
+        data=None,
         cmap=None,
         title=None,
         title_fontsize=14,
@@ -2267,7 +2227,7 @@ class Plots(Stats):
         Wrapper function for scikit_posthoc heatmap.
 
         :param data: Pandas.Dataframe
-            Input table must be a matrix calculated using the stats.get_p_matrix().
+            Input table must be a matrix calculated using the stats.get_p_matrix(). Optional.
         :param cmap: List
             A list of colors. Can be color names or hex codes.
         :param title: String
@@ -2284,6 +2244,9 @@ class Plots(Stats):
         :return: Pyplot figure
         """
 
+        if data is None:
+            data = self.data
+
         if title:
             plt.title(title, fontsize=title_fontsize)
 
@@ -2291,7 +2254,7 @@ class Plots(Stats):
             # cmap list for 1, NS, 0.001, 0.01, 0.05
             cmap = ["1", "#fbd7d4", "#005a32", "#238b45", "#a1d99b"]
             fig = sp.sign_plot(
-                self.data,
+                data,
                 cmap=cmap,
                 linewidths=linewidths,
                 linecolor=linecolor,
@@ -2299,7 +2262,7 @@ class Plots(Stats):
             )
         else:
             fig = sp.sign_plot(
-                self.data,
+                data,
                 cmap=cmap,
                 linewidths=linewidths,
                 linecolor=linecolor,
