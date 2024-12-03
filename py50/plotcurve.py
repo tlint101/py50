@@ -44,6 +44,20 @@ class PlotCurve:
         elif isinstance(rows, int):
             return self.data.head(rows)
 
+    def to_csv(self, path: str = None, index: bool = False, **kwargs):
+        """
+        Save table to csv file.
+        :param path: str
+            Designate save path for table.
+        :param index: bool
+            Write row names.
+        **kwargs
+            Keyword arguments for pandas.DataFrame.to_csv.
+        :return:
+        """
+
+        self.data.to_csv(path, index=index, **kwargs)
+
     # Filter input data based on Compound Name to generate single plot
     def _filter_dataframe(self, drug_name: str = None):
         """
