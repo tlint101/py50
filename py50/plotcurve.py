@@ -196,7 +196,8 @@ class PlotCurve:
 
         # if response_col is a list, table will be reformated to produce a column with average values
         if isinstance(response_col, list):
-            response_col_is_list = True
+            response_col_is_list = True # bool to indicate sns usage
+            response_col_list = response_col # set response_col input for reshaping data
             reshape_data = pd.melt(
                 self.data,
                 id_vars=[name_col, concentration_col],
@@ -208,6 +209,9 @@ class PlotCurve:
                 columns=["variable"]
             )  # reset table to reshaped table
             response_col = "inhibition_average"  # reset response_col input
+
+            # reset input data for the reshaped data and add column with averages
+            self.data['inhibition_average'] = self.data[response_col_list].mean(axis=1)
         else:
             response_col_is_list = False
 
