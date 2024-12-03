@@ -40,6 +40,20 @@ class Calculator:
         elif isinstance(rows, int):
             return self.data.head(rows)
 
+    def to_csv(self, path: str = None, index: bool = False, **kwargs):
+        """
+        Save table to csv file.
+        :param path: str
+            Designate save path for table.
+        :param index: bool
+            Write row names.
+        **kwargs
+            Keyword arguments for pandas.DataFrame.to_csv.
+        :return:
+        """
+
+        self.data.to_csv(path, index=index, **kwargs)
+
     def show_column(self, key: str = None):
         """
         View specific column from DataFrame
@@ -83,6 +97,7 @@ class Calculator:
         """
 
         # set instance variables
+        global response_col_is_list, averaged_df
         if name_col is None:
             name_col = self.name_col
         if concentration_col is None:
@@ -92,6 +107,13 @@ class Calculator:
 
         # if response_col is a list, table will be reformated to produce a column with average values
         if isinstance(response_col, list):
+            response_col_is_list = True  # bool reset self.data with calculated average col
+            # calculate average column
+            response_col_list = response_col  # set response_col input for reshaping data
+            averaged_df = self.data.copy()
+            averaged_df['inhibition_average'] = averaged_df[response_col_list].mean(axis=1)
+
+            # reshape data
             reshape_data = pd.melt(
                 self.data,
                 id_vars=[name_col, concentration_col],
@@ -101,6 +123,8 @@ class Calculator:
             # drop the variable column
             self.data = reshape_data.drop(columns=["variable"])
             response_col = "inhibition_average"  # reset response_col input
+        else:
+            response_col_is_list = False
 
         # Set variables from function and convert name_col to np array
         values = self._relative_calculation(
@@ -108,6 +132,9 @@ class Calculator:
         )
 
         result_df = pd.DataFrame(values)
+
+        if response_col_is_list is True:
+            self.data = averaged_df
 
         self.calculation = result_df
         return self.calculation
@@ -139,6 +166,7 @@ class Calculator:
         :return: DataFrame generated from the list from the absolute_calculation method
         """
         # set instance variables
+        global response_col_is_list, averaged_df
         if name_col is None:
             name_col = self.name_col
         if concentration_col is None:
@@ -148,6 +176,13 @@ class Calculator:
 
         # if response_col is a list, table will be reformated to produce a column with average values
         if isinstance(response_col, list):
+            response_col_is_list = True # bool reset self.data with calculated average col
+            # calculate average column
+            response_col_list = response_col # set response_col input for reshaping data
+            averaged_df = self.data.copy()
+            averaged_df['inhibition_average'] = averaged_df[response_col_list].mean(axis=1)
+
+            # reshape data
             reshape_data = pd.melt(
                 self.data,
                 id_vars=[name_col, concentration_col],
@@ -157,6 +192,8 @@ class Calculator:
             # drop the variable column
             self.data = reshape_data.drop(columns=["variable"])
             response_col = "inhibition_average"  # reset response_col input
+        else:
+            response_col_is_list = False
 
         values = self._absolute_calculation(
             name_col=name_col,
@@ -166,6 +203,9 @@ class Calculator:
             verbose=verbose,
         )
         result_df = pd.DataFrame(values)
+
+        if response_col_is_list is True:
+            self.data = averaged_df
 
         self.calculation = result_df
         return self.calculation
