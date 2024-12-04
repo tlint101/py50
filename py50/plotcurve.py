@@ -300,8 +300,8 @@ class PlotCurve:
 
         # Create the plot
         fig, ax = plt.subplots(figsize=figsize)
+        ax.set_ylim(top=100)  # Set maximum y axis limit
         if response_col_is_list is True:  # for error bars
-            ax.set_ylim(top=100)  # Set maximum y axis limit
             sns.lineplot(
                 data=drug_query,
                 x=concentration,
@@ -317,12 +317,7 @@ class PlotCurve:
             ax.plot(
                 x_fit, y_fit, color=line_color, linewidth=line_width, label="fit_line"
             )
-            ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
-            ax.set_xlabel(xlabel, fontsize=axis_fontsize)
-            ax.set_ylabel(ylabel, fontsize=axis_fontsize)
-            ax.set_title(plot_title, fontsize=plot_title_size)
         else:
-            ax.set_ylim(top=100)  # Set maximum y axis limit
             ax.scatter(
                 concentration,
                 response,
@@ -333,10 +328,12 @@ class PlotCurve:
             ax.plot(
                 x_fit, y_fit, color=line_color, linewidth=line_width, label="fit_line"
             )
-            ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
-            ax.set_xlabel(xlabel, fontsize=axis_fontsize)
-            ax.set_ylabel(ylabel, fontsize=axis_fontsize)
-            ax.set_title(plot_title, fontsize=plot_title_size)
+
+        # set scales
+        ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
+        ax.set_xlabel(xlabel, fontsize=axis_fontsize)
+        ax.set_ylabel(ylabel, fontsize=axis_fontsize)
+        ax.set_title(plot_title, fontsize=plot_title_size)
 
         # Set grid lines to False by default
         plt.grid(kwargs.get("grid", False))
@@ -450,7 +447,9 @@ class PlotCurve:
         axis_fontsize: int = 10,
         line_color: list = CBPALETTE,
         marker: list = CBMARKERS,
+        markersize: int = 8,
         line_width: int = 1.5,
+        errorbar: str = "sd",
         legend: bool = False,
         legend_loc: str = "best",
         box_target: str = None,
@@ -531,24 +530,54 @@ class PlotCurve:
 
         :return: Figure
         """
-        global response, x_fit, y_fit, y_intersection, x_intersection, reverse, params
+        global response, x_fit, y_fit, y_intersection, x_intersection, reverse, params, response_col_is_list, query, concentration, list_data, melted_df
         name_list = np.unique(self.data[name_col])
 
         concentration_list = []
         response_list = []
         y_fit_list = []
 
+        # if response_col is a list, table will be reformated to produce a column with average values
+        if isinstance(response_col, list):
+            response_col_is_list = True  # bool to indicate sns usage
+            response_col_list = (
+                response_col  # set response_col input for reshaping data
+            )
+            reshape_data = pd.melt(
+                self.data,
+                id_vars=[name_col, concentration_col],
+                value_vars=response_col,
+                value_name="inhibition_average",
+            )
+            # drop the variable column
+            # set dataframe for use in drawing error bars
+            melted_df = reshape_data.drop(
+                columns=["variable"]
+            )  # reset table to reshaped table
+            response_col = "inhibition_average"  # reset response_col input
+
+            # reset input data for the reshaped data and add column with averages
+            self.data["inhibition_average"] = self.data[response_col_list].mean(axis=1)
+        else:
+            response_col_is_list = False
+
+        # Create variables for inputs. Extract column from Dataframe
+        if concentration_col is None:
+            concentration_col = self.concentration_col
+        if response_col is None:
+            response_col = self.response_col
+
         for drug in name_list:
             drug_query = self._filter_dataframe(drug)
 
-            # Create variables for inputs. Extract column from Dataframe
-            if concentration_col is None:
-                concentration_col = self.concentration_col
-            if response_col is None:
-                response_col = self.response_col
-
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
+
+            # Append values for each drug into list for multi curve plotting
+            concentration_for_list = concentration.values  # Convert into np.array
+            concentration_list.append(concentration_for_list)
+            response_for_list = response.values
+            response_list.append(response_for_list)
 
             # Set initial guess for 4PL equation
             initial_guess = [
@@ -618,12 +647,6 @@ class PlotCurve:
             # Confirm ic50 unit output
             # ic50, x_intersection = calculator.unit_convert(ic50, x_intersection, conc_unit)
 
-            # Append values for each drug into list for multi curve plotting
-            concentration_for_list = concentration.values  # Convert into np.array
-            concentration_list.append(concentration_for_list)
-            response_for_list = response.values
-            response_list.append(response_for_list)
-
         # Generate plot
         fig, ax = plt.subplots(figsize=figsize)
         ax.set_ylim(top=100)  # Set maximum y axis limit
@@ -643,7 +666,6 @@ class PlotCurve:
             pass
         else:
             raise ValueError("xscale must be 'log' or 'linear'")
-
         # Plotting the data for each line
         legend_handles = (
             []
@@ -665,8 +687,36 @@ class PlotCurve:
                 marker,
             )
         ):
-            plt.plot(x_fit, y_fit_point, color=color, label=name, linewidth=line_width)
-            ax.scatter(concentration_point, response_point, color=color, marker=mark)
+            # Convert Seaborn sizes (diameters) to Matplotlib sizes (area)
+            if response_col_is_list is True:
+                # use info from melted data for errorbars
+                data_to_split = melted_df[melted_df[name_col] == name]
+                concentration_data = data_to_split[concentration_col]
+                response_data = data_to_split[response_col]
+
+                sns.lineplot(
+                    data=melted_df,
+                    x=concentration_data,
+                    y=response_data,
+                    errorbar=errorbar,
+                    marker=mark,
+                    markersize=markersize,
+                    err_style="bars",
+                    linestyle="",
+                    label="data_points",
+                    color=color,
+                )
+                plt.plot(
+                    x_fit, y_fit_point, color=color, label=name, linewidth=line_width
+                )
+            else:
+                plt.plot(
+                    x_fit, y_fit_point, color=color, label=name, linewidth=line_width
+                )
+                ax.scatter(
+                    concentration_point, response_point, color=color, marker=mark
+                )
+
             ax.set_title(plot_title)
             ax.set_xscale(xscale)  # Use a logarithmic scale for the x-axis
             # Set ticks for axis
