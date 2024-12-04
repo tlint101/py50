@@ -73,7 +73,6 @@ class PlotCurve:
         ]
         return filtered_df
 
-    # todo fix verbose issue - box info will also print
     def curve_plot(
         self,
         concentration_col: str = None,
