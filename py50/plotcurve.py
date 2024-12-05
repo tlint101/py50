@@ -497,8 +497,12 @@ class PlotCurve:
         :param line_color: str
             Takes a list of colors. By default, it uses the CBPALETTE. List can contain name of colors or colors in hex
             code.
+        :param markersize:
+            Set the marker size.
         :param line_width: int
             Set width of lines in plot.
+        :param errorbar:
+            Set the type of seaborn errorbar to use. Defaults to 'sd'.
         :param marker: list
             Takes a list for point markers. Marker options can be found here: https://matplotlib.org/stable/api/markers_api.html
         :param legend: bool
@@ -891,6 +895,7 @@ class PlotCurve:
         ymin: int = None,
         line_color: list = CBPALETTE,
         line_width: int = 1.5,
+        errorbar: str = "sd",
         box: bool = False,
         box_color: str = "gray",
         box_intercept: int = 50,
@@ -939,6 +944,8 @@ class PlotCurve:
             colors or colors in hex code.
         :param line_width: int
             Set width of lines in plot.
+        :param errorbar:
+            Set the type of seaborn errorbar to use. Defaults to 'sd'.
         :param box: bool
             Draw a box to highlight a specific location. If box = True, then the box_color, and box_intercept MUST ALSO
             BE GIVEN.
