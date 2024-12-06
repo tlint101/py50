@@ -2,7 +2,7 @@
 
 # py50: Generate Dose-Response Curves
 
-![Static Badge](https://img.shields.io/badge/py50_v1.0.8-13406E)
+![Static Badge](https://img.shields.io/badge/py50_v1.0.9-13406E)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.34.0-FF4B4B.svg?style=flat&logo=Streamlit&logoColor=white)](https://py50-app.streamlit.app)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/py50?style=flat&logo=python&logoColor=white)
 [![Documentation Status](https://readthedocs.org/projects/py50/badge/?version=latest)](https://py50.readthedocs.io/en/latest/?badge=latest)
@@ -21,15 +21,15 @@ statistics, or make annotated plots. However, I found that these packages did no
 2. Adaptable to user needs
 3. Easy to use (hopefully!)
 
-The dose-response curves are built on the four parameter logistic regression model:
+The dose-response curves in py50 are built using the four parameter logistic regression model:
 $$Y = \text{Min} + \frac{\text{Max} - \text{Min}}{1 + \left(\frac{X}{\text{IC50}}\right)^{\text{Hill coefficient}}}$$
-where min is the minimum response value, max is the maximum response value, Y is the response values of the curves, X
-is the concentration.
+where min is the minimum response value, max is the maximum response value, Y is the response values of the curves, and 
+X is the concentration.
 
-The statistics and annotated plots is a wrapper for [Pingouin](https://github.com/raphaelvallat/pingouin)
+The statistics and annotated plots are wrapped from [Pingouin](https://github.com/raphaelvallat/pingouin)
 and [Statannotations](https://github.com/trevismd/statannotations).
-This may have been done inelegantly and will be updated based on my use or recommendations by other users. As things
-stand, this project meets my and the needs of my classmates/coworkers. Hopefully it can meet the needs of others.
+This may have been done inelegantly and will be updated based on my use or recommendations by other. As things stand, 
+this project meets my and the needs of my classmates/coworkers. Hopefully it can meet the needs of others.
 
 ## Installation
 
@@ -42,21 +42,6 @@ Pacakge can be upgraded specifically using pip with the following:
 ```
 pip install py50 -U
 ```
-
-**Warning:** As of this writing, Statannotations is at v0.6. It is incompatible with Seaborn ≥v0.12 or with Pandas
-≥v.2.0.
-During testing, I found that Seaborn v0.12.2 had no issues. This is advantages because v0.12 allows better control of
-error bars for the bar plot. Unfortunately, the python packaging system I use, Poetry, will not successfully build if
-there are conflicts. Thus, the py50 installation will install Seaborn v0.11.2 instead. As written, py50 will not work
-with bar plots for Seaborn ≤ v0.12.0. I recommend manually installing Seaborn v0.12.2 manually afterward using:
-
-```
-pip install seaborn==0.12.2
-```
-
-I would love contribute to the main Statannotations branch and bump it up to match the Seaborn updates, but it seems to
-be a daunting challenge and will require time on my part. 🤞Hopefully the main maintainers and
-contributors can get to it sooner!🤞
 
 ## Tutorial
 
@@ -75,8 +60,7 @@ The web application can be found here: [py50-app](https://py50-app.streamlit.app
 The repository for the Streamlit app version can be found
 here: [py50-streamlit](https://github.com/tlint101/py50-streamlit)
 
-**NOTE:** Updates to the web application take more time. As of this writing, the py50 Streamlit is running on version
-0.3.6. Updates with statistics and plot annotations will be forthcoming.
+**NOTE:** Updates to the web application take more time. Updates will be made when possible or upon request.
 
 ## Future Work
 
@@ -85,7 +69,7 @@ will be to reformat the code for maintainability and to fix any bugs that I find
 py50 for the foreseeable future. As such, my current "To-Do" list (in no particular order) are as follows:
 
 - [ ] Complete To-Do notes in Python script
-- [ ] Update Tutorials for clarity
+- [X] Update Tutorials for clarity
 - [X] Update py50 Streamlit to version 1.0.0
 - [ ] Refactor code for maintainability
 - [ ] **Add error messages!**
