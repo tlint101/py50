@@ -4,7 +4,7 @@ version = "1.0.9"
 description = "Generate Dose-Response Curves"
 documentation = "https://py50.readthedocs.io/en/latest/"
 authors = ["Tony Eight Lin <tonyelin@tmu.edu.tw>"]
-license = "GPL-3.0"
+license = "GPL-3.0-only"
 readme = "README.md" #change README_pypi.md to README.md for consistency
 packages = [{ include = "py50"}]
 
