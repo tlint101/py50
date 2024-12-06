@@ -895,7 +895,6 @@ class PlotCurve:
         ymin: int = None,
         line_color: list = CBPALETTE,
         line_width: int = 1.5,
-        errorbar: str = "sd",
         box: bool = False,
         box_color: str = "gray",
         box_intercept: int = 50,
