@@ -1,0 +1,18 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: 'py50: Generate Dose-Response Curves'
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Tony Eight
+    family-names: Lin
+    email: tonyelin@tmu.edu.tw
+repository-code: 'https://github.com/tlint101/py50.git'
+url: 'https://py50.readthedocs.io/en/latest/'
+license: GPL-3.0
+version: 1.0.10
+date-released: '2024-12-19'
