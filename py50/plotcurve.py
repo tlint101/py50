@@ -78,6 +78,7 @@ class PlotCurve:
         concentration_col: str = None,
         response_col: Union[str, list] = None,
         name_col: str = None,
+        query: str = None,
         plot_title: str = None,
         plot_title_size: int = 16,
         xlabel: str = None,
@@ -114,10 +115,12 @@ class PlotCurve:
 
         :param concentration_col: str
             Concentration column from DataFrame.
-        :param response_col: str
+        :param response_col: Union[str, list]
             Response column from DataFrame.
         :param name_col: str
             Column containing drug name for plotting.
+        :param query: str
+            Draw a curve for a specific query in the dataset. Only needed when response_col is a list.
         :param plot_title: str
             Title of the figure.
         :param plot_title_size: tuple
@@ -210,9 +213,14 @@ class PlotCurve:
         # if response_col is a list, table will be reformated to produce a column with average values
         if isinstance(response_col, list):
             response_col_is_list = True  # bool to indicate sns usage
-            response_col_list = (
-                response_col  # set response_col input for reshaping data
-            )
+            response_col_list = response_col  # set response_col input for reshaping data
+
+            # check compound queries
+            compounds = self.data[name_col].unique().tolist()
+            if len(compounds) > 1:
+                query_df = self._filter_dataframe(drug_name=query)
+                self.data = query_df
+
             reshape_data = pd.melt(
                 self.data,
                 id_vars=[name_col, concentration_col],
@@ -226,7 +234,11 @@ class PlotCurve:
             response_col = "inhibition_average"  # reset response_col input
 
             # reset input data for the reshaped data and add column with averages
-            self.data["inhibition_average"] = self.data[response_col_list].mean(axis=1)
+            data = self.data.copy() # to remove slice warning
+            data["inhibition_average"] = data[response_col_list].mean(axis=1)
+
+            # reset name_col to query if only single query detected
+            name_col = query
         else:
             response_col_is_list = False
 
@@ -244,7 +256,7 @@ class PlotCurve:
         # Initialize in Calculator class for calculating results for plotting
         calculator = Calculator(drug_query)
 
-        # set a new coy of the DataFrame to avoid warnings
+        # set a new copy of the DataFrame to avoid warnings
         query = drug_query.copy()
         query.sort_values(by=concentration_col, ascending=True, inplace=True)
 
@@ -419,6 +431,8 @@ class PlotCurve:
                 ],
                 loc=legend_loc,
             )
+        else:
+            ax.get_legend().remove()
 
         # Save the plot to a file
         if savefig == None:
