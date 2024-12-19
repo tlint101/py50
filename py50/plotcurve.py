@@ -7,7 +7,7 @@ import itertools
 from scipy.interpolate import interp1d
 from py50.plot_settings import CBMARKERS, CBPALETTE, CurveSettings
 from py50.calculator import Calculator
-from typing import Union
+from typing import Union, Optional
 
 __all__ = ["PlotCurve"]
 
@@ -17,9 +17,9 @@ class PlotCurve:
     def __init__(
         self,
         data: pd.DataFrame,
-        name_col: str = None,
-        concentration_col: str = None,
-        response_col: Union[str, list] = None,
+        name_col: Optional[str] = None,
+        concentration_col: Optional[str] = None,
+        response_col: Optional[Union[str, list]] = None,
     ):
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Input must be a DataFrame")
@@ -76,7 +76,7 @@ class PlotCurve:
     def curve_plot(
         self,
         concentration_col: str = None,
-        response_col: str = None,
+        response_col: Union[str, list] = None,
         name_col: str = None,
         plot_title: str = None,
         plot_title_size: int = 16,
