@@ -238,7 +238,11 @@ class PlotCurve:
             data["inhibition_average"] = data[response_col_list].mean(axis=1)
 
             # reset name_col to query if only single query detected
-            name_col = query
+            if query is None:
+                name_col = data[name_col].unique()[0]
+
+            else:
+                name_col = query
         else:
             response_col_is_list = False
 
