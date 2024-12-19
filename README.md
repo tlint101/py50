@@ -11,7 +11,7 @@
 
 ## Summary
 
-The aim of py50 is to make the generation of dose-respnose curves and annotated plots with statistics. The project was
+The aim of py50 is to make the generation of dose-response curves and annotated plots with statistics. The project was
 created primarily for my personal use and for my coworkers/classmates. I found many of my classmates/coworkers were
 using a program that I find to be unfriendly in generating dose-response curves or with calculating statistics and
 plots. During my search, I found other helpful repositories that can generate dose-response curves, calculate
@@ -28,8 +28,9 @@ X is the concentration.
 
 The statistics and annotated plots are wrapped from [Pingouin](https://github.com/raphaelvallat/pingouin)
 and [Statannotations](https://github.com/trevismd/statannotations).
-This may have been done inelegantly and will be updated based on my use or recommendations by other. As things stand, 
-this project meets my and the needs of my classmates/coworkers. Hopefully it can meet the needs of others.
+This may have been done inelegantly and will be updated based on my use or recommendations by others. As things stand, 
+this project meets my needs and the needs of my classmates/coworkers.
+Hopefully it can meet the needs of others.
 
 ## Installation
 
@@ -77,10 +78,19 @@ py50 for the foreseeable future. As such, my current "To-Do" list (in no particu
 
 ## Citation
 
-If you are interested in citing the repository, I have generated a DOI link using Zenodo
-here: [![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
-
-For those using a citation manager, there is also a compressed endnote file that is available and can be
-downloaded [here](https://github.com/tlint101/py50/tree/v1.0.4/citation)
+If you are interested in citing the repository, the BibTeX reference is as follows:
+```aiignore
+@software{lin_2024_14523624,
+  author       = {Lin, Tony Eight},
+  title        = {py50: Generate Dose-Response Curves},
+  month        = dec,
+  year         = 2024,
+  publisher    = {Zenodo},
+  version      = {v1.0.10},
+  doi          = {10.5281/zenodo.14523624},
+  url          = {https://doi.org/10.5281/zenodo.14523624},
+}
+```
+All versions can be linked to the Zenodo repository here: [![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
 
 Thanks for your interest! 
