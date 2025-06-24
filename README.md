@@ -2,9 +2,9 @@
 
 # py50: Generate Dose-Response Curves
 
-![Static Badge](https://img.shields.io/badge/py50_v1.0.10-13406E)
+[![py50](https://img.shields.io/pypi/v/py50.svg?labelColor=gray&style=flat)](https://pypi.org/project/py50/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.34.0-FF4B4B.svg?style=flat&logo=Streamlit&logoColor=white)](https://py50-app.streamlit.app)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/py50?style=flat&logo=python&logoColor=white)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/py50?style=flat&logo=python&logoColor=white)](https://pypi.org/project/py50/)
 [![Documentation Status](https://readthedocs.org/projects/py50/badge/?version=latest)](https://py50.readthedocs.io/en/latest/?badge=latest)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
@@ -22,7 +22,9 @@ statistics, or make annotated plots. However, I found that these packages did no
 3. Easy to use (hopefully!)
 
 The dose-response curves in py50 are built using the four parameter logistic regression model:
-$$Y = \text{Min} + \frac{\text{Max} - \text{Min}}{1 + \left(\frac{X}{\text{IC50}}\right)^{\text{Hill coefficient}}}$$
+$$
+Y = \text{Min} + \frac{\text{Max} - \text{Min}}{1 + \left(\frac{X}{\text{IC50}}\right)^{\text{Hill coefficient}}}
+$$
 where min is the minimum response value, max is the maximum response value, Y is the response values of the curves, and 
 X is the concentration.
 
