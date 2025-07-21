@@ -105,7 +105,7 @@ class PlotCurve:
         vline: int = None,
         vline_color: str = "gray",
         figsize: tuple = (6.4, 4.8),
-        savefig: str = None,
+        savepath: str = None,
         verbose: bool = None,
         **kwargs,
     ):
@@ -184,7 +184,7 @@ class PlotCurve:
             Set color of vertical line. Default color is gray.
         :param figsize: tuple
             Set figure size.
-        :param savefig: str
+        :param savepath: str
             File path for save location.
         :param verbose: bool
             Output information about the plot.
@@ -440,11 +440,11 @@ class PlotCurve:
             ax.get_legend().remove()
 
         # Save the plot to a file
-        if savefig == None:
+        if savepath == None:
             pass
         else:
             plt.savefig(
-                savefig, dpi=300
+                savepath, dpi=300
             )  # Save the plot to a file with the specified filename
 
         return fig
@@ -479,7 +479,7 @@ class PlotCurve:
         vline: int = None,
         vline_color: str = "gray",
         figsize: tuple = (6.4, 4.8),
-        savefig: str = None,
+        savepath: str = None,
         verbose: bool = None,
         **kwargs,
     ):
@@ -546,7 +546,7 @@ class PlotCurve:
             Set color of vertical line. Default color is gray.
         :param figsize: tuple
             Set figure size.
-        :param savefig: str
+        :param savepath: str
             File path for save location.
         :param verbose: bool
             Output information about the plot.
@@ -890,10 +890,10 @@ class PlotCurve:
 
         plt.title(plot_title, fontsize=plot_title_size)
 
-        if savefig is None:
+        if savepath is None:
             pass
         else:
-            plt.savefig(savefig, dpi=300)
+            plt.savefig(savepath, dpi=300)
 
         return fig
 
@@ -922,7 +922,7 @@ class PlotCurve:
         vline: int = None,
         vline_color: str = "gray",
         figsize: tuple = (8.4, 4.8),
-        savefig: str = None,
+        savepath: str = None,
         verbose: bool = None,
         **kwargs,
     ):
@@ -982,7 +982,7 @@ class PlotCurve:
             Set color of vertical line. Default color is gray.
         :param figsize: tuple
             Set figure size for subplot.
-        :param savefig: str
+        :param savepath: str
             File path for save location.
         :param verbose: bool
             Output information about the plot.
@@ -1281,10 +1281,10 @@ class PlotCurve:
         # Adjust spacing between subplots
         plt.subplots_adjust(wspace=0.2, hspace=0.4)
 
-        if savefig is None:
+        if savepath is None:
             pass
         else:
-            plt.savefig(savefig, dpi=300)
+            plt.savefig(savepath, dpi=300)
 
         return fig
 
