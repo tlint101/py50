@@ -202,10 +202,11 @@ class PlotCurve:
             response_col = self.response_col
 
         if name_col is not None:
-            drug_query = self._filter_dataframe(drug_name=name_col)
-            if len(drug_query) > 0:
+            drug_name = query
+            query = self._filter_dataframe(drug_name=query)
+            if len(query) > 0:
                 pass
-            elif len(drug_query) == 0:
+            elif len(query) == 0:
                 print("Drug not found!")
         else:
             print("Drug not found!")
@@ -246,8 +247,8 @@ class PlotCurve:
         else:
             response_col_is_list = False
 
-        concentration = drug_query[concentration_col]
-        response = drug_query[response_col]
+        concentration = query[concentration_col]
+        response = query[response_col]
 
         # Set initial guess for 4PL equation
         initial_guess = [
@@ -258,11 +259,11 @@ class PlotCurve:
         ]  # Max, Min, ic50, and hill_slope
 
         # Initialize in Calculator class for calculating results for plotting
-        calculator = Calculator(drug_query)
+        calculator = Calculator(query)
 
         # set a new copy of the DataFrame to avoid warnings
-        query = drug_query.copy()
-        query.sort_values(by=concentration_col, ascending=True, inplace=True)
+        calc_query = query.copy()
+        calc_query.sort_values(by=concentration_col, ascending=True, inplace=True)
 
         """
         x_fit and concentration adjustments mut come before the calc_logic or curve and datapoints will not bre aligned
@@ -279,7 +280,7 @@ class PlotCurve:
         )
 
         reverse, params, covariance = calculator._calc_logic(
-            data=query,
+            data=calc_query,
             concentration=concentration,
             response_col=response_col,
             initial_guess=initial_guess,
@@ -430,7 +431,7 @@ class PlotCurve:
             ax.legend(
                 handles=[
                     plt.Line2D(
-                        [0], [0], color=line_color, marker=marker, label=name_col
+                        [0], [0], color=line_color, marker=marker, label=drug_name
                     ),
                 ],
                 loc=legend_loc,
