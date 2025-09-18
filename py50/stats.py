@@ -2,7 +2,9 @@
 Script to calculate statistics.
 """
 
+from typing import Optional, Union, List
 import pandas as pd
+import numpy as np
 from itertools import combinations
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -1047,11 +1049,13 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
-        # Adjust title and title fontsize from kwargs
-        if "title" in kwargs:
-            plt.title(kwargs["title"])
-        if "title" and "fontsize" in kwargs:
-            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+        # Adjust title and title titlesize from kwargs
+        title = kwargs.pop("title", None)
+        titlesize = kwargs.pop("titlesize", None)
+        if title:
+            plt.title(title)
+        if title and titlesize:
+            plt.title(title, fontsize=titlesize)
 
         # Return DataFrame AND figure
         if return_df:
@@ -1234,11 +1238,13 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
-        # Adjust title and title fontsize from kwargs
-        if "title" in kwargs:
-            plt.title(kwargs["title"])
-        if "title" and "fontsize" in kwargs:
-            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+        # Adjust title and title titlesize from kwargs
+        title = kwargs.pop("title", None)
+        titlesize = kwargs.pop("titlesize", None)
+        if title:
+            plt.title(title)
+        if title and titlesize:
+            plt.title(title, fontsize=titlesize)
 
         # Return DataFrame AND figure
         if return_df:
@@ -1414,11 +1420,13 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
-        # Adjust title and title fontsize from kwargs
-        if "title" in kwargs:
-            plt.title(kwargs["title"])
-        if "title" and "fontsize" in kwargs:
-            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+        # Adjust title and title titlesize from kwargs
+        title = kwargs.pop("title", None)
+        titlesize = kwargs.pop("titlesize", None)
+        if title:
+            plt.title(title)
+        if title and titlesize:
+            plt.title(title, fontsize=titlesize)
 
         # Return DataFrame AND figure
         if return_df:
@@ -1601,11 +1609,13 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
-        # Adjust title and title fontsize from kwargs
-        if "title" in kwargs:
-            plt.title(kwargs["title"])
-        if "title" and "fontsize" in kwargs:
-            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+        # Adjust title and title titlesize from kwargs
+        title = kwargs.pop("title", None)
+        titlesize = kwargs.pop("titlesize", None)
+        if title:
+            plt.title(title)
+        if title and titlesize:
+            plt.title(title, fontsize=titlesize)
 
         # Return DataFrame AND figure
         if return_df:
@@ -1788,11 +1798,13 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
-        # Adjust title and title fontsize from kwargs
-        if "title" in kwargs:
-            plt.title(kwargs["title"])
-        if "title" and "fontsize" in kwargs:
-            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+        # Adjust title and title titlesize from kwargs
+        title = kwargs.pop("title", None)
+        titlesize = kwargs.pop("titlesize", None)
+        if title:
+            plt.title(title)
+        if title and titlesize:
+            plt.title(title, fontsize=titlesize)
 
         # Return DataFrame AND figure
         if return_df:
@@ -1927,25 +1939,25 @@ class Plots(Stats):
 
         # plot
         ax = sns.boxenplot(
-                data=self.data,
-                x=x_input,
-                y=y_input,
-                order=group_order,
-                palette=palette,
-                hue=subgroup_hue,
-                **sns_kwargs,
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            palette=palette,
+            hue=subgroup_hue,
+            **sns_kwargs,
         )
         annotator = Annotator(
-                ax,
-                pairs=pairs,
-                data=self.data,
-                x=x_input,
-                y=y_input,
-                order=group_order,
-                verbose=False,
-                orient=orient,
-                hue=subgroup_hue,
-                **annot_kwargs,
+            ax,
+            pairs=pairs,
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            verbose=False,
+            orient=orient,
+            hue=subgroup_hue,
+            **annot_kwargs,
         )
 
         # optional input for custom annotations
@@ -1972,11 +1984,13 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
-        # Adjust title and title fontsize from kwargs
-        if "title" in kwargs:
-            plt.title(kwargs["title"])
-        if "title" and "fontsize" in kwargs:
-            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+        # Adjust title and title titlesize from kwargs
+        title = kwargs.pop("title", None)
+        titlesize = kwargs.pop("titlesize", None)
+        if title:
+            plt.title(title)
+        if title and titlesize:
+            plt.title(title, fontsize=titlesize)
 
         # Return DataFrame AND figure
         if return_df:
@@ -2097,28 +2111,28 @@ class Plots(Stats):
 
         # plot
         ax = sns.lineplot(
-                    data=self.data,
-                    x=x_input,
-                    y=y_input,
-                    order=group_order,
-                    palette=palette,
-                    hue=subgroup_hue,
-                    ci=ci,  # errorbar
-                    capsize=capsize,  # errorbar
-                    **sns_kwargs,
-                )
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            palette=palette,
+            hue=subgroup_hue,
+            ci=ci,  # errorbar
+            capsize=capsize,  # errorbar
+            **sns_kwargs,
+        )
         annotator = Annotator(
-                    ax,
-                    pairs=pairs,
-                    data=self.data,
-                    x=x_input,
-                    y=y_input,
-                    order=group_order,
-                    verbose=False,
-                    orient=orient,
-                    hue=subgroup_hue,
-                    **annot_kwargs,
-                )
+            ax,
+            pairs=pairs,
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            verbose=False,
+            orient=orient,
+            hue=subgroup_hue,
+            **annot_kwargs,
+        )
 
         # optional input for custom annotations
         if pvalue_label:
@@ -2140,11 +2154,11 @@ class Plots(Stats):
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
-        # Adjust title and title fontsize from kwargs
+        # Adjust title and title titlesize from kwargs
         if "title" in kwargs:
             plt.title(kwargs["title"])
-        if "title" and "fontsize" in kwargs:
-            plt.title(kwargs["title"], fontsize=kwargs["fontsize"])
+        if "title" and "titlesize" in kwargs:
+            plt.title(kwargs["title"], titlesize=kwargs["titlesize"])
 
         # Return DataFrame AND figure
         if return_df:
@@ -2157,7 +2171,7 @@ class Plots(Stats):
         data=None,
         cmap=None,
         title=None,
-        title_fontsize=14,
+        titlesize=14,
         linewidths=0.01,
         linecolor="gray",
         **kwargs,
@@ -2171,7 +2185,7 @@ class Plots(Stats):
             A list of colors. Can be color names or hex codes.
         :param title: String
             Input title for figure.
-        :param title_fontsize: Int
+        :param title_titlesize: Int
             Set size of figure legend.
         :param linewidths: Int
             Set line width of figure.
@@ -2187,7 +2201,7 @@ class Plots(Stats):
             data = self.data
 
         if title:
-            plt.title(title, fontsize=title_fontsize)
+            plt.title(title, fontsize=titlesize)
 
         if cmap is None:
             # cmap list for 1, NS, 0.001, 0.01, 0.05
