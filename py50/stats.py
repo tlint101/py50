@@ -2044,7 +2044,7 @@ class Plots(Stats):
 
         # calculate anova
         stat = Stats(data=self.data)
-        anova_table = stat.get_anova(value_col="Pain threshold", group_col="Hair color")
+        anova_table = stat.get_anova(value_col=value_col, group_col=group_col)
         anova = anova_table["p-unc"].iloc[0]
 
         # identify highest mean
