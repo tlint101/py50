@@ -1,16 +1,16 @@
 [tool.poetry]
 name = "py50"
-version = "1.0.10"
+version = "1.0.11"
 description = "Generate Dose-Response Curves"
 documentation = "https://py50.readthedocs.io/en/latest/"
 authors = ["Tony Eight Lin <tonyelin@tmu.edu.tw>"]
 license = "GPL-3.0-only"
-readme = "README.md" #change README_pypi.md to README.md for consistency
+readme = "README.md"
 repository = "https://github.com/tlint101/py50.git"
 packages = [{ include = "py50"}]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.13"
+python = ">=3.9"
 pandas = ">=1.5.0"
 numpy = ">=1.26.4"
 matplotlib = ">=3.8.1"
