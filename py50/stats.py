@@ -4,10 +4,10 @@ Script to calculate statistics.
 
 from typing import Optional, Union, List
 import pandas as pd
-import numpy as np
 from itertools import combinations
 import matplotlib.pyplot as plt
 import seaborn as sns
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
 import scikit_posthocs as sp
 import pingouin as pg
 from statannotations.Annotator import (
@@ -892,7 +892,7 @@ class Plots(Stats):
         palette=None,
         orient="v",
         loc="inside",
-        whis=1.5,  # boxplot whiskers
+        whis=1.5,
         return_df=None,
         **kwargs,
     ):
@@ -1201,8 +1201,8 @@ class Plots(Stats):
             order=group_order,
             palette=palette,
             hue=subgroup_hue,
-            errorbar=errorbar,  # errorbar
-            capsize=capsize,  # errorbar
+            errorbar=errorbar,
+            capsize=capsize,
             **sns_kwargs,
         )
         annotator = Annotator(
@@ -1271,7 +1271,7 @@ class Plots(Stats):
         **kwargs,
     ):
         """
-        Draw a biolinplot from the input DataFrame.
+        Draw a violinplot from the input DataFrame.
 
         :param test: String
             Name of test for calculations. Names must match the test names from the py50.Stats()
@@ -1997,6 +1997,78 @@ class Plots(Stats):
             return stat_df_result, annotator
 
         return annotator
+
+    def ci_plot(
+        self,
+        data: Optional = None,
+        value_col: str = None,
+        group_col: str = None,
+        alpha: float = 0.05,
+        title: str = "Tukey HSD Confidence Intervals",
+        xlabel: str = None,
+        ylabel: str = None,
+        figsize: tuple = (8, 6),
+        return_stats: bool = False,
+    ):
+        """
+        Generate a confidence interval plot. The plot utilizes the Tukey Honest Significant Difference (HSD) test and
+        is a wrapper for statsmodels (https://www.statsmodels.org/dev/index.html). ANOVA will also be calculated and
+        its p-value will be plotted alongside the title.
+        :param data: Optional
+            Input dataset.
+        :param value_col: str
+            Name of the column containing the dependent variable.
+        :param group_col: str
+            Name of the column containing the groups.
+        :param alpha: float
+            The significance level for the test.
+        :param title: str
+            Set the title for the figure. Defaults to "Tukey HSD Confidence Intervals".
+        :param xlabel: str
+            Set the label for the x-axis. If None is given, defaults to the value_col input.
+        :param ylabel: str
+            Set the label for the y-axis. If None is given, defaults to the group_colinput.
+        :param figsize: tuple
+            Set the figure size. Defaults to (8,6).
+        :param return_stats: bool
+            Whether to return the Tukey HSD test.
+        :return:
+        """
+        if data is None:
+            data = self.data
+
+        # calculate tukey using statsmodels
+        tukey = pairwise_tukeyhsd(
+            endog=data[value_col], groups=data[group_col], alpha=alpha
+        )
+
+        # calculate anova
+        stat = Stats(data=self.data)
+        anova_table = stat.get_anova(value_col="Pain threshold", group_col="Hair color")
+        anova = anova_table["p-unc"].iloc[0]
+
+        # identify highest mean
+        group_means = data.groupby(group_col)[value_col].mean()
+        best_group = group_means.idxmax()
+
+        # set labels
+        if xlabel is None:
+            xlabel = value_col
+        if ylabel is None:
+            ylabel = group_col
+
+        # optional return of calculated stats
+        if return_stats:
+            print(tukey.summary())
+
+        # plot CI
+        fig, ax = plt.subplots(figsize=figsize)
+        tukey.plot_simultaneous(comparison_name=best_group, ax=ax)
+
+        plt.title(f"{title} | ANOVA p={anova:.3f}", fontsize=18)
+        plt.xlabel(xlabel, fontsize=12, labelpad=10)
+        plt.ylabel(ylabel, fontsize=12, labelpad=10)
+        plt.tight_layout()
 
     # todo add support for lineplot
     def _lineplot(
