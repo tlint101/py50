@@ -11,11 +11,11 @@ __all__ = ["Calculator"]
 class Calculator:
     # Will accept input DataFrame and output said DataFrame for double checking.
     def __init__(
-        self,
-        data: pd.DataFrame,
-        name_col: str = None,
-        concentration_col: str = None,
-        response_col: Union[str, list] = None,
+            self,
+            data: pd.DataFrame,
+            name_col: str = None,
+            concentration_col: str = None,
+            response_col: Union[str, list] = None,
     ):
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Input must be a DataFrame")
@@ -42,14 +42,15 @@ class Calculator:
 
     def to_csv(self, path: str = None, index: bool = False, **kwargs):
         """
-        Save table to csv file.
+        Save the tabel to csv file.
+
         :param path: str
-            Designate save path for table.
+            Designate the save path for the table.
         :param index: bool
-            Write row names.
-        **kwargs
+            Write the row names.
+        :param kwargs:
             Keyword arguments for pandas.DataFrame.to_csv.
-        :return:
+        :return: csv file
         """
 
         self.data.to_csv(path, index=index, **kwargs)
@@ -70,12 +71,12 @@ class Calculator:
     """Functions for calculations below"""
 
     def calculate_ic50(
-        self,
-        name_col: str = None,
-        concentration_col: str = None,
-        response_col: Union[str, list] = None,
-        input_units: str = None,
-        verbose: bool = None,
+            self,
+            name_col: str = None,
+            concentration_col: str = None,
+            response_col: Union[str, list] = None,
+            input_units: str = None,
+            verbose: bool = None,
     ):
         """
         Calculations previously performed in relative_calculation(). The dictionary results are converted into into a
@@ -140,12 +141,12 @@ class Calculator:
         return self.calculation
 
     def calculate_absolute_ic50(
-        self,
-        name_col: str = None,
-        concentration_col: str = None,
-        response_col: Union[str, list] = None,
-        input_units: str = None,
-        verbose: bool = None,
+            self,
+            name_col: str = None,
+            concentration_col: str = None,
+            response_col: Union[str, list] = None,
+            input_units: str = None,
+            verbose: bool = None,
     ):
         """
         Calculations previously performed in absolute_calculation(). The dictionary results are converted into a
@@ -176,9 +177,9 @@ class Calculator:
 
         # if response_col is a list, table will be reformated to produce a column with average values
         if isinstance(response_col, list):
-            response_col_is_list = True # bool reset self.data with calculated average col
+            response_col_is_list = True  # bool reset self.data with calculated average col
             # calculate average column
-            response_col_list = response_col # set response_col input for reshaping data
+            response_col_list = response_col  # set response_col input for reshaping data
             averaged_df = self.data.copy()
             averaged_df['inhibition_average'] = averaged_df[response_col_list].mean(axis=1)
 
@@ -211,12 +212,12 @@ class Calculator:
         return self.calculation
 
     def calculate_pic50(
-        self,
-        name_col: str = None,
-        concentration_col: str = None,
-        response_col: Union[str, list] = None,
-        input_units: str = None,
-        verbose: bool = None,
+            self,
+            name_col: str = None,
+            concentration_col: str = None,
+            response_col: Union[str, list] = None,
+            input_units: str = None,
+            verbose: bool = None,
     ):
         """
         Convert IC50 into pIC50 values. Calculation is performed using the absolute_calculation. As such, two columns
@@ -311,7 +312,7 @@ class Calculator:
         :return: equation
         """
         return minimum + (maximum - minimum) / (
-            1 + (concentration / ic50) ** hill_slope
+                1 + (concentration / ic50) ** hill_slope
         )
 
     @staticmethod
@@ -329,11 +330,11 @@ class Calculator:
         :return: equation
         """
         return minimum + (maximum - minimum) / (
-            1 + (concentration / ic50) ** -hill_slope
+                1 + (concentration / ic50) ** -hill_slope
         )
 
     def _verbose_calculation(
-        self, drug: str = None, input_units: str = None, verbose: bool = True
+            self, drug: str = None, input_units: str = None, verbose: bool = True
     ):
         """
         Logic function to calculate unit concentration for Relative and Absolute IC50 calculation. Information will
@@ -366,12 +367,12 @@ class Calculator:
     # This method will be used to reduce the functions in the calculating methods below.
     # This will loop through each drug item.
     def _relative_calculation(
-        self,
-        name_col: str = None,
-        concentration_col: str = None,
-        response_col: str = None,
-        input_units: str = None,
-        verbose: bool = None,
+            self,
+            name_col: str = None,
+            concentration_col: str = None,
+            response_col: str = None,
+            input_units: str = None,
+            verbose: bool = None,
     ):
         """
         Calculate relative IC50 values for a given drug. Output will be a dictionary that will be converted into a
@@ -462,12 +463,12 @@ class Calculator:
         return values
 
     def _absolute_calculation(
-        self,
-        name_col: str = None,
-        concentration_col: str = None,
-        response_col: str = None,
-        input_units: str = None,
-        verbose: bool = None,
+            self,
+            name_col: str = None,
+            concentration_col: str = None,
+            response_col: str = None,
+            input_units: str = None,
+            verbose: bool = None,
     ):
         """
         Calculate relative IC50 values for a given drug. Output will be a dictionary that will be converted into a
@@ -576,7 +577,7 @@ class Calculator:
         return values
 
     def _reverse_absolute_calculation(
-        self, hill_slope, ic50, input_units, maximum, minimum, params, reverse, x_fit
+            self, hill_slope, ic50, input_units, maximum, minimum, params, reverse, x_fit
     ):
         """
         Support function to condense code. Script will allow the generation of reverse curves.
@@ -592,7 +593,7 @@ class Calculator:
                 interpretation(y_intersection), 3
             )  # give results and round to 3 sig figs
             hill_slope = (
-                -1 * hill_slope
+                    -1 * hill_slope
             )  # ensure hill_slope is negative # may not be needed if fixed
         else:
             y_fit = self._fourpl(x_fit, *params)
@@ -606,12 +607,12 @@ class Calculator:
 
     # When data is reversed, program is not obtaining correct column.
     def _calc_logic(
-        self,
-        data: pd.DataFrame,
-        concentration: pd.Series = None,
-        initial_guess: list = None,
-        response: pd.Series = None,
-        response_col: str = None,
+            self,
+            data: pd.DataFrame,
+            concentration: pd.Series = None,
+            initial_guess: list = None,
+            response: pd.Series = None,
+            response_col: str = None,
     ):
         """
         Set logic to determine positive or negative sigmoid curve. This method is called by internally by the
@@ -632,7 +633,7 @@ class Calculator:
         """
         global reverse, params, covariance
         if (
-            data[response_col].iloc[0] > data[response_col].iloc[-1]
+                data[response_col].iloc[0] > data[response_col].iloc[-1]
         ):  # Sigmoid curve 100% to 0%
             params, covariance, *_ = curve_fit(
                 self._reverse_fourpl,
@@ -644,7 +645,7 @@ class Calculator:
             reverse = 1  # Tag direction of sigmoid curve
 
         elif (
-            data[response_col].iloc[0] < data[response_col].iloc[-1]
+                data[response_col].iloc[0] < data[response_col].iloc[-1]
         ):  # sigmoid curve 0% to 100%
             params, covariance, *_ = curve_fit(
                 self._fourpl, concentration, response, p0=[initial_guess], maxfev=100000
@@ -653,7 +654,7 @@ class Calculator:
         return reverse, params, covariance
 
     def _unit_convert(
-        self, ic50: int = None, x_intersection: int = None, input_units: str = None
+            self, ic50: int = None, x_intersection: int = None, input_units: str = None
     ):
         """
         Converts ic50 to desired input units for the plot_curve class

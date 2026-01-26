@@ -1,12 +1,3 @@
-"""
-============
-py50
-============
-
-Calculate and draw IC50 curves.
-
-"""
-
 from .calculator import *
 from .plot_settings import *
 from .plotcurve import *
