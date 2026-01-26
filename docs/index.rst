@@ -1,14 +1,12 @@
-Welcome to py50 Documentation!
-==============================
+.. py50 documentation master file, created by
+   sphinx-quickstart on Mon Jan 26 09:41:58 2026.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-This site will document py50 and its usage.
+Welcome to py50's documentation!
+================================
 
-.. _github-repo:
-
-You can find the source code for this project on GitHub_ and tutorials here_.
-
-.. _GitHub: https://github.com/tlint101/py50/tree/main
-.. _here: https://github.com/tlint101/py50/tree/main/tutorials
+py50 is a Python package to generate dose-response curves and calculate IC50 statistics.
 
 Installation
 ------------
@@ -19,11 +17,32 @@ py50 can be installed by using pip:
 
    pip install py50
 
+The package can be upgraded specifically in an environment using pip:
+
+.. code-block:: python
+
+   pip install py50 -U
+
 .. toctree::
    :caption: Contents
    :maxdepth: 1
 
-   calculator
-   plotcurve
-   plot_settings
-   stats
+.. toctree::
+   :maxdepth: 2
+   :caption: Tutorials
+
+   tutorials
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
+   api
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+

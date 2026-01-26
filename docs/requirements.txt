@@ -1,7 +1,13 @@
 sphinx
-sphinx_rtd_theme
+sphinx-rtd-theme
 nbsphinx
-scikit-posthocs
+myst-parser
+ipykernel
+pandas
+matplotlib
+seaborn
+scipy
+statsmodels
 pingouin
 statannotations
-py50==1.0.0
+py50
