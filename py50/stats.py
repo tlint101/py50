@@ -72,9 +72,7 @@ class Stats:
         )
         return result_df
 
-    def get_homoscedasticity(
-        self, value_col=None, group_col=None, method="levene", **kwargs
-    ):
+    def get_homoscedasticity(self, value_col=None, group_col=None, method="levene", **kwargs):
         """
         Test for data variance.
 
@@ -140,15 +138,8 @@ class Stats:
 
         return result_df
 
-    def get_rm_anova(
-        self,
-        value_col=None,
-        within_subject_col=None,
-        subject_col=None,
-        correction="auto",
-        detailed=False,
-        effsize="ng2",
-    ):
+    def get_rm_anova(self, value_col=None, within_subject_col=None, subject_col=None, correction="auto", detailed=False,
+                     effsize="ng2"):
         """
         One-way and two-way repeated measures ANOVA.
 
@@ -168,15 +159,8 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        result_df = pg.rm_anova(
-            data=self.data,
-            dv=value_col,
-            within=within_subject_col,
-            subject=subject_col,
-            correction=correction,
-            detailed=detailed,
-            effsize=effsize,
-        )
+        result_df = pg.rm_anova(data=self.data, dv=value_col, within=within_subject_col, subject=subject_col,
+                                correction=correction, detailed=detailed, effsize=effsize)
 
         # Add significance asterisk
         pvalue_result = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -184,14 +168,7 @@ class Stats:
 
         return result_df
 
-    def get_mixed_anova(
-        self,
-        value_col=None,
-        group_col=None,
-        within_subject_col=None,
-        subject_col=None,
-        **kwargs,
-    ):
+    def get_mixed_anova(self, value_col=None, group_col=None, within_subject_col=None, subject_col=None, **kwargs):
         """
         Mixed-design ANOVA.
 
@@ -209,14 +186,8 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        result_df = pg.mixed_anova(
-            data=self.data,
-            dv=value_col,
-            between=group_col,
-            within=within_subject_col,
-            subject=subject_col,
-            **kwargs,
-        )
+        result_df = pg.mixed_anova(data=self.data, dv=value_col, between=group_col, within=within_subject_col,
+                                   subject=subject_col, **kwargs)
 
         # Add significance asterisk
         pvalue_result = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -262,9 +233,7 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        result_df = pg.pairwise_gameshowell(
-            data=self.data, dv=value_col, between=group_col, effsize=effsize
-        )
+        result_df = pg.pairwise_gameshowell(data=self.data, dv=value_col, between=group_col, effsize=effsize)
 
         # Add significance asterisk
         pvalue_result = [utils.star_value(value) for value in result_df["pval"]]
@@ -276,14 +245,7 @@ class Stats:
     non-parametric tests below
     """
 
-    def get_wilcoxon(
-        self,
-        value_col=None,
-        group_col=None,
-        subgroup_col=None,
-        alternative="two-sided",
-        **kwargs,
-    ):
+    def get_wilcoxon(self, value_col=None, group_col=None, subgroup_col=None, alternative="two-sided", **kwargs):
         """
         Calculate wilcoxon tests. This is non-parametric version of paired T-test. Data number must be uniform to work.
 
@@ -303,10 +265,7 @@ class Stats:
         """
 
         # ignore Wilcoxon warnings
-        warnings.filterwarnings(
-            "ignore",
-            message="Exact p-value calculation does not work if there are zeros.*",
-        )
+        warnings.filterwarnings("ignore", message="Exact p-value calculation does not work if there are zeros.*")
 
         if subgroup_col:
             # Convert 'Name' and 'Status' columns to string
@@ -346,17 +305,9 @@ class Stats:
 
                 # Perform Wilcoxon signed-rank test
                 result = pg.wilcoxon(
-                    self.data[
-                        (self.data[group_col] == group1)
-                        & (self.data[subgroup_col] == subgroup1)
-                    ][value_col],
-                    self.data[
-                        (self.data[group_col] == group2)
-                        & (self.data[subgroup_col] == subgroup2)
-                    ][value_col],
-                    alternative=alternative,
-                    **kwargs,
-                )
+                    self.data[(self.data[group_col] == group1) & (self.data[subgroup_col] == subgroup1)][value_col],
+                    self.data[(self.data[group_col] == group2) & (self.data[subgroup_col] == subgroup2)][value_col],
+                    alternative=alternative, **kwargs)
 
                 # Convert significance by pvalue
                 pvalue_output = [utils.star_value(value) for value in result["p-val"]]
@@ -442,14 +393,7 @@ class Stats:
 
             return result_df
 
-    def get_mannu(
-        self,
-        value_col=None,
-        group_col=None,
-        subgroup_col=None,
-        alternative="two-sided",
-        **kwargs,
-    ):
+    def get_mannu(self, value_col=None, group_col=None, subgroup_col=None, alternative="two-sided", **kwargs):
         """
         Calculate Mann-Whitney U Test. This is a non-parametric version of the independent T-test.
 
@@ -502,17 +446,9 @@ class Stats:
 
                 # Perform mwu
                 result = pg.mwu(
-                    self.data[
-                        (self.data[group_col] == group1)
-                        & (self.data[subgroup_col] == subgroup1)
-                    ][value_col],
-                    self.data[
-                        (self.data[group_col] == group2)
-                        & (self.data[subgroup_col] == subgroup2)
-                    ][value_col],
-                    alternative=alternative,
-                    **kwargs,
-                )
+                    self.data[(self.data[group_col] == group1) & (self.data[subgroup_col] == subgroup1)][value_col],
+                    self.data[(self.data[group_col] == group2) & (self.data[subgroup_col] == subgroup2)][value_col],
+                    alternative=alternative, **kwargs)
 
                 # Convert significance by pvalue
                 pvalue_output = [utils.star_value(value) for value in result["p-val"]]
@@ -616,9 +552,7 @@ class Stats:
         """
 
         if subgroup_col:
-            result_df = pg.cochran(
-                data=self.data, dv=value_col, within=subgroup_col, subject=group_col
-            )
+            result_df = pg.cochran(data=self.data, dv=value_col, within=subgroup_col, subject=group_col)
         else:
             result_df = pg.cochran(data=self.data, dv=value_col, within=group_col)
 
@@ -628,9 +562,7 @@ class Stats:
 
         return result_df
 
-    def get_friedman(
-        self, group_col=None, value_col=None, subgroup_col=None, method="chisq"
-    ):
+    def get_friedman(self, group_col=None, value_col=None, subgroup_col=None, method="chisq"):
         """
         Calculate Friedman Test. Determines if distributions of two or more paired samples are equal. For details between
         groups, posthoc test (get_pairwise_tests(parametric=False)) will be needed.
@@ -649,17 +581,9 @@ class Stats:
 
         # Raise error if subgroup_col not given
         if subgroup_col is None:
-            raise ValueError(
-                "Friedman test must be in long format and requires a subgroup_col as subject"
-            )
+            raise ValueError("Friedman test must be in long format and requires a subgroup_col as subject")
 
-        result_df = pg.friedman(
-            data=self.data,
-            dv=value_col,
-            within=group_col,
-            subject=subgroup_col,
-            method=method,
-        )
+        result_df = pg.friedman(data=self.data, dv=value_col, within=group_col, subject=subgroup_col, method=method)
 
         # Add significance asterisk
         pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -671,15 +595,8 @@ class Stats:
     pairwise t-tests below
     """
 
-    def get_pairwise_tests(
-        self,
-        value_col=None,
-        group_col=None,
-        within_subject_col=None,
-        subject_col=None,
-        parametric=True,
-        **kwargs,
-    ):
+    def get_pairwise_tests(self, value_col=None, group_col=None, within_subject_col=None, subject_col=None,
+                           parametric=True, **kwargs):
         """
         Posthoc test for parametric or nonparametric statistics. By default, the parametric parameter is set as True.
 
@@ -699,15 +616,8 @@ class Stats:
         :return: pandas.DataFrame
         """
 
-        result_df = pg.pairwise_tests(
-            data=self.data,
-            dv=value_col,
-            between=group_col,
-            within=within_subject_col,
-            subject=subject_col,
-            parametric=parametric,
-            **kwargs,
-        )
+        result_df = pg.pairwise_tests(data=self.data, dv=value_col, between=group_col, within=within_subject_col,
+                                      subject=subject_col, parametric=parametric, **kwargs)
 
         # Add significance asterisk
         pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -715,15 +625,8 @@ class Stats:
 
         return result_df
 
-    def get_pairwise_rm(
-        self,
-        value_col=None,
-        group_col=None,
-        within_subject_col=None,
-        subject_col=None,
-        parametric=True,
-        **kwargs,
-    ):
+    def get_pairwise_rm(self, value_col=None, group_col=None, within_subject_col=None, subject_col=None,
+                        parametric=True, **kwargs, ):
         """
         Posthoc test for repeated measures.
 
@@ -743,15 +646,8 @@ class Stats:
         :return: pandas.DataFrame
         """
 
-        result_df = pg.pairwise_tests(
-            data=self.data,
-            dv=value_col,
-            between=group_col,
-            within=within_subject_col,
-            subject=subject_col,
-            parametric=parametric,
-            **kwargs,
-        )
+        result_df = pg.pairwise_tests(data=self.data, dv=value_col, between=group_col, within=within_subject_col,
+                                      subject=subject_col, parametric=parametric, **kwargs)
 
         # Add significance asterisk
         pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -759,15 +655,8 @@ class Stats:
 
         return result_df
 
-    def get_pairwise_mixed(
-        self,
-        value_col=None,
-        group_col=None,
-        within_subject_col=None,
-        subject_col=None,
-        parametric=True,
-        **kwargs,
-    ):
+    def get_pairwise_mixed(self, value_col=None, group_col=None, within_subject_col=None, subject_col=None,
+                           parametric=True, **kwargs):
         """
         Posthoc test for mixed ANOVA.
 
@@ -787,15 +676,8 @@ class Stats:
         :return: pandas.DataFrame
         """
 
-        result_df = pg.pairwise_tests(
-            data=self.data,
-            dv=value_col,
-            between=group_col,
-            within=within_subject_col,
-            subject=subject_col,
-            parametric=parametric,
-            **kwargs,
-        )
+        result_df = pg.pairwise_tests(data=self.data, dv=value_col, between=group_col, within=within_subject_col,
+                                      subject=subject_col, parametric=parametric, **kwargs)
 
         # Add significance asterisk
         pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
@@ -877,25 +759,9 @@ class Plots(Stats):
             "'kruskal'"
         )
 
-    def boxplot(
-        self,
-        test=None,
-        group_col=None,
-        value_col=None,
-        group_order=None,
-        subgroup_col=None,
-        subject_col=None,
-        within_subject_col=None,
-        pairs=None,
-        pvalue_label=None,
-        hide_ns=False,
-        palette=None,
-        orient="v",
-        loc="inside",
-        whis=1.5,
-        return_df=None,
-        **kwargs,
-    ):
+    def boxplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None, subject_col=None,
+                within_subject_col=None, pairs=None, pvalue_label=None, hide_ns=False, palette=None, orient="v",
+                loc="inside", whis=1.5, return_df=None, **kwargs):
         """
         Draw a boxplot from the input DataFrame.
 
@@ -939,22 +805,11 @@ class Plots(Stats):
         valid_annot = utils.get_kwargs(Annotator)
 
         sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
-        annot_kwargs = {
-            key: value for key, value in kwargs.items() if key in valid_annot
-        }
+        annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue_plot, stat_df_result = Plots._get_test(
-            self,
-            group_col,
-            kwargs,
-            pairs,
-            subgroup_col,
-            subject_col,
-            within_subject_col,
-            test,
-            value_col,
-        )
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(self, group_col, kwargs, pairs, subgroup_col, subject_col,
+                                                             within_subject_col, test, value_col)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -973,11 +828,7 @@ class Plots(Stats):
         # If set to True, only show plots with significance
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [
-                (item1, item2)
-                for item1, item2 in zip(pvalue_plot, pairs)
-                if item1 != "n.s."
-            ]
+            hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
 
             try:
                 # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
@@ -1006,28 +857,10 @@ class Plots(Stats):
             subgroup_hue = group_col
 
         # plot
-        ax = sns.boxplot(
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            palette=palette,
-            hue=subgroup_hue,
-            whis=whis,
-            **sns_kwargs,
-        )
-        annotator = Annotator(
-            ax,
-            pairs=pairs,
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            verbose=False,
-            orient=orient,
-            hue=subgroup_hue,
-            **annot_kwargs,
-        )
+        ax = sns.boxplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
+                         whis=whis, **sns_kwargs)
+        annotator = Annotator(ax, pairs=pairs, data=self.data, x=x_input, y=y_input, order=group_order, verbose=False,
+                              orient=orient, hue=subgroup_hue, **annot_kwargs)
 
         # Optional input to make custom labels
         if pvalue_label:
@@ -1056,6 +889,7 @@ class Plots(Stats):
             plt.title(title)
         if title and titlesize:
             plt.title(title, fontsize=titlesize)
+        plt.tight_layout()
 
         # Return DataFrame AND figure
         if return_df:
@@ -1063,26 +897,9 @@ class Plots(Stats):
 
         return annotator
 
-    def barplot(
-        self,
-        test=None,
-        group_col=None,
-        value_col=None,
-        group_order=None,
-        subgroup_col=None,
-        subject_col=None,
-        within_subject_col=None,
-        pairs=None,
-        pvalue_label=None,
-        hide_ns=False,
-        palette=None,
-        orient="v",
-        loc="inside",
-        errorbar="sd",
-        capsize=0.1,
-        return_df=None,
-        **kwargs,
-    ):
+    def barplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None, subject_col=None,
+                within_subject_col=None, pairs=None, pvalue_label=None, hide_ns=False, palette=None, orient="v",
+                loc="inside", errorbar="sd", capsize=0.1, return_df=None, **kwargs):
         """
         Draw a barplot from the input DataFrame.
 
@@ -1127,22 +944,11 @@ class Plots(Stats):
         valid_annot = utils.get_kwargs(Annotator)
 
         sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
-        annot_kwargs = {
-            key: value for key, value in kwargs.items() if key in valid_annot
-        }
+        annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue_plot, stat_df_result = Plots._get_test(
-            self,
-            group_col,
-            kwargs,
-            pairs,
-            subgroup_col,
-            subject_col,
-            within_subject_col,
-            test,
-            value_col,
-        )
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(self, group_col, kwargs, pairs, subgroup_col, subject_col,
+                                                             within_subject_col, test, value_col)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -1161,11 +967,7 @@ class Plots(Stats):
         # If set to True, only show plots with significance
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [
-                (item1, item2)
-                for item1, item2 in zip(pvalue_plot, pairs)
-                if item1 != "n.s."
-            ]
+            hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
 
             try:
                 # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
@@ -1194,29 +996,10 @@ class Plots(Stats):
             subgroup_hue = group_col
 
         # plot
-        ax = sns.barplot(
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            palette=palette,
-            hue=subgroup_hue,
-            errorbar=errorbar,
-            capsize=capsize,
-            **sns_kwargs,
-        )
-        annotator = Annotator(
-            ax,
-            pairs=pairs,
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            verbose=False,
-            orient=orient,
-            hue=subgroup_hue,
-            **annot_kwargs,
-        )
+        ax = sns.barplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
+                         errorbar=errorbar, capsize=capsize, **sns_kwargs)
+        annotator = Annotator(ax, pairs=pairs, data=self.data, x=x_input, y=y_input, order=group_order, verbose=False,
+                              orient=orient, hue=subgroup_hue, **annot_kwargs)
 
         # optional input for custom annotations
         if pvalue_label:
@@ -1245,6 +1028,7 @@ class Plots(Stats):
             plt.title(title)
         if title and titlesize:
             plt.title(title, fontsize=titlesize)
+        plt.tight_layout()
 
         # Return DataFrame AND figure
         if return_df:
@@ -1252,24 +1036,9 @@ class Plots(Stats):
 
         return annotator
 
-    def violinplot(
-        self,
-        test=None,
-        group_col=None,
-        value_col=None,
-        group_order=None,
-        subgroup_col=None,
-        subject_col=None,
-        within_subject_col=None,
-        pairs=None,
-        pvalue_label=None,
-        hide_ns=False,
-        palette=None,
-        orient="v",
-        loc="inside",
-        return_df=None,
-        **kwargs,
-    ):
+    def violinplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None,
+                   subject_col=None, within_subject_col=None, pairs=None, pvalue_label=None, hide_ns=False,
+                   palette=None, orient="v", loc="inside", return_df=None, **kwargs):
         """
         Draw a violinplot from the input DataFrame.
 
@@ -1311,22 +1080,11 @@ class Plots(Stats):
         valid_annot = utils.get_kwargs(Annotator)
 
         sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
-        annot_kwargs = {
-            key: value for key, value in kwargs.items() if key in valid_annot
-        }
+        annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue_plot, stat_df_result = Plots._get_test(
-            self,
-            group_col,
-            kwargs,
-            pairs,
-            subgroup_col,
-            subject_col,
-            within_subject_col,
-            test,
-            value_col,
-        )
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(self, group_col, kwargs, pairs, subgroup_col, subject_col,
+                                                             within_subject_col, test, value_col)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -1345,11 +1103,7 @@ class Plots(Stats):
         # If set to True, only show plots with significance
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [
-                (item1, item2)
-                for item1, item2 in zip(pvalue_plot, pairs)
-                if item1 != "n.s."
-            ]
+            hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
 
             try:
                 # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
@@ -1378,27 +1132,10 @@ class Plots(Stats):
             subgroup_hue = group_col
 
         # plot
-        ax = sns.violinplot(
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            palette=palette,
-            hue=subgroup_hue,
-            **sns_kwargs,
-        )
-        annotator = Annotator(
-            ax,
-            pairs=pairs,
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            verbose=False,
-            orient=orient,
-            hue=subgroup_hue,
-            **annot_kwargs,
-        )
+        ax = sns.violinplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
+                            **sns_kwargs)
+        annotator = Annotator(ax, pairs=pairs, data=self.data, x=x_input, y=y_input, order=group_order, verbose=False,
+                              orient=orient, hue=subgroup_hue, **annot_kwargs)
 
         # optional input for custom annotations
         if pvalue_label:
@@ -1427,6 +1164,7 @@ class Plots(Stats):
             plt.title(title)
         if title and titlesize:
             plt.title(title, fontsize=titlesize)
+        plt.tight_layout()
 
         # Return DataFrame AND figure
         if return_df:
@@ -1434,24 +1172,9 @@ class Plots(Stats):
         else:
             return annotator
 
-    def swarmplot(
-        self,
-        test=None,
-        group_col=None,
-        value_col=None,
-        group_order=None,
-        subgroup_col=None,
-        subject_col=None,
-        within_subject_col=None,
-        pairs=None,
-        pvalue_label=None,
-        hide_ns=False,
-        palette=None,
-        orient="v",
-        loc="inside",
-        return_df=None,
-        **kwargs,
-    ):
+    def swarmplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None,
+                  subject_col=None, within_subject_col=None, pairs=None, pvalue_label=None, hide_ns=False, palette=None,
+                  orient="v", loc="inside", return_df=None, **kwargs):
         """
         Draw a swarm plot from the input DataFrame.
 
@@ -1496,22 +1219,11 @@ class Plots(Stats):
         valid_annot = utils.get_kwargs(Annotator)
 
         sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
-        annot_kwargs = {
-            key: value for key, value in kwargs.items() if key in valid_annot
-        }
+        annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue_plot, stat_df = Plots._get_test(
-            self,
-            group_col,
-            kwargs,
-            pairs,
-            subgroup_col,
-            subject_col,
-            within_subject_col,
-            test,
-            value_col,
-        )
+        pairs, pvalue_plot, stat_df = Plots._get_test(self, group_col, kwargs, pairs, subgroup_col, subject_col,
+                                                      within_subject_col, test, value_col)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -1530,11 +1242,7 @@ class Plots(Stats):
         # If set to True, only show plots with significance
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [
-                (item1, item2)
-                for item1, item2 in zip(pvalue_plot, pairs)
-                if item1 != "n.s."
-            ]
+            hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
 
             try:
                 # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
@@ -1563,27 +1271,10 @@ class Plots(Stats):
             subgroup_hue = group_col
 
         # plot
-        ax = sns.swarmplot(
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            palette=palette,
-            hue=subgroup_hue,
-            **sns_kwargs,
-        )
-        annotator = Annotator(
-            ax,
-            pairs=pairs,
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            verbose=False,
-            orient=orient,
-            hue=subgroup_hue,
-            **annot_kwargs,
-        )
+        ax = sns.swarmplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
+                           **sns_kwargs)
+        annotator = Annotator(ax, pairs=pairs, data=self.data, x=x_input, y=y_input, order=group_order, verbose=False,
+                              orient=orient, hue=subgroup_hue, **annot_kwargs, )
 
         # optional input for custom annotations
         if pvalue_label:
@@ -1616,6 +1307,7 @@ class Plots(Stats):
             plt.title(title)
         if title and titlesize:
             plt.title(title, fontsize=titlesize)
+        plt.tight_layout()
 
         # Return DataFrame AND figure
         if return_df:
@@ -1623,24 +1315,9 @@ class Plots(Stats):
 
         return annotator
 
-    def stripplot(
-        self,
-        test=None,
-        group_col=None,
-        value_col=None,
-        group_order=None,
-        subgroup_col=None,
-        subject_col=None,
-        within_subject_col=None,
-        pairs=None,
-        pvalue_label=None,
-        hide_ns=False,
-        palette=None,
-        orient="v",
-        loc="inside",
-        return_df=None,
-        **kwargs,
-    ):
+    def stripplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None,
+                  subject_col=None, within_subject_col=None, pairs=None, pvalue_label=None, hide_ns=False, palette=None,
+                  orient="v", loc="inside", return_df=None, **kwargs):
         """
         Draw a stripplot from the input DataFrame.
 
@@ -1685,22 +1362,11 @@ class Plots(Stats):
         valid_annot = utils.get_kwargs(Annotator)
 
         sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
-        annot_kwargs = {
-            key: value for key, value in kwargs.items() if key in valid_annot
-        }
+        annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue_plot, stat_df_result = Plots._get_test(
-            self,
-            group_col,
-            kwargs,
-            pairs,
-            subgroup_col,
-            subject_col,
-            within_subject_col,
-            test,
-            value_col,
-        )
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(self, group_col, kwargs, pairs, subgroup_col, subject_col,
+                                                             within_subject_col, test, value_col)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -1752,27 +1418,10 @@ class Plots(Stats):
             subgroup_hue = group_col
 
         # plot
-        ax = sns.stripplot(
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            palette=palette,
-            hue=subgroup_hue,
-            **sns_kwargs,
-        )
-        annotator = Annotator(
-            ax,
-            pairs=pairs,
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            verbose=False,
-            orient=orient,
-            hue=subgroup_hue,
-            **annot_kwargs,
-        )
+        ax = sns.stripplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
+                           **sns_kwargs)
+        annotator = Annotator(ax, pairs=pairs, data=self.data, x=x_input, y=y_input, order=group_order, verbose=False,
+                              orient=orient, hue=subgroup_hue, **annot_kwargs)
 
         # optional input for custom annotations
         if pvalue_label:
@@ -1805,6 +1454,7 @@ class Plots(Stats):
             plt.title(title)
         if title and titlesize:
             plt.title(title, fontsize=titlesize)
+        plt.tight_layout()
 
         # Return DataFrame AND figure
         if return_df:
@@ -1812,24 +1462,9 @@ class Plots(Stats):
 
         return annotator
 
-    def boxenplot(
-        self,
-        test=None,
-        group_col=None,
-        value_col=None,
-        group_order=None,
-        subgroup_col=None,
-        subject_col=None,
-        within_subject_col=None,
-        pairs=None,
-        pvalue_label=None,
-        hide_ns=False,
-        palette=None,
-        orient="v",
-        loc="inside",
-        return_df=None,
-        **kwargs,
-    ):
+    def boxenplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None,
+                  subject_col=None, within_subject_col=None, pairs=None, pvalue_label=None, hide_ns=False, palette=None,
+                  orient="v", loc="inside", return_df=None, **kwargs):
         """
         Draw a boxenplot from the input DataFrame.
 
@@ -1871,22 +1506,11 @@ class Plots(Stats):
         valid_annot = utils.get_kwargs(Annotator)
 
         sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
-        annot_kwargs = {
-            key: value for key, value in kwargs.items() if key in valid_annot
-        }
+        annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue_plot, stat_df_result = Plots._get_test(
-            self,
-            group_col,
-            kwargs,
-            pairs,
-            subgroup_col,
-            subject_col,
-            within_subject_col,
-            test,
-            value_col,
-        )
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(self, group_col, kwargs, pairs, subgroup_col, subject_col,
+                                                             within_subject_col, test, value_col)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -1905,11 +1529,7 @@ class Plots(Stats):
         # If set to True, only show plots with significance
         if hide_ns is True:
             # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [
-                (item1, item2)
-                for item1, item2 in zip(pvalue_plot, pairs)
-                if item1 != "n.s."
-            ]
+            hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
 
             try:
                 # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
@@ -1938,27 +1558,10 @@ class Plots(Stats):
             subgroup_hue = group_col
 
         # plot
-        ax = sns.boxenplot(
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            palette=palette,
-            hue=subgroup_hue,
-            **sns_kwargs,
-        )
-        annotator = Annotator(
-            ax,
-            pairs=pairs,
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            verbose=False,
-            orient=orient,
-            hue=subgroup_hue,
-            **annot_kwargs,
-        )
+        ax = sns.boxenplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
+                           **sns_kwargs)
+        annotator = Annotator(ax, pairs=pairs, data=self.data, x=x_input, y=y_input, order=group_order, verbose=False,
+                              orient=orient, hue=subgroup_hue, **annot_kwargs)
 
         # optional input for custom annotations
         if pvalue_label:
@@ -1991,6 +1594,7 @@ class Plots(Stats):
             plt.title(title)
         if title and titlesize:
             plt.title(title, fontsize=titlesize)
+        plt.tight_layout()
 
         # Return DataFrame AND figure
         if return_df:
@@ -1998,18 +1602,9 @@ class Plots(Stats):
 
         return annotator
 
-    def ci_plot(
-        self,
-        data: Optional = None,
-        value_col: str = None,
-        group_col: str = None,
-        alpha: float = 0.05,
-        title: str = "Tukey HSD Confidence Intervals",
-        xlabel: str = None,
-        ylabel: str = None,
-        figsize: tuple = (8, 6),
-        return_stats: bool = False,
-    ):
+    def ci_plot(self, data: Optional = None, value_col: str = None, group_col: str = None, alpha: float = 0.05,
+                title: str = "Tukey HSD Confidence Intervals", xlabel: str = None, ylabel: str = None,
+                figsize: tuple = (8, 6), return_stats: bool = False, ):
         """
         Generate a confidence interval plot. The plot utilizes the Tukey Honest Significant Difference (HSD) test and
         is a wrapper for statsmodels (https://www.statsmodels.org/dev/index.html). ANOVA will also be calculated and
@@ -2038,9 +1633,7 @@ class Plots(Stats):
             data = self.data
 
         # calculate tukey using statsmodels
-        tukey = pairwise_tukeyhsd(
-            endog=data[value_col], groups=data[group_col], alpha=alpha
-        )
+        tukey = pairwise_tukeyhsd(endog=data[value_col], groups=data[group_col], alpha=alpha)
 
         # calculate anova
         stat = Stats(data=self.data)
@@ -2071,25 +1664,9 @@ class Plots(Stats):
         plt.tight_layout()
 
     # todo add support for lineplot
-    def _lineplot(
-        self,
-        test=None,
-        group_col=None,
-        value_col=None,
-        group_order=None,
-        subgroup_col=None,
-        subject_col=None,
-        within_subject_col=None,
-        pairs=None,
-        pvalue_label=None,
-        palette=None,
-        orient="v",
-        loc="inside",
-        ci="sd",
-        capsize=0.1,
-        return_df=None,
-        **kwargs,
-    ):
+    def _lineplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None,
+                  subject_col=None, within_subject_col=None, pairs=None, pvalue_label=None, palette=None, orient="v",
+                  loc="inside", ci="sd", capsize=0.1, return_df=None, **kwargs):
         """
         Draw a lineplot from the input DataFrame.
 
@@ -2133,22 +1710,11 @@ class Plots(Stats):
         valid_annot = utils.get_kwargs(Annotator)
 
         sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
-        annot_kwargs = {
-            key: value for key, value in kwargs.items() if key in valid_annot
-        }
+        annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue_plot, stat_df_result = Plots._get_test(
-            self,
-            group_col,
-            kwargs,
-            pairs,
-            subgroup_col,
-            subject_col,
-            within_subject_col,
-            test,
-            value_col,
-        )
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(self, group_col, kwargs, pairs, subgroup_col, subject_col,
+                                                             within_subject_col, test, value_col)
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
@@ -2182,29 +1748,11 @@ class Plots(Stats):
             subgroup_hue = group_col
 
         # plot
-        ax = sns.lineplot(
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            palette=palette,
-            hue=subgroup_hue,
-            ci=ci,  # errorbar
-            capsize=capsize,  # errorbar
-            **sns_kwargs,
-        )
-        annotator = Annotator(
-            ax,
-            pairs=pairs,
-            data=self.data,
-            x=x_input,
-            y=y_input,
-            order=group_order,
-            verbose=False,
-            orient=orient,
-            hue=subgroup_hue,
-            **annot_kwargs,
-        )
+        # ci and capsize for errorbar
+        ax = sns.lineplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
+                          ci=ci, capsize=capsize, **sns_kwargs)
+        annotator = Annotator(ax, pairs=pairs, data=self.data, x=x_input, y=y_input, order=group_order, verbose=False,
+                              orient=orient, hue=subgroup_hue, **annot_kwargs)
 
         # optional input for custom annotations
         if pvalue_label:
@@ -2231,6 +1779,7 @@ class Plots(Stats):
             plt.title(kwargs["title"])
         if "title" and "titlesize" in kwargs:
             plt.title(kwargs["title"], titlesize=kwargs["titlesize"])
+        plt.tight_layout()
 
         # Return DataFrame AND figure
         if return_df:
@@ -2238,16 +1787,7 @@ class Plots(Stats):
 
         return annotator
 
-    def p_matrix(
-        self,
-        data=None,
-        cmap=None,
-        title=None,
-        titlesize=14,
-        linewidths=0.01,
-        linecolor="gray",
-        **kwargs,
-    ):
+    def p_matrix(self, data=None, cmap=None, title=None, titlesize=14, linewidths=0.01, linecolor="gray", **kwargs):
         """
         Wrapper function for scikit_posthoc heatmap.
 
@@ -2278,21 +1818,9 @@ class Plots(Stats):
         if cmap is None:
             # cmap list for 1, NS, 0.001, 0.01, 0.05
             cmap = ["1", "#fbd7d4", "#005a32", "#238b45", "#a1d99b"]
-            fig = sp.sign_plot(
-                data,
-                cmap=cmap,
-                linewidths=linewidths,
-                linecolor=linecolor,
-                **kwargs,
-            )
+            fig = sp.sign_plot(data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs)
         else:
-            fig = sp.sign_plot(
-                data,
-                cmap=cmap,
-                linewidths=linewidths,
-                linecolor=linecolor,
-                **kwargs,
-            )
+            fig = sp.sign_plot(data, cmap=cmap, linewidths=linewidths, linecolor=linecolor, **kwargs)
 
         # Display plot
         return fig
@@ -2327,23 +1855,11 @@ class Plots(Stats):
         elif type == "qqplot":
             fig = pg.qqplot(self.data[val_col], dist="norm", **qq_kwargs)
         else:
-            raise ValueError(
-                "For test parameter, only 'histplot' or 'qqplot' available"
-            )
+            raise ValueError("For test parameter, only 'histplot' or 'qqplot' available")
 
         return fig
 
-    def _get_test(
-        self,
-        group_col,
-        kwargs,
-        pairs,
-        subgroup_col,
-        subject_col,
-        within_subject_col,
-        test,
-        value_col,
-    ):
+    def _get_test(self, group_col, kwargs, pairs, subgroup_col, subject_col, within_subject_col, test, value_col):
         """
         Function to obtain the pvalues and pairs for annotating the plot.
         :param self: self.df
@@ -2362,9 +1878,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.pairwise_tukey)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.data).get_tukey(
-                value_col=value_col, group_col=group_col, **pg_kwargs
-            )
+            stat_df = Stats(self.data).get_tukey(value_col=value_col, group_col=group_col, **pg_kwargs)
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -2378,9 +1892,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.pairwise_gameshowell)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.data).get_gameshowell(
-                value_col=value_col, group_col=group_col, **pg_kwargs
-            )
+            stat_df = Stats(self.data).get_gameshowell(value_col=value_col, group_col=group_col, **pg_kwargs)
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -2395,14 +1907,9 @@ class Plots(Stats):
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
             # print(pg_kwargs)
 
-            stat_df = Stats(self.data).get_pairwise_rm(
-                value_col=value_col,
-                group_col=group_col,
-                within_subject_col=within_subject_col,
-                subject_col=subject_col,
-                parametric=True,
-                **pg_kwargs,
-            )
+            stat_df = Stats(self.data).get_pairwise_rm(value_col=value_col, group_col=group_col,
+                                                       within_subject_col=within_subject_col, subject_col=subject_col,
+                                                       parametric=True, **pg_kwargs)
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -2416,14 +1923,9 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.data).get_pairwise_mixed(
-                value_col=value_col,
-                group_col=group_col,
-                within_subject_col=within_subject_col,
-                subgroup_col=subject_col,
-                parametric=True,
-                **pg_kwargs,
-            )
+            stat_df = Stats(self.data).get_pairwise_mixed(value_col=value_col, group_col=group_col,
+                                                          within_subject_col=within_subject_col,
+                                                          subgroup_col=subject_col, parametric=True, **pg_kwargs)
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -2437,14 +1939,9 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.data).get_pairwise_tests(
-                value_col=value_col,
-                group_col=group_col,
-                within_subject_col=within_subject_col,
-                subject_col=subject_col,
-                parametric=False,
-                **pg_kwargs,
-            )
+            stat_df = Stats(self.data).get_pairwise_tests(value_col=value_col, group_col=group_col,
+                                                          within_subject_col=within_subject_col,
+                                                          subject_col=subject_col, parametric=False, **pg_kwargs)
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -2458,14 +1955,9 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.data).get_pairwise_tests(
-                value_col=value_col,
-                group_col=group_col,
-                within_subject_col=within_subject_col,
-                subject_col=subgroup_col,
-                parametric=True,
-                **pg_kwargs,
-            )
+            stat_df = Stats(self.data).get_pairwise_tests(value_col=value_col, group_col=group_col,
+                                                          within_subject_col=within_subject_col,
+                                                          subject_col=subgroup_col, parametric=True, **pg_kwargs)
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -2479,12 +1971,8 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.wilcoxon)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.data).get_wilcoxon(
-                value_col=value_col,
-                group_col=group_col,
-                subgroup_col=subgroup_col,
-                **pg_kwargs,
-            )
+            stat_df = Stats(self.data).get_wilcoxon(value_col=value_col, group_col=group_col, subgroup_col=subgroup_col,
+                                                    **pg_kwargs)
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -2498,13 +1986,8 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.mwu)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.data).get_mannu(
-                value_col=value_col,
-                group_col=group_col,
-                subgroup_col=subgroup_col,
-                alternative="two-sided",
-                **pg_kwargs,
-            )
+            stat_df = Stats(self.data).get_mannu(value_col=value_col, group_col=group_col, subgroup_col=subgroup_col,
+                                                 alternative="two-sided", **pg_kwargs)
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -2518,9 +2001,7 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.kruskal)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.data).get_kruskal(
-                value_col=value_col, group_col=group_col, **pg_kwargs
-            )
+            stat_df = Stats(self.data).get_kruskal(value_col=value_col, group_col=group_col, **pg_kwargs)
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -2547,11 +2028,7 @@ def _get_pair_subgroup(df, hue=None):
     df["AB"] = list(zip(df["A"], df["B"]))
 
     # Filtering DataFrame based on filter values
-    filtered_df = (
-        df[df["AB"].isin(forward_set) | df["AB"].isin(reverse_set)]
-        .copy()
-        .reset_index(drop=True)
-    )
+    filtered_df = (df[df["AB"].isin(forward_set) | df["AB"].isin(reverse_set)].copy().reset_index(drop=True))
 
     # Make pairs between groups and subgroups by df
     filtered_df = _sort_df(filtered_df, hue)
