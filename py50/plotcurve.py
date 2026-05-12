@@ -67,11 +67,20 @@ class PlotCurve:
             Column name containing drug name.
         :return: DataFrame
         """
-        # Filter row based on drug name input. Row must match drug name somewhere
-        filtered_df = self.data[
-            self.data.apply(lambda row: drug_name in str(row), axis=1)
-        ]
+        # filter row based on drug name input. Row must match drug name somewhere
+        if drug_name is None:
+            filtered_df = self.data # Skip filtering, use all data
+        else:
+            # filter row based on drug name input
+            filtered_df = self.data[
+                self.data.apply(lambda row: drug_name in "".join(map(str, row.values)), axis=1)
+            ]
+
+        # # for debugging
+        # print(filtered_df)
+
         return filtered_df
+
 
     def curve_plot(
         self,
