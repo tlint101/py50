@@ -1604,7 +1604,7 @@ class Plots(Stats):
 
     def ci_plot(self, data: Optional = None, value_col: str = None, group_col: str = None, alpha: float = 0.05,
                 title: str = "Tukey HSD Confidence Intervals", xlabel: str = None, ylabel: str = None,
-                figsize: tuple = (8, 6), return_stats: bool = False, ):
+                linewidth: float = 1.5, figsize: tuple = (8, 6), return_stats: bool = False):
         """
         Generate a confidence interval plot. The plot utilizes the Tukey Honest Significant Difference (HSD) test and
         is a wrapper for statsmodels (https://www.statsmodels.org/dev/index.html). ANOVA will also be calculated and
@@ -1622,7 +1622,9 @@ class Plots(Stats):
         :param xlabel: str
             Set the label for the x-axis. If None is given, defaults to the value_col input.
         :param ylabel: str
-            Set the label for the y-axis. If None is given, defaults to the group_colinput.
+            Set the label for the y-axis. If None is given, defaults to the group_col input.
+        :param linewidth: float
+            Set the width of the lines.
         :param figsize: tuple
             Set the figure size. Defaults to (8,6).
         :param return_stats: bool
@@ -1657,6 +1659,21 @@ class Plots(Stats):
         # plot CI
         fig, ax = plt.subplots(figsize=figsize)
         tukey.plot_simultaneous(comparison_name=best_group, ax=ax)
+
+        ax = fig.axes[0]
+
+        # change line thickness
+        for collection in ax.collections:
+            collection.set_linewidth(linewidth)
+
+        # dynamically set center dot size
+        for line in ax.lines:
+            if line.get_linestyle() != '--':  # avoid dash vertical
+                original_marker_size = 8
+                marker_size = original_marker_size * (linewidth / 2)
+                if marker_size < original_marker_size:
+                    marker_size = original_marker_size
+                line.set_markersize(marker_size)
 
         plt.title(f"{title} | ANOVA p={anova:.3f}", fontsize=18)
         plt.xlabel(xlabel, fontsize=12, labelpad=10)
