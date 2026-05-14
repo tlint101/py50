@@ -2,7 +2,7 @@
 Script to calculate statistics.
 """
 
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Any
 import pandas as pd
 from itertools import combinations
 import matplotlib.pyplot as plt
@@ -825,19 +825,11 @@ class Plots(Stats):
         if group_order:
             group_order = group_order
 
-        # If set to True, only show plots with significance
-        if hide_ns is True:
-            # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
-
-            try:
-                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue_plot, pairs = zip(*hidden_sigfig_data)
-                # # to troubleshoot
-                # print(pvalue)
-                # print(pairs)
-            except:
-                warnings.warn("No Significant Values. hide_ns will be set to False!")
+        # hide ns label
+        if hide_ns:
+            pairs, pvalue_plot, data_is_sig = _option_to_hide_ns(hide_ns, pairs, pvalue_plot)
+        else:
+            data_is_sig = True
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -878,6 +870,9 @@ class Plots(Stats):
         # Make sure the pairs and pvalue lists match
         if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
+        # if no significance
+        elif not data_is_sig:
+            pass
         else:
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
@@ -964,19 +959,11 @@ class Plots(Stats):
         if group_order:
             group_order = group_order
 
-        # If set to True, only show plots with significance
-        if hide_ns is True:
-            # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
-
-            try:
-                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue_plot, pairs = zip(*hidden_sigfig_data)
-                # # to troubleshoot
-                # print(pvalue)
-                # print(pairs)
-            except:
-                warnings.warn("No Significant Values. hide_ns will be set to False!")
+        # hide ns label
+        if hide_ns:
+            pairs, pvalue_plot, data_is_sig = _option_to_hide_ns(hide_ns, pairs, pvalue_plot)
+        else:
+            data_is_sig = True
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1017,6 +1004,9 @@ class Plots(Stats):
         # Make sure the pairs and pvalue lists match
         if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
+        # if no significance
+        elif not data_is_sig:
+            pass
         else:
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
@@ -1100,19 +1090,11 @@ class Plots(Stats):
         if group_order:
             group_order = group_order
 
-        # If set to True, only show plots with significance
-        if hide_ns is True:
-            # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
-
-            try:
-                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue_plot, pairs = zip(*hidden_sigfig_data)
-                # # to troubleshoot
-                # print(pvalue)
-                # print(pairs)
-            except:
-                warnings.warn("No Significant Values. hide_ns will be set to False!")
+        # hide ns label
+        if hide_ns:
+            pairs, pvalue_plot, data_is_sig = _option_to_hide_ns(hide_ns, pairs, pvalue_plot)
+        else:
+            data_is_sig = True
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1153,6 +1135,9 @@ class Plots(Stats):
         # Make sure the pairs and pvalue lists match
         if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
+        # if no significance
+        elif not data_is_sig:
+            pass
         else:
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
@@ -1239,19 +1224,11 @@ class Plots(Stats):
         if group_order:
             group_order = group_order
 
-        # If set to True, only show plots with significance
-        if hide_ns is True:
-            # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
-
-            try:
-                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue_plot, pairs = zip(*hidden_sigfig_data)
-                # # to troubleshoot
-                # print(pvalue)
-                # print(pairs)
-            except:
-                warnings.warn("No Significant Values. hide_ns will be set to False!")
+        # hide ns label
+        if hide_ns:
+            pairs, pvalue_plot, data_is_sig = _option_to_hide_ns(hide_ns, pairs, pvalue_plot)
+        else:
+            data_is_sig = True
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1296,6 +1273,9 @@ class Plots(Stats):
         # Make sure the pairs and pvalue lists match
         if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
+        # if no significance
+        elif not data_is_sig:
+            pass
         else:
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
@@ -1382,23 +1362,11 @@ class Plots(Stats):
         if group_order:
             group_order = group_order
 
-        # If set to True, only show plots with significance
-        if hide_ns is True:
-            # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [
-                (item1, item2)
-                for item1, item2 in zip(pvalue_plot, pairs)
-                if item1 != "n.s."
-            ]
-
-            try:
-                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue_plot, pairs = zip(*hidden_sigfig_data)
-                # # to troubleshoot
-                # print(pvalue)
-                # print(pairs)
-            except:
-                warnings.warn("No Significant Values. hide_ns will be set to False!")
+        # hide ns label
+        if hide_ns:
+            pairs, pvalue_plot, data_is_sig = _option_to_hide_ns(hide_ns, pairs, pvalue_plot)
+        else:
+            data_is_sig = True
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1443,6 +1411,9 @@ class Plots(Stats):
         # Make sure the pairs and pvalue lists match
         if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
+        # if no significance
+        elif not data_is_sig:
+            pass
         else:
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
@@ -1526,19 +1497,11 @@ class Plots(Stats):
         if group_order:
             group_order = group_order
 
-        # If set to True, only show plots with significance
-        if hide_ns is True:
-            # Filter n.s. from pvalue and pairs
-            hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
-
-            try:
-                # Unzip the hidden_sigfig_data and separate into pvalue and pairs variables
-                pvalue_plot, pairs = zip(*hidden_sigfig_data)
-                # # to troubleshoot
-                # print(pvalue)
-                # print(pairs)
-            except:
-                warnings.warn("No Significant Values. hide_ns will be set to False!")
+        # hide ns label
+        if hide_ns:
+            pairs, pvalue_plot, data_is_sig = _option_to_hide_ns(hide_ns, pairs, pvalue_plot)
+        else:
+            data_is_sig = True
 
         # set orientation for plot and Annotator
         orient = orient.lower()
@@ -1583,6 +1546,9 @@ class Plots(Stats):
         # Make sure the pairs and pvalue lists match
         if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
+        # if no significance
+        elif not data_is_sig:
+            pass
         else:
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
@@ -2084,6 +2050,25 @@ def _sort_df(df, list_order):
     # Support function to make pairs between groups and subgroups by df
     sorted_indices = df.apply(lambda row: _pair_sort(list_order, row), axis=1)
     return df.iloc[sorted_indices.argsort()]
+
+
+# support function for cases where hide_ns is true, and nothing in plot is significant
+def _option_to_hide_ns(hide_ns: bool, pairs: Union[list[tuple[Any, Any]], Any], pvalue_plot: list[str]):
+    # If set to True, only show plots with significance
+    if hide_ns:
+        # Filter n.s. from pvalue and pairs
+        hidden_sigfig_data = [(item1, item2) for item1, item2 in zip(pvalue_plot, pairs) if item1 != "n.s."]
+
+        if hidden_sigfig_data:
+            # Unzip the filtered data into pvalue and pairs variables
+            pvalue_plot, pairs = zip(*hidden_sigfig_data)
+            data_is_sig = True
+        else:
+            data_is_sig = False
+            warnings.warn("No Significant Values found after filtering. Plot drawn without annotations.")
+    else:
+        data_is_sig = True  # to track sigfig for annotations
+    return pairs, pvalue_plot, data_is_sig
 
 
 if __name__ == "__main__":
