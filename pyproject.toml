@@ -10,14 +10,14 @@ repository = "https://github.com/tlint101/py50.git"
 packages = [{ include = "py50"}]
 
 [tool.poetry.dependencies]
-python = ">=3.9"
+python = ">=3.10"
 pandas = ">=1.5.0"
 numpy = ">=1.26.4"
 matplotlib = ">=3.8.1"
 scipy = ">=1.11.3"
 seaborn = ">=0.12.2"
 scikit-posthocs = ">=0.7.0"
-pingouin = ">=0.5.4"
+pingouin = ">=0.6.1"
 statannotations = ">=0.6.0"
 
 [build-system]
