@@ -114,7 +114,7 @@ class Stats:
         result_df = pg.anova(data=self.data, dv=value_col, between=group_col, **kwargs)
 
         # Add significance asterisk
-        pvalue_result = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue_result = [utils.star_value(value) for value in result_df.p_unc]
         result_df["significance"] = pvalue_result
 
         return result_df
@@ -133,7 +133,7 @@ class Stats:
         result_df = pg.welch_anova(data=self.data, dv=value_col, between=group_col)
 
         # Add significance asterisk
-        pvalue_result = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue_result = [utils.star_value(value) for value in result_df.p_unc]
         result_df["significance"] = pvalue_result
 
         return result_df
@@ -163,7 +163,7 @@ class Stats:
                                 correction=correction, detailed=detailed, effsize=effsize)
 
         # Add significance asterisk
-        pvalue_result = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue_result = [utils.star_value(value) for value in result_df.p_unc]
         result_df["significance"] = pvalue_result
 
         return result_df
@@ -190,7 +190,7 @@ class Stats:
                                    subject=subject_col, **kwargs)
 
         # Add significance asterisk
-        pvalue_result = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue_result = [utils.star_value(value) for value in result_df.p_unc]
         result_df["significance"] = pvalue_result
 
         return result_df
@@ -214,7 +214,7 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue_result = [utils.star_value(value) for value in result_df["p-tukey"]]
+        pvalue_result = [utils.star_value(value) for value in result_df.p_tukey]
         result_df["significance"] = pvalue_result
 
         return result_df
@@ -236,7 +236,7 @@ class Stats:
         result_df = pg.pairwise_gameshowell(data=self.data, dv=value_col, between=group_col, effsize=effsize)
 
         # Add significance asterisk
-        pvalue_result = [utils.star_value(value) for value in result_df["pval"]]
+        pvalue_result = [utils.star_value(value) for value in result_df.pval]
         result_df["significance"] = pvalue_result
 
         return result_df
@@ -310,18 +310,18 @@ class Stats:
                     alternative=alternative, **kwargs)
 
                 # Convert significance by pvalue
-                pvalue_output = [utils.star_value(value) for value in result["p-val"]]
+                pvalue_output = [utils.star_value(value) for value in result.p_val]
 
                 # Store the results in the list
                 results_list.append(
                     {
                         "A": f"{group1}-{subgroup1}",
                         "B": f"{group2}-{subgroup2}",
-                        "W-val": result["W-val"].iloc[0],
-                        "p-val": result["p-val"].iloc[0],
+                        "W-val": result.W_val.iloc[0],
+                        "p-val": result.p_val.iloc[0],
                         "significance": pvalue_output[0],
-                        "RBC": result["RBC"].iloc[0],
-                        "CLES": result["CLES"].iloc[0],
+                        "RBC": result.RBC.iloc[0],
+                        "CLES": result.CLES.iloc[0],
                     }
                 )
 
@@ -329,8 +329,8 @@ class Stats:
             result_df = pd.DataFrame(results_list)
 
             # Split values into and separate by comma
-            result_df["A"] = result_df["A"].apply(lambda x: tuple(x.split("-", 1)))
-            result_df["B"] = result_df["B"].apply(lambda x: tuple(x.split("-", 1)))
+            result_df["A"] = result_df.A.apply(lambda x: tuple(x.split("-", 1)))
+            result_df["B"] = result_df.B.apply(lambda x: tuple(x.split("-", 1)))
 
             return result_df
         else:
@@ -371,16 +371,16 @@ class Stats:
                     alternative=alternative,
                     **kwargs,
                 )
-                pvalue_output = [utils.star_value(value) for value in result["p-val"]]
+                pvalue_output = [utils.star_value(value) for value in result.p_val]
                 results_list.append(
                     {
                         "A": group1,
                         "B": group2,
-                        "W-val": result["W-val"].iloc[0],
-                        "p-val": result["p-val"].iloc[0],
+                        "W-val": result.W_val.iloc[0],
+                        "p-val": result.p_val.iloc[0],
                         "significance": pvalue_output[0],
-                        "RBC": result["RBC"].iloc[0],
-                        "CLES": result["CLES"].iloc[0],
+                        "RBC": result.RBC.iloc[0],
+                        "CLES": result.CLES.iloc[0],
                     }
                 )
 
@@ -451,18 +451,18 @@ class Stats:
                     alternative=alternative, **kwargs)
 
                 # Convert significance by pvalue
-                pvalue_output = [utils.star_value(value) for value in result["p-val"]]
+                pvalue_output = [utils.star_value(value) for value in result.p_val]
 
                 # Store the results in the list
                 results_list.append(
                     {
                         "A": f"{group1}-{subgroup1}",
                         "B": f"{group2}-{subgroup2}",
-                        "U-val": result["U-val"].iloc[0],
-                        "p-val": result["p-val"].iloc[0],
+                        "U-val": result.U_val.iloc[0],
+                        "p-val": result.p_val.iloc[0],
                         "significance": pvalue_output[0],
-                        "RBC": result["RBC"].iloc[0],
-                        "CLES": result["CLES"].iloc[0],
+                        "RBC": result.RBC.iloc[0],
+                        "CLES": result.CLES.iloc[0],
                     }
                 )
 
@@ -496,16 +496,16 @@ class Stats:
                     alternative=alternative,
                     **kwargs,
                 )
-                pvalue_output = [utils.star_value(value) for value in result["p-val"]]
+                pvalue_output = [utils.star_value(value) for value in result.p_val]
                 results_list.append(
                     {
                         "A": group1,
                         "B": group2,
-                        "U-val": result["U-val"].iloc[0],
-                        "p-val": result["p-val"].iloc[0],
+                        "U-val": result.U_val.iloc[0],
+                        "p-val": result.p_val.iloc[0],
                         "significance": pvalue_output[0],
-                        "RBC": result["RBC"].iloc[0],
-                        "CLES": result["CLES"].iloc[0],
+                        "RBC": result.RBC.iloc[0],
+                        "CLES": result.CLES.iloc[0],
                     }
                 )
 
@@ -532,7 +532,7 @@ class Stats:
         )
 
         # Add significance asterisk
-        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue_output = [utils.star_value(value) for value in result_df.p_unc]
         result_df["significance"] = pvalue_output
 
         return result_df
@@ -557,7 +557,7 @@ class Stats:
             result_df = pg.cochran(data=self.data, dv=value_col, within=group_col)
 
         # Add significance asterisk
-        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue_output = [utils.star_value(value) for value in result_df.p_unc]
         result_df["significance"] = pvalue_output
 
         return result_df
@@ -586,7 +586,7 @@ class Stats:
         result_df = pg.friedman(data=self.data, dv=value_col, within=group_col, subject=subgroup_col, method=method)
 
         # Add significance asterisk
-        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue_output = [utils.star_value(value) for value in result_df.p_unc]
         result_df["significance"] = pvalue_output
 
         return result_df
@@ -620,7 +620,7 @@ class Stats:
                                       subject=subject_col, parametric=parametric, **kwargs)
 
         # Add significance asterisk
-        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue_output = [utils.star_value(value) for value in result_df.p_unc]
         result_df["significance"] = pvalue_output
 
         return result_df
@@ -650,7 +650,7 @@ class Stats:
                                       subject=subject_col, parametric=parametric, **kwargs)
 
         # Add significance asterisk
-        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue_output = [utils.star_value(value) for value in result_df.p_unc]
         result_df["significance"] = pvalue_output
 
         return result_df
@@ -680,7 +680,7 @@ class Stats:
                                       subject=subject_col, parametric=parametric, **kwargs)
 
         # Add significance asterisk
-        pvalue_output = [utils.star_value(value) for value in result_df["p-unc"]]
+        pvalue_output = [utils.star_value(value) for value in result_df.p_unc]
         result_df["significance"] = pvalue_output
 
         return result_df
@@ -1606,7 +1606,7 @@ class Plots(Stats):
         # calculate anova
         stat = Stats(data=self.data)
         anova_table = stat.get_anova(value_col=value_col, group_col=group_col)
-        anova = anova_table["p-unc"].iloc[0]
+        anova = anova_table.p_unc.iloc[0]
 
         # identify highest mean
         group_means = data.groupby(group_col)[value_col].mean()
@@ -1867,7 +1867,7 @@ class Plots(Stats):
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
             stat_df = _get_pair_subgroup(stat_df, hue=pairs)
 
-            pvalue = [utils.star_value(value) for value in stat_df["p-tukey"].tolist()]
+            pvalue = [utils.star_value(value) for value in stat_df.p_tukey.tolist()]
             pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
 
         elif test == "gameshowell":
@@ -1881,7 +1881,7 @@ class Plots(Stats):
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
             stat_df = _get_pair_subgroup(stat_df, hue=pairs)
 
-            pvalue = [utils.star_value(value) for value in stat_df["pval"].tolist()]
+            pvalue = [utils.star_value(value) for value in stat_df.pval.tolist()]
             pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
 
         elif test == "pairwise-rm":
@@ -1898,7 +1898,7 @@ class Plots(Stats):
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
             stat_df = _get_pair_subgroup(stat_df, hue=pairs)
 
-            pvalue = [utils.star_value(value) for value in stat_df["p-unc"].tolist()]
+            pvalue = [utils.star_value(value) for value in stat_df.p_unc.tolist()]
             pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
 
         elif test == "pairwise-mixed":
@@ -1914,7 +1914,7 @@ class Plots(Stats):
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
             stat_df = _get_pair_subgroup(stat_df, hue=pairs)
 
-            pvalue = [utils.star_value(value) for value in stat_df["p-unc"].tolist()]
+            pvalue = [utils.star_value(value) for value in stat_df.p_unc.tolist()]
             pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
 
         elif test == "pairwise-nonparametric":
@@ -1930,7 +1930,7 @@ class Plots(Stats):
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
             stat_df = _get_pair_subgroup(stat_df, hue=pairs)
 
-            pvalue = [utils.star_value(value) for value in stat_df["p-unc"].tolist()]
+            pvalue = [utils.star_value(value) for value in stat_df.p_unc.tolist()]
             pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
 
         elif test == "pairwise-parametric":
@@ -1946,7 +1946,7 @@ class Plots(Stats):
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
             stat_df = _get_pair_subgroup(stat_df, hue=pairs)
 
-            pvalue = [utils.star_value(value) for value in stat_df["p-unc"].tolist()]
+            pvalue = [utils.star_value(value) for value in stat_df.p_unc.tolist()]
             pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
 
         elif test == "wilcoxon":
@@ -1990,7 +1990,7 @@ class Plots(Stats):
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
             stat_df = _get_pair_subgroup(stat_df, hue=pairs)
 
-            pvalue = [utils.star_value(value) for value in stat_df["p-unc"].tolist()]
+            pvalue = [utils.star_value(value) for value in stat_df.p_unc.tolist()]
             pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
         else:
             print(f"Plotting not supported for {test}!")
