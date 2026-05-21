@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py50"
-version = "1.0.14"
+version = "1.1.0"
 description = "Generate Dose-Response Curves"
 documentation = "https://py50.readthedocs.io/en/latest/"
 authors = ["Tony Eight Lin <tonyelin@tmu.edu.tw>"]
