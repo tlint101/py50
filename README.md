@@ -2,7 +2,7 @@
 
 # py50: Generate Dose-Response Curves
 
-[![Python Versions](https://img.shields.io/badge/python-3.9+-blue.svg?logo=python&logoColor=white)](https://pypi.org/project/py50/)
+[![Python Versions](https://img.shields.io/badge/python-3.10+-blue.svg?logo=python&logoColor=white)](https://pypi.org/project/py50/)
 [![py50](https://img.shields.io/pypi/v/py50.svg?labelColor=gray&style=flat)](https://pypi.org/project/py50/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.34.0-FF4B4B.svg?style=flat&logo=Streamlit&logoColor=white)](https://py50-app.streamlit.app)
 [![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
