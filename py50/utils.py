@@ -69,7 +69,7 @@ def gameshowell_plot_logic(test_value):
     :param test_value:
     :return:
     """
-    pvalue = [star_value(value) for value in test_value["pval"].tolist()]
+    pvalue = [star_value(value) for value in test_value.pval.tolist()]
     return pvalue
 
 
@@ -92,7 +92,7 @@ def multi_group(df, group_col1=None, group_col2=None, test=None, order=None):
     """
     global p_col, row_order_list, column_order_list
     if test == "tukey":
-        p_col = "p-tukey"
+        p_col = "p_tukey"
         group_col1 = "A"
         group_col2 = "B"
     elif test == "gameshowell":
@@ -104,7 +104,7 @@ def multi_group(df, group_col1=None, group_col2=None, test=None, order=None):
         group_col1 = "A"
         group_col2 = "B"
     elif test == "pairwise-parametric" or test == "pairwise-nonparametric":
-        p_col = "p-unc"
+        p_col = "p_unc"
         group_col1 = "A"
         group_col2 = "B"
 
