@@ -87,9 +87,8 @@ If you are interested in citing the repository, the BibTeX reference is as follo
   month        = dec,
   year         = 2024,
   publisher    = {Zenodo},
-  version      = {v1.0.10},
-  doi          = {10.5281/zenodo.14523624},
-  url          = {https://doi.org/10.5281/zenodo.14523624},
+  doi          = {10.5281/zenodo.10183912},
+  url          = {https://doi.org/10.5281/zenodo.10183912},
 }
 ```
 All versions can be linked to the Zenodo repository here: [![DOI](https://zenodo.org/badge/716929963.svg)](https://zenodo.org/doi/10.5281/zenodo.10183912)
