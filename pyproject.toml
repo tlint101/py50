@@ -1,25 +1,40 @@
-[tool.poetry]
+[project]
 name = "py50"
-version = "1.1.0"
+version = "1.1.1"
 description = "Generate Dose-Response Curves"
-documentation = "https://py50.readthedocs.io/en/latest/"
-authors = ["Tony Eight Lin <tonyelin@tmu.edu.tw>"]
-license = "GPL-3.0-only"
+authors = [{ name = "Tony Eight Lin", email = "tonyelin@tmu.edu.tw" }]
+requires-python = ">=3.10"
 readme = "README.md"
-repository = "https://github.com/tlint101/py50.git"
-packages = [{ include = "py50"}]
+license = "GPL-3.0-only"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "pandas>=1.5.0",
+    "numpy>=1.26.4",
+    "matplotlib>=3.8.1",
+    "scipy>=1.11.3",
+    "seaborn>=0.12.2",
+    "scikit-posthocs>=0.7.0",
+    "pingouin>=0.6.1",
+    "statannotations>=0.6.0",
+    "fastmcp>=4.0.0",
+    "ipykernel>=7.3.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10"
-pandas = ">=1.5.0"
-numpy = ">=1.26.4"
-matplotlib = ">=3.8.1"
-scipy = ">=1.11.3"
-seaborn = ">=0.12.2"
-scikit-posthocs = ">=0.7.0"
-pingouin = ">=0.6.1"
-statannotations = ">=0.6.0"
+[project.urls]
+Repository = "https://github.com/tlint101/py50.git"
+Documentation = "https://py50.readthedocs.io/en/latest/"
+
+[tool.uv.build-backend]
+module-name = ["py50"]
+module-root = ""
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
