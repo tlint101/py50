@@ -1,6 +1,6 @@
 [project]
 name = "py50"
-version = "1.1.1"
+version = "1.2.0"
 description = "Generate Dose-Response Curves"
 authors = [{ name = "Tony Eight Lin", email = "tonyelin@tmu.edu.tw" }]
 requires-python = ">=3.10"
@@ -23,9 +23,21 @@ dependencies = [
     "scikit-posthocs>=0.7.0",
     "pingouin>=0.6.1",
     "statannotations>=0.6.0",
-    "fastmcp>=4.0.0",
-    "ipykernel>=7.3.0",
 ]
+
+[project.optional-dependencies]
+# The MCP server. Keeps `pip install py50` a lean scientific library, while
+# `pip install 'py50[mcp]'` (or `uvx --from 'py50[mcp]' py50-mcp`) adds the server.
+mcp = [
+    "fastmcp>=4.0.0",
+    "tabulate>=0.9.0",  # DataFrame.to_markdown; otherwise only a transitive dep
+]
+
+[project.scripts]
+py50-mcp = "py50.mcp_server.server:main"
+
+[dependency-groups]
+dev = ["ipykernel>=7.3.0"]
 
 [project.urls]
 Repository = "https://github.com/tlint101/py50.git"
