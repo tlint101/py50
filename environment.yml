@@ -1,9 +1,0 @@
-name: py50
-channels:
-  - conda-forge
-  - defaults
-dependencies:
-  - pip
-  - statannotations
-  - pingouin
-  - scikit-posthocs
