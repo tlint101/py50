@@ -21,6 +21,8 @@ except ModuleNotFoundError as exc:
         "    uvx --from 'py50[mcp]' py50-mcp\n"
     ) from exc
 
+from importlib.metadata import PackageNotFoundError, version as _package_version
+__version__ = _package_version("py50")
 from py50 import Calculator, PlotCurve
 from py50.mcp_server._support import (
     compound_names,
@@ -90,7 +92,7 @@ D_FIGSIZE = "Figure size in inches as [width, height]."
 # setup mcp
 mcp = FastMCP(
     name="py50",
-    version="1.1.1",
+    version=__version__,
     instructions=(
         "py50 fits four-parameter-logistic (4PL) dose-response curves to plate-assay "
         "data in CSV files and renders publication-quality plots.\n"
