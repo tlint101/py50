@@ -64,18 +64,33 @@ here: [py50-streamlit](https://github.com/tlint101/py50-streamlit)
 
 **NOTE:** Updates to the web application take more time. Updates will be made when possible or upon request.
 
-## Future Work
+# MCP
 
-With the release of py50 v1.0.0, I have finished a project that has been on my mind for the past six months. My aim now
-will be to reformat the code for maintainability and to fix any bugs that I find or others report. I plan on maintaining
-py50 for the foreseeable future. As such, my current "To-Do" list (in no particular order) are as follows:
+py50 ships an MCP server that exposes its dose-response calculations and plots to
+an MCP-compatible client — Claude Desktop, or a local LLM through a runner such as
+Jan or LM Studio.
 
-- [ ] Complete To-Do notes in Python script
-- [X] Update Tutorials for clarity
-- [X] Update py50 Streamlit to version 1.0.0
-- [ ] Refactor code for maintainability
-- [ ] **Add error messages!**
-- [ ] (Bonus Points) Provide KNIME workflow?
+To get started, install py50 with the MCP dependencies:
+
+```bash
+pip install 'py50[mcp]'
+```
+
+This adds a `py50-mcp` executable to your environment. The MCP can then be set up as follows:
+
+
+```json
+{
+  "mcpServers": {
+    "py50": {
+      "command": "/absolute/path/to/env/bin/py50-mcp"
+    }
+  }
+}
+```
+
+Test installation by running `which py50-mcp` in the activated environment.
+
 
 ## Citation
 
