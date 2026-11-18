@@ -390,6 +390,8 @@ class Calculator:
 
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
+            if reverse == 1:
+                hill_slope = -1 * hill_slope
             # print(drug, ' IC50: ', ic50, f'{conc_unit}') # For checking
 
             # Confirm ic50 unit output
