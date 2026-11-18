@@ -237,38 +237,38 @@ class Calculator:
     """Define the 4-parameter logistic (4PL) equation"""
 
     @staticmethod
-    def _fourpl(concentration, minimum, maximum, ic50, hill_slope):
+    def _fourpl(concentration, maximum, minimum, ic50, hill_slope):
         """
         Four-Parameter Logistic (4PL) Equation for calculating curve fit:
 
 
         :param concentration: concentration
-        :param minimum: minimum concentration in drug query (bottom plateau)
-        :param maximum: maximum concentration for drug query (top plateau)
+        :param maximum: maximum response for drug query (top plateau)
+        :param minimum: minimum response in drug query (bottom plateau)
         :param ic50: Concentration at inflection point (where curve shifts from up or down)
-        :param hill_slope: Steepness of hte curve (Hill Slope)
+        :param hill_slope: Steepness of the curve (Hill Slope)
 
         :return: equation
         """
-        return minimum + (maximum - minimum) / (
+        return maximum + (minimum - maximum) / (
                 1 + (concentration / ic50) ** hill_slope
         )
 
     @staticmethod
-    def _reverse_fourpl(concentration, minimum, maximum, ic50, hill_slope):
+    def _reverse_fourpl(concentration, maximum, minimum, ic50, hill_slope):
         """
         Four-Parameter Logistic (4PL) Equation. This reverse function will graph the sigmoid curve from 100% to 0%
 
 
         :param concentration: concentration
-        :param minimum: minimum concentration in drug query (bottom plateau)
-        :param maximum: maximum concentration for drug query (top plateau)
+        :param maximum: maximum response for drug query (top plateau)
+        :param minimum: minimum response in drug query (bottom plateau)
         :param ic50: Concentration at inflection point (where curve shifts from up or down)
-        :param hill_slope: Steepness of hte curve (Hill Slope)
+        :param hill_slope: Steepness of the curve (Hill Slope)
 
         :return: equation
         """
-        return minimum + (maximum - minimum) / (
+        return maximum + (minimum - maximum) / (
                 1 + (concentration / ic50) ** -hill_slope
         )
 
