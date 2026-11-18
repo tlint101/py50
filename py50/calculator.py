@@ -247,6 +247,9 @@ class Calculator:
         if response_col is None:
             response_col = self.response_col
 
+        # normalize units for query
+        conc_unit = self._normalize_units(input_units)
+
         # if response_col is a list, table will be reformated to produce a column with average values
         if isinstance(response_col, list):
             reshape_data = pd.melt(
@@ -263,32 +266,18 @@ class Calculator:
             name_col=name_col,
             concentration_col=concentration_col,
             response_col=response_col,
-            input_units=input_units,
+            input_units=conc_unit,
             verbose=verbose,
         )
         result_df = pd.DataFrame(values)
 
-        if input_units is None or input_units == "nM":
-            result_df["relative pIC50"] = -np.log10(
-                result_df["relative ic50 (nM)"] * 1e-9
-            )
-            result_df["absolute pIC50"] = -np.log10(
-                result_df["absolute ic50 (nM)"] * 1e-9
-            )
-        elif input_units == "µM":
-            result_df["relative pIC50"] = -np.log10(
-                result_df["relative ic50 (µM)"] * 1e-6
-            )
-            result_df["absolute pIC50"] = -np.log10(
-                result_df["absolute ic50 (µM)"] * 1e-6
-            )
-        elif input_units == "pM":
-            result_df["relative pIC50"] = -np.log10(
-                result_df["relative ic50 (pM)"] * 1e-12
-            )
-            result_df["absolute pIC50"] = -np.log10(
-                result_df["absolute ic50 (pM)"] * 1e-12
-            )
+        unit_scale = {"nM": 1e-9, "µM": 1e-6, "pM": 1e-12}[conc_unit]
+        result_df["relative pIC50"] = -np.log10(
+            result_df[f"relative ic50 ({conc_unit})"] * unit_scale
+        )
+        result_df["absolute pIC50"] = -np.log10(
+            result_df[f"absolute ic50 ({conc_unit})"] * unit_scale
+        )
 
         self.calculation = result_df
         return self.calculation
@@ -333,6 +322,20 @@ class Calculator:
                 1 + (concentration / ic50) ** -hill_slope
         )
 
+    @staticmethod
+    def _normalize_units(input_units: str = None) -> str:
+        """Normalize concentration unit aliases to 'nM', 'µM', or 'pM'."""
+        if input_units is None or input_units in ("nM", "nm"):
+            return "nM"
+        if input_units in ("µM", "uM", "um", "μM", "μm", "µm"):
+            return "µM"
+        if input_units in ("pM", "pm"):
+            return "pM"
+        raise ValueError(
+            f"Unsupported concentration unit {input_units!r}. "
+            "Supported units are 'nM', 'µM' ('uM'), or 'pM'."
+        )
+
     def _verbose_calculation(
             self, drug: str = None, input_units: str = None, verbose: bool = True
     ):
@@ -353,15 +356,7 @@ class Calculator:
 
         # Verbose conditions
         if verbose is True:
-            # Logic to append concentration units to output DataFrame
-            if input_units is None:
-                conc_unit = "nM"
-            elif input_units == "uM" or input_units == "µM" or input_units == "um":
-                conc_unit = "µM"
-            elif input_units == "pM" or input_units == "pm":
-                conc_unit = "pM"
-            else:
-                conc_unit = input_units
+            conc_unit = self._normalize_units(input_units)
             print(f"{drug} concentration is in {conc_unit}!")
 
     # This method will be used to reduce the functions in the calculating methods below.
@@ -392,7 +387,9 @@ class Calculator:
         :return: A dictionary containing drug name, maximum response, minimum response, IC50 (relative) and hill slope.
         """
         # Set variables from function and convert name_col to np array
-        global params, conc_unit
+        global params
+        # normalize units for query
+        conc_unit = self._normalize_units(input_units)
         name_col = name_col
         name = self.data[name_col].values
 
@@ -428,27 +425,17 @@ class Calculator:
             )
 
             # If verbose, output info
-            self._verbose_calculation(drug, input_units, verbose)
+            self._verbose_calculation(drug, conc_unit, verbose)
 
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
-            # print(drug, ' IC50: ', ic50, f'{input_units}') # For checking
+            # print(drug, ' IC50: ', ic50, f'{conc_unit}') # For checking
 
             # Confirm ic50 unit output
             # x_intersection is not needed for relative ic50
-            ic50, x_intersection, input_units = self._unit_convert(
-                ic50, x_intersection=None, input_units=input_units
+            ic50, x_intersection, conc_unit = self._unit_convert(
+                ic50, x_intersection=None, input_units=conc_unit
             )
-
-            # Logic to append concentration units to output DataFrame
-            if input_units is None:
-                conc_unit = "nM"
-            elif input_units == "nM":
-                conc_unit = "nM"
-            elif input_units == "uM" or input_units == "µM":
-                conc_unit = "µM"
-            elif input_units == "pM" or input_units == "pm":
-                conc_unit = "pM"
 
             # Generate DataFrame from parameters
             values.append(
@@ -490,7 +477,9 @@ class Calculator:
         """
 
         # Set variables from function and convert name_col to np array
-        global params, conc_unit
+        global params
+        # normalize units for query
+        conc_unit = self._normalize_units(input_units)
         name_col = name_col
         name = self.data[name_col].values
 
@@ -525,7 +514,7 @@ class Calculator:
             )
 
             # If verbose, output info
-            # self.verbose_calculation(drug, input_units, verbose)
+            # self.verbose_calculation(drug, conc_unit, verbose)
 
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
@@ -533,18 +522,18 @@ class Calculator:
 
             # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
             # If verbose, more info will be printed
-            x_fit, input_units = CurveSettings().scale_units(
+            x_fit, scaled_unit = CurveSettings().scale_units(
                 drug_name=drug,
-                xscale_unit=input_units,
+                xscale_unit=conc_unit,
                 xscale_ticks=None,
                 verbose=verbose,
             )
 
-            hill_slope, ic50, input_units, x_intersection, y_fit = (
+            hill_slope, ic50, scaled_unit, x_intersection, y_fit = (
                 self._reverse_absolute_calculation(
                     hill_slope,
                     ic50,
-                    input_units,
+                    scaled_unit,
                     maximum,
                     minimum,
                     params,
@@ -553,24 +542,14 @@ class Calculator:
                 )
             )
 
-            # Logic to append concentration units to output DataFrame
-            if input_units is None:
-                conc_unit = "nM"
-            elif input_units == "nM":
-                conc_unit = "nM"
-            elif input_units == "uM" or input_units == "µM":
-                conc_unit = "µM"
-            elif input_units == "pM" or input_units == "pm":
-                conc_unit = "pM"
-
             # Generate DataFrame from parameters
             values.append(
                 {
                     "compound_name": drug,
                     "maximum": maximum,
                     "minimum": minimum,
-                    f"relative ic50 ({conc_unit})": ic50,
-                    f"absolute ic50 ({conc_unit})": x_intersection,
+                    f"relative ic50 ({scaled_unit})": ic50,
+                    f"absolute ic50 ({scaled_unit})": x_intersection,
                     "hill_slope": hill_slope,
                 }
             )
@@ -667,28 +646,17 @@ class Calculator:
             Unites for the converted IC50 value. Only "nM", "µM", or "pM" are supported.
         :return:
         """
-        # convert ic50 by input units
-        if input_units == "nM" or input_units == "nm":
-            return ic50, x_intersection, input_units
-
-        elif input_units == "µM" or input_units == "uM" or input_units == "um":
+        # normalize units for query
+        conc_unit = self._normalize_units(input_units)
+        if conc_unit == "µM":
             ic50 = ic50 / 1000
             if x_intersection is not None:
                 x_intersection = x_intersection / 1000
-            return ic50, x_intersection, input_units
-
-        elif input_units == "pM" or input_units == "pM" or input_units == "pm":
+        elif conc_unit == "pM":
             ic50 = ic50 * 1000
             if x_intersection is not None:
                 x_intersection = x_intersection * 1000
-            return ic50, x_intersection, input_units
-
-        elif input_units is None:
-            input_units = "nM"
-            return ic50, x_intersection, input_units
-
-        else:
-            print("Need to be in 'nM' (Nanomolar) or 'µM' (Micromolar) concentrations!")
+        return ic50, x_intersection, conc_unit
 
 
 if __name__ == "__main__":
