@@ -98,7 +98,6 @@ class Calculator:
         """
 
         # set instance variables
-        global response_col_is_list, averaged_df
         if name_col is None:
             name_col = self.name_col
         if concentration_col is None:
@@ -106,36 +105,16 @@ class Calculator:
         if response_col is None:
             response_col = self.response_col
 
-        # if response_col is a list, table will be reformated to produce a column with average values
-        if isinstance(response_col, list):
-            response_col_is_list = True  # bool reset self.data with calculated average col
-            # calculate average column
-            response_col_list = response_col  # set response_col input for reshaping data
-            averaged_df = self.data.copy()
-            averaged_df['inhibition_average'] = averaged_df[response_col_list].mean(axis=1)
-
-            # reshape data
-            reshape_data = pd.melt(
-                self.data,
-                id_vars=[name_col, concentration_col],
-                value_vars=response_col,
-                value_name="inhibition_average",
-            )
-            # drop the variable column
-            self.data = reshape_data.drop(columns=["variable"])
-            response_col = "inhibition_average"  # reset response_col input
-        else:
-            response_col_is_list = False
+        calc_data, calc_response_col = self._prepare_response_data(
+            name_col, concentration_col, response_col
+        )
 
         # Set variables from function and convert name_col to np array
         values = self._relative_calculation(
-            name_col, concentration_col, response_col, input_units, verbose
+            name_col, concentration_col, calc_response_col, input_units, verbose, data=calc_data
         )
 
         result_df = pd.DataFrame(values)
-
-        if response_col_is_list is True:
-            self.data = averaged_df
 
         self.calculation = result_df
         return self.calculation
@@ -167,7 +146,6 @@ class Calculator:
         :return: DataFrame generated from the list from the absolute_calculation method
         """
         # set instance variables
-        global response_col_is_list, averaged_df
         if name_col is None:
             name_col = self.name_col
         if concentration_col is None:
@@ -175,38 +153,19 @@ class Calculator:
         if response_col is None:
             response_col = self.response_col
 
-        # if response_col is a list, table will be reformated to produce a column with average values
-        if isinstance(response_col, list):
-            response_col_is_list = True  # bool reset self.data with calculated average col
-            # calculate average column
-            response_col_list = response_col  # set response_col input for reshaping data
-            averaged_df = self.data.copy()
-            averaged_df['inhibition_average'] = averaged_df[response_col_list].mean(axis=1)
-
-            # reshape data
-            reshape_data = pd.melt(
-                self.data,
-                id_vars=[name_col, concentration_col],
-                value_vars=response_col,
-                value_name="inhibition_average",
-            )
-            # drop the variable column
-            self.data = reshape_data.drop(columns=["variable"])
-            response_col = "inhibition_average"  # reset response_col input
-        else:
-            response_col_is_list = False
+        calc_data, calc_response_col = self._prepare_response_data(
+            name_col, concentration_col, response_col
+        )
 
         values = self._absolute_calculation(
             name_col=name_col,
             concentration_col=concentration_col,
-            response_col=response_col,
+            response_col=calc_response_col,
             input_units=input_units,
             verbose=verbose,
+            data=calc_data,
         )
         result_df = pd.DataFrame(values)
-
-        if response_col_is_list is True:
-            self.data = averaged_df
 
         self.calculation = result_df
         return self.calculation
@@ -250,24 +209,17 @@ class Calculator:
         # normalize units for query
         conc_unit = self._normalize_units(input_units)
 
-        # if response_col is a list, table will be reformated to produce a column with average values
-        if isinstance(response_col, list):
-            reshape_data = pd.melt(
-                self.data,
-                id_vars=[name_col, concentration_col],
-                value_vars=response_col,
-                value_name="inhibition_average",
-            )
-            # drop the variable column
-            self.data = reshape_data.drop(columns=["variable"])
-            response_col = "inhibition_average"  # reset response_col input
+        calc_data, calc_response_col = self._prepare_response_data(
+            name_col, concentration_col, response_col
+        )
 
         values = self._absolute_calculation(
             name_col=name_col,
             concentration_col=concentration_col,
-            response_col=response_col,
+            response_col=calc_response_col,
             input_units=conc_unit,
             verbose=verbose,
+            data=calc_data,
         )
         result_df = pd.DataFrame(values)
 
@@ -322,6 +274,27 @@ class Calculator:
                 1 + (concentration / ic50) ** -hill_slope
         )
 
+    def _prepare_response_data(
+            self,
+            name_col: str,
+            concentration_col: str,
+            response_col: Union[str, list],
+    ) -> tuple[pd.DataFrame, str]:
+        """Reshape replicate response columns on a local frame without mutating self.data."""
+        if isinstance(response_col, list):
+            subset = self.data[[name_col, concentration_col, *response_col]]
+            melted_col = "_melted_response"
+            while melted_col in subset.columns:
+                melted_col = f"_{melted_col}"
+            reshape_data = pd.melt(
+                subset,
+                id_vars=[name_col, concentration_col],
+                value_vars=response_col,
+                value_name=melted_col,
+            )
+            return reshape_data.drop(columns=["variable"]), melted_col
+        return self.data, response_col
+
     @staticmethod
     def _normalize_units(input_units: str = None) -> str:
         """Normalize concentration unit aliases to 'nM', 'µM', or 'pM'."""
@@ -368,6 +341,7 @@ class Calculator:
             response_col: str = None,
             input_units: str = None,
             verbose: bool = None,
+            data: pd.DataFrame = None,
     ):
         """
         Calculate relative IC50 values for a given drug. Output will be a dictionary that will be converted into a
@@ -390,8 +364,9 @@ class Calculator:
         global params
         # normalize units for query
         conc_unit = self._normalize_units(input_units)
+        calc_data = self.data if data is None else data
         name_col = name_col
-        name = self.data[name_col].values
+        name = calc_data[name_col].values
 
         drug_name = np.unique(name)
 
@@ -399,7 +374,7 @@ class Calculator:
 
         # Loop through each drug name and perform calculation
         for drug in drug_name:
-            drug_query = self.data[self.data[name_col] == drug]
+            drug_query = calc_data[calc_data[name_col] == drug]
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
 
@@ -456,6 +431,7 @@ class Calculator:
             response_col: str = None,
             input_units: str = None,
             verbose: bool = None,
+            data: pd.DataFrame = None,
     ):
         """
         Calculate relative IC50 values for a given drug. Output will be a dictionary that will be converted into a
@@ -480,8 +456,9 @@ class Calculator:
         global params
         # normalize units for query
         conc_unit = self._normalize_units(input_units)
+        calc_data = self.data if data is None else data
         name_col = name_col
-        name = self.data[name_col].values
+        name = calc_data[name_col].values
 
         drug_name = np.unique(name)
 
@@ -489,7 +466,7 @@ class Calculator:
 
         # Loop through each drug name and perform calculation
         for drug in drug_name:
-            drug_query = self.data[self.data[name_col] == drug]
+            drug_query = calc_data[calc_data[name_col] == drug]
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
 
