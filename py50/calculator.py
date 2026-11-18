@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
@@ -13,9 +13,9 @@ class Calculator:
     def __init__(
             self,
             data: pd.DataFrame,
-            name_col: str = None,
-            concentration_col: str = None,
-            response_col: Union[str, list] = None,
+            name_col: Optional[str] = None,
+            concentration_col: Optional[str] = None,
+            response_col: Optional[Union[str, list]] = None,
     ):
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Input must be a DataFrame")
@@ -26,7 +26,7 @@ class Calculator:
         self.response_col = response_col
         self.calculation = None
 
-    def show(self, rows: int = None):
+    def show(self, rows: Optional[int] = None):
         """
         show DataFrame
 
@@ -40,7 +40,7 @@ class Calculator:
         elif isinstance(rows, int):
             return self.data.head(rows)
 
-    def to_csv(self, path: str = None, index: bool = False, **kwargs):
+    def to_csv(self, path: Optional[str] = None, index: bool = False, **kwargs):
         """
         Save the tabel to csv file.
 
@@ -55,7 +55,7 @@ class Calculator:
 
         self.data.to_csv(path, index=index, **kwargs)
 
-    def show_column(self, key: str = None):
+    def show_column(self, key: Optional[str] = None):
         """
         View specific column from DataFrame
 
@@ -72,11 +72,11 @@ class Calculator:
 
     def calculate_ic50(
             self,
-            name_col: str = None,
-            concentration_col: str = None,
-            response_col: Union[str, list] = None,
-            input_units: str = None,
-            verbose: bool = None,
+            name_col: Optional[str] = None,
+            concentration_col: Optional[str] = None,
+            response_col: Optional[Union[str, list]] = None,
+            input_units: Optional[str] = None,
+            verbose: Optional[bool] = None,
     ):
         """
         Calculations previously performed in relative_calculation(). The dictionary results are converted into into a
@@ -121,11 +121,11 @@ class Calculator:
 
     def calculate_absolute_ic50(
             self,
-            name_col: str = None,
-            concentration_col: str = None,
-            response_col: Union[str, list] = None,
-            input_units: str = None,
-            verbose: bool = None,
+            name_col: Optional[str] = None,
+            concentration_col: Optional[str] = None,
+            response_col: Optional[Union[str, list]] = None,
+            input_units: Optional[str] = None,
+            verbose: Optional[bool] = None,
     ):
         """
         Calculations previously performed in absolute_calculation(). The dictionary results are converted into a
@@ -172,11 +172,11 @@ class Calculator:
 
     def calculate_pic50(
             self,
-            name_col: str = None,
-            concentration_col: str = None,
-            response_col: Union[str, list] = None,
-            input_units: str = None,
-            verbose: bool = None,
+            name_col: Optional[str] = None,
+            concentration_col: Optional[str] = None,
+            response_col: Optional[Union[str, list]] = None,
+            input_units: Optional[str] = None,
+            verbose: Optional[bool] = None,
     ):
         """
         Convert IC50 into pIC50 values. Calculation is performed using the absolute_calculation. As such, two columns
@@ -276,10 +276,10 @@ class Calculator:
 
     def _prepare_response_data(
             self,
-            name_col: str,
-            concentration_col: str,
-            response_col: Union[str, list],
-    ) -> tuple[pd.DataFrame, str]:
+            name_col: Optional[str],
+            concentration_col: Optional[str],
+            response_col: Optional[Union[str, list]],
+    ) -> tuple[pd.DataFrame, Optional[str]]:
         """Reshape replicate response columns on a local frame without mutating self.data."""
         if isinstance(response_col, list):
             subset = self.data[[name_col, concentration_col, *response_col]]
@@ -296,7 +296,7 @@ class Calculator:
         return self.data, response_col
 
     @staticmethod
-    def _normalize_units(input_units: str = None) -> str:
+    def _normalize_units(input_units: Optional[str] = None) -> str:
         """Normalize concentration unit aliases to 'nM', 'µM', or 'pM'."""
         if input_units is None or input_units in ("nM", "nm"):
             return "nM"
@@ -310,7 +310,7 @@ class Calculator:
         )
 
     def _verbose_calculation(
-            self, drug: str = None, input_units: str = None, verbose: bool = True
+            self, drug: Optional[str] = None, input_units: Optional[str] = None, verbose: Optional[bool] = True
     ):
         """
         Logic function to calculate unit concentration for Relative and Absolute IC50 calculation. Information will
@@ -332,16 +332,15 @@ class Calculator:
             conc_unit = self._normalize_units(input_units)
             print(f"{drug} concentration is in {conc_unit}!")
 
-    # This method will be used to reduce the functions in the calculating methods below.
     # This will loop through each drug item.
     def _relative_calculation(
             self,
-            name_col: str = None,
-            concentration_col: str = None,
-            response_col: str = None,
-            input_units: str = None,
-            verbose: bool = None,
-            data: pd.DataFrame = None,
+            name_col: Optional[str] = None,
+            concentration_col: Optional[str] = None,
+            response_col: Optional[str] = None,
+            input_units: Optional[str] = None,
+            verbose: Optional[bool] = None,
+            data: Optional[pd.DataFrame] = None,
     ):
         """
         Calculate relative IC50 values for a given drug. Output will be a dictionary that will be converted into a
@@ -360,8 +359,6 @@ class Calculator:
 
         :return: A dictionary containing drug name, maximum response, minimum response, IC50 (relative) and hill slope.
         """
-        # Set variables from function and convert name_col to np array
-        global params
         # normalize units for query
         conc_unit = self._normalize_units(input_units)
         calc_data = self.data if data is None else data
@@ -426,12 +423,12 @@ class Calculator:
 
     def _absolute_calculation(
             self,
-            name_col: str = None,
-            concentration_col: str = None,
-            response_col: str = None,
-            input_units: str = None,
-            verbose: bool = None,
-            data: pd.DataFrame = None,
+            name_col: Optional[str] = None,
+            concentration_col: Optional[str] = None,
+            response_col: Optional[str] = None,
+            input_units: Optional[str] = None,
+            verbose: Optional[bool] = None,
+            data: Optional[pd.DataFrame] = None,
     ):
         """
         Calculate relative IC50 values for a given drug. Output will be a dictionary that will be converted into a
@@ -452,8 +449,6 @@ class Calculator:
          absolute IC50, and hill slope.
         """
 
-        # Set variables from function and convert name_col to np array
-        global params
         # normalize units for query
         conc_unit = self._normalize_units(input_units)
         calc_data = self.data if data is None else data
@@ -565,10 +560,10 @@ class Calculator:
     def _calc_logic(
             self,
             data: pd.DataFrame,
-            concentration: pd.Series = None,
-            initial_guess: list = None,
-            response: pd.Series = None,
-            response_col: str = None,
+            concentration: Optional[pd.Series] = None,
+            initial_guess: Optional[list] = None,
+            response: Optional[pd.Series] = None,
+            response_col: Optional[str] = None,
     ):
         """
         Set logic to determine positive or negative sigmoid curve. This method is called by internally by the
@@ -587,10 +582,14 @@ class Calculator:
 
         :return: variables for further calculation. This includes: reverse, params, covariance
         """
-        global reverse, params, covariance
-        if (
-                data[response_col].iloc[0] > data[response_col].iloc[-1]
-        ):  # Sigmoid curve 100% to 0%
+        ordered = data[response_col]
+        low, high = ordered.iloc[0], ordered.iloc[-1]
+        if low == high and len(ordered) > 1:
+            mid = len(ordered) // 2
+            low = ordered.iloc[:mid].mean()
+            high = ordered.iloc[mid:].mean()
+
+        if low > high:  # Sigmoid curve 100% to 0%
             params, covariance, *_ = curve_fit(
                 self._reverse_fourpl,
                 concentration,
@@ -599,18 +598,19 @@ class Calculator:
                 maxfev=100000,
             )
             reverse = 1  # Tag direction of sigmoid curve
-
-        elif (
-                data[response_col].iloc[0] < data[response_col].iloc[-1]
-        ):  # sigmoid curve 0% to 100%
+        else:  # Sigmoid curve 0% to 100% (including flat ties)
             params, covariance, *_ = curve_fit(
-                self._fourpl, concentration, response, p0=[initial_guess], maxfev=100000
+                self._fourpl,
+                concentration,
+                response,
+                p0=[initial_guess],
+                maxfev=100000,
             )
             reverse = 0  # Tag direction of sigmoid curve
         return reverse, params, covariance
 
     def _unit_convert(
-            self, ic50: int = None, x_intersection: int = None, input_units: str = None
+            self, ic50: Optional[float] = None, x_intersection: Optional[float] = None, input_units: Optional[str] = None
     ):
         """
         Converts ic50 to desired input units for the plot_curve class
