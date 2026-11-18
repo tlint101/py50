@@ -2,8 +2,6 @@ from typing import Optional, Union
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
-from scipy.interpolate import interp1d
-from py50.plot_settings import CurveSettings
 
 __all__ = ["Calculator"]
 
@@ -486,31 +484,22 @@ class Calculator:
             )
 
             # If verbose, output info
-            # self.verbose_calculation(drug, conc_unit, verbose)
+            self._verbose_calculation(drug, conc_unit, verbose)
 
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
             # print(drug, ' IC50: ', ic50, 'nM') # For checking
 
-            # Obtain x_fit. Because calculator does not require xscale_ticks, it is set to None
-            # If verbose, more info will be printed
-            x_fit, scaled_unit = CurveSettings().scale_units(
-                drug_name=drug,
-                xscale_unit=conc_unit,
-                xscale_ticks=None,
-                verbose=verbose,
-            )
-
-            hill_slope, ic50, scaled_unit, x_intersection, y_fit = (
+            hill_slope, ic50, scaled_unit, x_intersection, _ = (
                 self._reverse_absolute_calculation(
                     hill_slope,
                     ic50,
-                    scaled_unit,
+                    conc_unit,
                     maximum,
                     minimum,
                     params,
                     reverse,
-                    x_fit,
+                    x_fit=None,
                 )
             )
 
@@ -528,28 +517,40 @@ class Calculator:
         return values
 
     def _reverse_absolute_calculation(
-            self, hill_slope, ic50, input_units, maximum, minimum, params, reverse, x_fit
+            self,
+            hill_slope,
+            ic50,
+            input_units,
+            maximum,
+            minimum,
+            params,
+            reverse,
+            x_fit: Optional[np.ndarray] = None,
     ):
         """
-        Support function to condense code. Script will allow the generation of reverse curves.
+        Support function to compute optional y_fit and solve the exact 4PL concentration at 50% response.
         """
-        # Calculate from parameters 4PL equation
         if reverse == 1:
-            y_fit = self._reverse_fourpl(x_fit, maximum, minimum, ic50, hill_slope)
-            y_intersection = 50
-            interpretation = interp1d(
-                y_fit, x_fit, kind="linear", fill_value="extrapolate"
+            y_fit = (
+                self._reverse_fourpl(x_fit, maximum, minimum, ic50, hill_slope)
+                if x_fit is not None
+                else None
             )
-            x_intersection = np.round(
-                interpretation(y_intersection), 3
-            )  # give results and round to 3 sig figs
             hill_slope = (
                     -1 * hill_slope
             )  # ensure hill_slope is negative # may not be needed if fixed
         else:
-            y_fit = self._fourpl(x_fit, *params)
-            y_intersection = 50
-            x_intersection = np.interp(y_intersection, y_fit, x_fit)
+            y_fit = self._fourpl(x_fit, *params) if x_fit is not None else None
+
+        low_plateau = min(minimum, maximum)
+        high_plateau = max(minimum, maximum)
+        if low_plateau < 50 < high_plateau and hill_slope != 0 and ic50 > 0:
+            x_intersection = float(
+                ic50 * ((50.0 - minimum) / (maximum - 50.0)) ** (1.0 / hill_slope)
+            )
+        else:
+            x_intersection = np.nan
+
         # Confirm ic50 unit output
         ic50, x_intersection, input_units = self._unit_convert(
             ic50, x_intersection, input_units
