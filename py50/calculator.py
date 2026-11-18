@@ -373,14 +373,6 @@ class Calculator:
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
 
-            # Set initial guess for 4PL equation
-            initial_guess = [
-                max(response),
-                min(response),
-                0.5 * (max(response) + min(response)),
-                1.0,
-            ]  # Max, Min, ic50, and hill_slope
-
             # set a new coy of the DataFrame to avoid warnings
             query = drug_query.copy()
             query.sort_values(by=concentration_col, inplace=True)
@@ -390,7 +382,6 @@ class Calculator:
                 data=query,
                 concentration=concentration,
                 response_col=response_col,
-                initial_guess=initial_guess,
                 response=response,
             )
 
@@ -463,14 +454,6 @@ class Calculator:
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
 
-            # Set initial guess for 4PL equation
-            initial_guess = [
-                max(response),
-                min(response),
-                0.5 * (max(response) + min(response)),
-                1.0,
-            ]  # Max, Min, ic50, and hill_slope
-
             # set a new coy of the DataFrame to avoid warnings
             query = drug_query.copy()
             query.sort_values(by=concentration_col, ascending=True, inplace=True)
@@ -479,7 +462,6 @@ class Calculator:
                 data=query,
                 concentration=concentration,
                 response_col=response_col,
-                initial_guess=initial_guess,
                 response=response,
             )
 
@@ -583,6 +565,22 @@ class Calculator:
 
         :return: variables for further calculation. This includes: reverse, params, covariance
         """
+        if initial_guess is None:
+            p0 = [
+                max(response),
+                min(response),
+                max(float(np.median(concentration)), 1e-12),
+                1.0,
+            ]
+        else:
+            p0 = list(initial_guess)
+            if p0[2] <= 1e-30:
+                p0[2] = max(float(np.median(concentration)), 1e-12)
+        bounds = (
+            [-np.inf, -np.inf, 1e-30, -np.inf],
+            [np.inf, np.inf, np.inf, np.inf],
+        )
+
         ordered = data[response_col]
         low, high = ordered.iloc[0], ordered.iloc[-1]
         if low == high and len(ordered) > 1:
@@ -595,7 +593,8 @@ class Calculator:
                 self._reverse_fourpl,
                 concentration,
                 response,
-                p0=[initial_guess],
+                p0=p0,
+                bounds=bounds,
                 maxfev=100000,
             )
             reverse = 1  # Tag direction of sigmoid curve
@@ -604,7 +603,8 @@ class Calculator:
                 self._fourpl,
                 concentration,
                 response,
-                p0=[initial_guess],
+                p0=p0,
+                bounds=bounds,
                 maxfev=100000,
             )
             reverse = 0  # Tag direction of sigmoid curve

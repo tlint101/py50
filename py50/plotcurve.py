@@ -231,14 +231,6 @@ class PlotCurve:
         concentration = query[concentration_col]
         response = query[response_col]
 
-        # Set initial guess for 4PL equation
-        initial_guess = [
-            max(response),
-            min(response),
-            0.5 * (max(response) + min(response)),
-            1.0,
-        ]  # Max, Min, ic50, and hill_slope
-
         # Initialize in Calculator class for calculating results for plotting
         calculator = Calculator(query)
 
@@ -264,7 +256,6 @@ class PlotCurve:
             data=calc_query,
             concentration=concentration,
             response_col=response_col,
-            initial_guess=initial_guess,
             response=response,
         )
         # Extract parameter values
@@ -554,14 +545,6 @@ class PlotCurve:
             response_for_list = response.values
             response_list.append(response_for_list)
 
-            # Set initial guess for 4PL equation
-            initial_guess = [
-                max(response),
-                min(response),
-                1.0,
-                1.0,
-            ]  # Max, Min, ic50, and hill_slope
-
             # Initialize in Calculator class for calculating results for plotting
             calculator = Calculator(drug_query)
 
@@ -588,7 +571,6 @@ class PlotCurve:
                 data=query,
                 concentration=concentration,
                 response_col=response_col,
-                initial_guess=initial_guess,
                 response=response,
             )
             # Extract parameter values
@@ -962,14 +944,6 @@ class PlotCurve:
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
 
-            # Set initial guess for 4PL equation
-            initial_guess = [
-                max(response),
-                min(response),
-                1.0,
-                1.0,
-            ]  # Max, Min, ic50, and hill_slope
-
             # Initialize in Calculator class for calculating results for plotting
             calculator = Calculator(drug_query)
 
@@ -997,7 +971,6 @@ class PlotCurve:
                 data=query,
                 concentration=concentration,
                 response_col=response_col,
-                initial_guess=initial_guess,
                 response=response,
             )
             # Extract parameter values
