@@ -287,8 +287,12 @@ class PlotCurve:
             id_list = [col for col in query.columns if col not in response_col_list]
 
             # melt table format, with drugs and replicate in a single column
-            melted_query = query.melt(id_vars=id_list, value_vars=response_col_list, var_name='Replicate',
-                                      value_name='Inhibition')
+            melted_query = query.assign(**{concentration_col: concentration}).melt(
+                id_vars=id_list,
+                value_vars=response_col_list,
+                var_name="Replicate",
+                value_name="Inhibition",
+            )
             # todo the id_vars must match input, find a way to automatically do this
             sns.lineplot(data=melted_query, x=concentration_col, y="Inhibition", errorbar=errorbar, marker=marker,
                          markersize=markersize, err_style="bars", linestyle="", label=None, color=line_color)
@@ -539,12 +543,6 @@ class PlotCurve:
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
 
-            # Append values for each drug into list for multi curve plotting
-            concentration_for_list = concentration.values  # Convert into np.array
-            concentration_list.append(concentration_for_list)
-            response_for_list = response.values
-            response_list.append(response_for_list)
-
             # Initialize in Calculator class for calculating results for plotting
             calculator = Calculator(drug_query)
 
@@ -566,6 +564,12 @@ class PlotCurve:
             concentration = CurveSettings().conc_scale(
                 xscale_unit, concentration, verbose=verbose
             )
+
+            # Append values for each drug into list for multi curve plotting
+            concentration_for_list = concentration.values  # Convert into np.array
+            concentration_list.append(concentration_for_list)
+            response_for_list = response.values
+            response_list.append(response_for_list)
 
             reverse, params, covariance = calculator._calc_logic(
                 data=query,
@@ -648,11 +652,13 @@ class PlotCurve:
             if response_col_is_list is True:
                 # use info from melted data for errorbars
                 data_to_split = melted_df[melted_df[name_col] == name]
-                concentration_data = data_to_split[concentration_col]
+                concentration_data = CurveSettings().conc_scale(
+                    xscale_unit, data_to_split[concentration_col]
+                )
                 response_data = data_to_split[response_col]
 
                 sns.lineplot(
-                    data=melted_df,
+                    data=data_to_split,
                     x=concentration_data,
                     y=response_data,
                     errorbar=errorbar,
