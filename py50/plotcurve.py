@@ -376,18 +376,16 @@ class PlotCurve:
         )
 
         # Set y-axis limit
-        # Y-axis limit will be limited to the largest response number and add 10 for spacing
+        # Y-axis limit uses replicate extremes when response_col is a list so error bars do not clip
+        y_values = melted_query["Inhibition"] if response_col_is_list else response
         if ymax is None:
-            max_value = max(response) + 10
+            max_value = float(y_values.max()) + 10
         else:
             max_value = ymax
 
         if ymin is None:
-            min_value = min(response)
-            if min_value < 0:
-                min_value = min_value - 5
-            else:
-                min_value = 0
+            min_y = float(y_values.min())
+            min_value = min_y - 10 if min_y < 0 else 0
         else:
             min_value = ymin
         ax.set_ylim(min_value, max_value)
@@ -762,19 +760,18 @@ class PlotCurve:
             legend_handles.append(legend_piece)
 
         # Set y-axis limit
-        # Y-axis limit will be limited to the largest response number and add 10 for spacing
+        # Y-axis limit uses all compounds (and replicate extremes when response_col is a list)
+        y_values = (
+            melted_df[response_col] if response_col_is_list else plot_df[response_col]
+        )
         if ymax is None:
-            max_y = plot_df[response_col].max()
-            max_value = max_y + 10
+            max_value = float(y_values.max()) + 10
         else:
             max_value = ymax
 
         if ymin is None:
-            min_value = min(response)
-            if min_value < 0:
-                min_value = min_value
-            else:
-                ax.set_ylim(0, max_value)
+            min_y = float(y_values.min())
+            min_value = min_y - 10 if min_y < 0 else 0
         else:
             min_value = ymin
 
