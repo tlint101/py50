@@ -63,6 +63,7 @@ class PlotCurve:
         self,
         drug_name: Optional[Union[str, int, float]] = None,
         name_col: Optional[str] = None,
+        data: Optional[pd.DataFrame] = None,
     ) -> pd.DataFrame:
         """
         Filter input DataFrame by exact compound name match in ``name_col``.
@@ -73,8 +74,12 @@ class PlotCurve:
             if ``name_col`` contains multiple compounds.
         :param name_col: Optional[str]
             Column name containing compound names. Defaults to ``self.name_col``.
+        :param data: Optional[pd.DataFrame]
+            DataFrame to filter. Defaults to ``self.data``.
         :return: DataFrame
         """
+        source_df = self.data if data is None else data
+
         if name_col is None:
             name_col = self.name_col
 
@@ -83,17 +88,17 @@ class PlotCurve:
                 raise ValueError(
                     "name_col must be provided when filtering by a compound query."
                 )
-            if self.data.empty:
+            if source_df.empty:
                 raise ValueError("Input DataFrame is empty.")
-            return self.data
+            return source_df
 
-        if name_col not in self.data.columns:
+        if name_col not in source_df.columns:
             raise ValueError(
                 f"Column {name_col!r} not found in DataFrame. "
-                f"Available columns: {list(self.data.columns)}"
+                f"Available columns: {list(source_df.columns)}"
             )
 
-        name_series = self.data[name_col]
+        name_series = source_df[name_col]
         unique_names = name_series.dropna().astype(str).drop_duplicates().tolist()
 
         if drug_name is None:
@@ -111,7 +116,7 @@ class PlotCurve:
         else:
             target = str(drug_name)
 
-        filtered_df = self.data.loc[
+        filtered_df = source_df.loc[
             name_series.notna() & (name_series.astype(str) == target)
         ]
 
@@ -261,8 +266,11 @@ class PlotCurve:
         if isinstance(response_col, list):
             response_col_is_list = True  # bool to indicate sns usage
             response_col_list = response_col  # set response_col input for reshaping data
-            query_df["inhibition_average"] = query_df[response_col_list].mean(axis=1)
-            response_col = "inhibition_average"  # reset response_col input
+            avg_col = "_inhibition_average"
+            while avg_col in query_df.columns:
+                avg_col = f"_{avg_col}"
+            query_df[avg_col] = query_df[response_col_list].mean(axis=1)
+            response_col = avg_col  # reset response_col input
         else:
             response_col_is_list = False
 
@@ -537,46 +545,51 @@ class PlotCurve:
         :return: Figure
         """
         global response, x_fit, y_fit, y_intersection, x_intersection, reverse, params, response_col_is_list, query, concentration, list_data, melted_df
+        # Resolve instance defaults before checking response_col type
         if name_col is None:
             name_col = self.name_col
-        name_list = np.unique(self.data[name_col])
+        if concentration_col is None:
+            concentration_col = self.concentration_col
+        if response_col is None:
+            response_col = self.response_col
+
+        plot_df = self.data
+        name_list = np.unique(plot_df[name_col])
 
         concentration_list = []
         response_list = []
         y_fit_list = []
 
-        # if response_col is a list, table will be reformated to produce a column with average values
+        # if response_col is a list, compute averages on a local copy without mutating self.data
         if isinstance(response_col, list):
             response_col_is_list = True  # bool to indicate sns usage
             response_col_list = (
                 response_col  # set response_col input for reshaping data
             )
+            plot_df = self.data.copy()
+            avg_col = "_inhibition_average"
+            while avg_col in plot_df.columns:
+                avg_col = f"_{avg_col}"
             reshape_data = pd.melt(
-                self.data,
+                plot_df,
                 id_vars=[name_col, concentration_col],
-                value_vars=response_col,
-                value_name="inhibition_average",
+                value_vars=response_col_list,
+                value_name=avg_col,
             )
             # drop the variable column
             # set dataframe for use in drawing error bars
             melted_df = reshape_data.drop(
                 columns=["variable"]
             )  # reset table to reshaped table
-            response_col = "inhibition_average"  # reset response_col input
+            response_col = avg_col  # reset response_col input
 
-            # reset input data for the reshaped data and add column with averages
-            self.data["inhibition_average"] = self.data[response_col_list].mean(axis=1)
+            # add column with averages on the local copy only
+            plot_df[avg_col] = plot_df[response_col_list].mean(axis=1)
         else:
             response_col_is_list = False
 
-        # Create variables for inputs. Extract column from Dataframe
-        if concentration_col is None:
-            concentration_col = self.concentration_col
-        if response_col is None:
-            response_col = self.response_col
-
         for drug in name_list:
-            drug_query = self._filter_dataframe(drug, name_col=name_col)
+            drug_query = self._filter_dataframe(drug, name_col=name_col, data=plot_df)
 
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
@@ -742,7 +755,7 @@ class PlotCurve:
         # Set y-axis limit
         # Y-axis limit will be limited to the largest response number and add 10 for spacing
         if ymax is None:
-            max_y = self.data[response_col].max()
+            max_y = plot_df[response_col].max()
             max_value = max_y + 10
         else:
             max_value = ymax
