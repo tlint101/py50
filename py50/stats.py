@@ -1889,11 +1889,16 @@ class Plots(Stats):
             # Get kwargs for pingouin
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
-            # print(pg_kwargs)
+            parametric = pg_kwargs.pop("parametric", True)
 
-            stat_df = Stats(self.data).get_pairwise_rm(value_col=value_col, group_col=group_col,
-                                                       within_subject_col=within_subject_col, subject_col=subject_col,
-                                                       parametric=True, **pg_kwargs)
+            stat_df = Stats(self.data).get_pairwise_rm(
+                value_col=value_col,
+                group_col=group_col,
+                within_subject_col=within_subject_col,
+                subject_col=subject_col,
+                parametric=parametric,
+                **pg_kwargs,
+            )
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -1906,10 +1911,16 @@ class Plots(Stats):
             # Get kwargs for pingouin
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+            parametric = pg_kwargs.pop("parametric", True)
 
-            stat_df = Stats(self.data).get_pairwise_mixed(value_col=value_col, group_col=group_col,
-                                                          within_subject_col=within_subject_col,
-                                                          subgroup_col=subject_col, parametric=True, **pg_kwargs)
+            stat_df = Stats(self.data).get_pairwise_mixed(
+                value_col=value_col,
+                group_col=group_col,
+                within_subject_col=within_subject_col,
+                subject_col=subject_col,
+                parametric=parametric,
+                **pg_kwargs,
+            )
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -1922,10 +1933,16 @@ class Plots(Stats):
             # Get kwargs for pingouin
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+            pg_kwargs.pop("parametric", None)
 
-            stat_df = Stats(self.data).get_pairwise_tests(value_col=value_col, group_col=group_col,
-                                                          within_subject_col=within_subject_col,
-                                                          subject_col=subject_col, parametric=False, **pg_kwargs)
+            stat_df = Stats(self.data).get_pairwise_tests(
+                value_col=value_col,
+                group_col=group_col,
+                within_subject_col=within_subject_col,
+                subject_col=subject_col,
+                parametric=False,
+                **pg_kwargs,
+            )
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -1938,10 +1955,16 @@ class Plots(Stats):
             # Get kwargs for pingouin
             valid_pg = utils.get_kwargs(pg.pairwise_tests)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
+            pg_kwargs.pop("parametric", None)
 
-            stat_df = Stats(self.data).get_pairwise_tests(value_col=value_col, group_col=group_col,
-                                                          within_subject_col=within_subject_col,
-                                                          subject_col=subgroup_col, parametric=True, **pg_kwargs)
+            stat_df = Stats(self.data).get_pairwise_tests(
+                value_col=value_col,
+                group_col=group_col,
+                within_subject_col=within_subject_col,
+                subject_col=subject_col,
+                parametric=True,
+                **pg_kwargs,
+            )
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -1970,8 +1993,12 @@ class Plots(Stats):
             valid_pg = utils.get_kwargs(pg.mwu)
             pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
 
-            stat_df = Stats(self.data).get_mannu(value_col=value_col, group_col=group_col, subgroup_col=subgroup_col,
-                                                 alternative="two-sided", **pg_kwargs)
+            stat_df = Stats(self.data).get_mannu(
+                value_col=value_col,
+                group_col=group_col,
+                subgroup_col=subgroup_col,
+                **pg_kwargs,
+            )
 
             """Get pvalue and pairs from table"""
             # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
@@ -1988,7 +2015,11 @@ class Plots(Stats):
                 "for pairwise significance brackets."
             )
         else:
-            print(f"Plotting not supported for {test}!")
+            raise ValueError(
+                f"Plotting not supported for {test!r}. Supported tests are: "
+                "'tukey', 'gameshowell', 'pairwise-parametric', 'pairwise-rm', "
+                "'pairwise-mixed', 'pairwise-nonparametric', 'wilcoxon', 'mannu'."
+            )
         return pairs, pvalue, stat_df
 
 
