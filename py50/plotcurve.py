@@ -128,6 +128,20 @@ class PlotCurve:
 
         return filtered_df
 
+    @staticmethod
+    def _cycle_style(
+        values: Union[str, list, tuple],
+        count: int,
+        param_name: str,
+    ) -> tuple:
+        """Normalize a single style string or sequence to a tuple of length ``count`` by cycling."""
+        if isinstance(values, str):
+            return tuple([values] * count)
+        seq = tuple(values)
+        if not seq:
+            raise ValueError(f"{param_name} must not be empty.")
+        return tuple(itertools.islice(itertools.cycle(seq), count))
+
     def curve_plot(
             self,
             concentration_col: Optional[str] = None,
@@ -455,8 +469,8 @@ class PlotCurve:
             ymax: Optional[Union[int, float]] = None,
             ymin: Optional[Union[int, float]] = None,
             axis_fontsize: int = 10,
-            line_color: Union[list, tuple] = CBPALETTE,
-            marker: Union[list, tuple] = CBMARKERS,
+            line_color: Union[str, list, tuple] = CBPALETTE,
+            marker: Union[str, list, tuple] = CBMARKERS,
             markersize: int = 8,
             line_width: float = 1.5,
             errorbar: Optional[str] = "sd",
@@ -559,6 +573,7 @@ class PlotCurve:
         concentration_list = []
         response_list = []
         y_fit_list = []
+        reverse_list = []
 
         # if response_col is a list, compute averages on a local copy without mutating self.data
         if isinstance(response_col, list):
@@ -628,6 +643,7 @@ class PlotCurve:
                 response_col=response_col,
                 response=response,
             )
+            reverse_list.append(reverse)
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
             # print(drug, ' IC50: ', ic50, 'nM') # For checking
@@ -663,15 +679,8 @@ class PlotCurve:
         fig, ax = plt.subplots(figsize=figsize)
         ax.set_ylim(top=100)  # Set maximum y axis limit
 
-        if line_color is CBPALETTE:
-            pass
-        else:
-            line_color = line_color
-
-        if marker is CBMARKERS:
-            pass
-        else:
-            marker = marker
+        line_color = self._cycle_style(line_color, len(name_list), "line_color")
+        marker = self._cycle_style(marker, len(name_list), "marker")
 
         # Check for xscale label:
         if xscale == "log" or xscale == "linear":
@@ -779,82 +788,50 @@ class PlotCurve:
             y_intersection = box_intercept
 
         # Specify box target
-        if box_target in name_list:
-            if isinstance(box_target, str) and reverse == 1:
-                if box_target in name_list:
-                    name_index = np.where(name_list == box_target)[0]
-                    if name_index.size > 0:
-                        name_index = name_index[0]
-                        # match data to drug using y_fit_list[name_index]
-                        interpretation = interp1d(
-                            y_fit_list[name_index],
-                            x_fit,
-                            kind="linear",
-                            fill_value="extrapolate",
-                        )
-                        x_intersection = interpretation(y_intersection)
-                    ymin = 0  # Starts at the bottom of the plot
-                    ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
-                            plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
+        if box_target is not None:
+            matches = np.where(name_list.astype(str) == str(box_target))[0]
+            if matches.size > 0:
+                name_index = matches[0]
+                if reverse_list[name_index] == 1:
+                    # match data to drug using y_fit_list[name_index]
+                    interpretation = interp1d(
+                        y_fit_list[name_index],
+                        x_fit,
+                        kind="linear",
+                        fill_value="extrapolate",
                     )
-                    if verbose is True:
-                        print(f"Box will target {box_target}")
-                        print(
-                            "Box X intersection: ",
-                            np.round(x_intersection, 3),
-                            f"{conc_unit}",
-                        )
-                        print("Box Y intersection: ", np.round(y_intersection, 3), "%")
-                    # Converted x_intersection from a numpy array into a float
-                    plt.axvline(
-                        x=x_intersection,
-                        ymin=ymin,
-                        ymax=ymax,
-                        color=box_color,
-                        linestyle="--",
+                    x_intersection = interpretation(y_intersection)
+                else:
+                    x_intersection = np.interp(
+                        y_intersection, y_fit_list[name_index], x_fit
                     )
-                    plt.hlines(
-                        y=y_intersection,
-                        xmin=0,
-                        xmax=x_intersection,
-                        colors=box_color,
-                        linestyles="--",
+                box_ymin = 0  # Starts at the bottom of the plot
+                box_ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
+                    plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
+                )
+                if verbose is True:
+                    print(f"Box will target {box_target}")
+                    print(
+                        "Box X intersection: ",
+                        np.round(x_intersection, 3),
+                        f"{conc_unit}",
                     )
-            elif isinstance(box_target, str) and reverse == 0:
-                if box_target in name_list:
-                    name_index = np.where(name_list == box_target)[0]
-                    if name_index.size > 0:
-                        name_index = name_index[0]
-                        x_intersection = np.interp(
-                            y_intersection, y_fit_list[name_index], x_fit
-                        )
-                    ymin = 0  # Starts at the bottom of the plot
-                    ymax = (y_intersection - plt.gca().get_ylim()[0]) / (
-                            plt.gca().get_ylim()[1] - plt.gca().get_ylim()[0]
-                    )
-                    if verbose is True:
-                        print(f"Box will target {box_target}")
-                        print(
-                            "Box X intersection: ",
-                            np.round(x_intersection, 3),
-                            f"{conc_unit}",
-                        )
-                        print("Box Y intersection: ", np.round(y_intersection, 3), "%")
-                    # Converted x_intersection from a numpy array into a float
-                    plt.axvline(
-                        x=x_intersection,
-                        ymin=ymin,
-                        ymax=ymax,
-                        color=box_color,
-                        linestyle="--",
-                    )
-                    plt.hlines(
-                        y=y_intersection,
-                        xmin=0,
-                        xmax=x_intersection,
-                        colors=box_color,
-                        linestyles="--",
-                    )
+                    print("Box Y intersection: ", np.round(y_intersection, 3), "%")
+                # Converted x_intersection from a numpy array into a float
+                plt.axvline(
+                    x=x_intersection,
+                    ymin=box_ymin,
+                    ymax=box_ymax,
+                    color=box_color,
+                    linestyle="--",
+                )
+                plt.hlines(
+                    y=y_intersection,
+                    xmin=0,
+                    xmax=x_intersection,
+                    colors=box_color,
+                    linestyles="--",
+                )
             else:
                 print("Drug name does not match box target!")
 
@@ -989,6 +966,7 @@ class PlotCurve:
         concentration_list = []
         response_list = []
         y_fit_list = []
+        reverse_list = []
         x_fit_list = []
 
         for drug in name_list:
@@ -1032,6 +1010,7 @@ class PlotCurve:
                 response_col=response_col,
                 response=response,
             )
+            reverse_list.append(reverse)
             # Extract parameter values
             maximum, minimum, ic50, hill_slope = params
             # print(drug, ' IC50: ', ic50, 'nM') # For checking
@@ -1065,27 +1044,8 @@ class PlotCurve:
             response_for_list = response.values
             response_list.append(response_for_list)
 
-        # Set up color options for line colors
-        if line_color is not CBPALETTE:
-            # if user uses list and it does not match name of drug names
-            if isinstance(line_color, list) and len(line_color) == len(name_list):
-                cycle_color = itertools.cycle(line_color)
-                line_color = tuple([next(cycle_color) for _ in range(len(name_list))])
-
-            # if user uses list and it does not match the length of the drug names
-            elif isinstance(line_color, list) and len(line_color) != len(name_list):
-                # Extend the list of colors to match the length of names
-                extended_colors = line_color * ((len(name_list) // len(line_color)) + 1)
-                line_color = extended_colors[
-                    : len(name_list)
-                ]  # Trim the extended list to the same length as names
-
-            # If user only gives a string of 1 color, duplicate color name to match length of drug names
-            elif len(line_color) is not len(name_list):
-                line_color_list = tuple([line_color] * len(name_list))
-                line_color = line_color_list
-        else:
-            pass
+        # Set up color options for line colors (cycles defaults and custom sequences to match len(name_list))
+        line_color = self._cycle_style(line_color, len(name_list), "line_color")
 
         # Check for xscale label:
         if xscale == "log" or xscale == "linear":
@@ -1154,19 +1114,26 @@ class PlotCurve:
                 axes[i, j].set_title(name_list[idx])
 
                 if box is True:
-                    if isinstance(box_intercept, (int, float)) and reverse == 1:
+                    if isinstance(box_intercept, (int, float)) and not isinstance(box_intercept, bool):
                         y_intersection = box_intercept
-                        interpretation = interp1d(
-                            y_fit_list[idx],
-                            x_fit_list[idx],
-                            kind="linear",
-                            fill_value="extrapolate",
-                        )
+                        if reverse_list[idx] == 1:
+                            interpretation = interp1d(
+                                y_fit_list[idx],
+                                x_fit_list[idx],
+                                kind="linear",
+                                fill_value="extrapolate",
+                            )
+                            x_concentration = interpretation(y_intersection)
+                        else:
+                            x_concentration = np.interp(
+                                y_intersection,
+                                y_fit_list[idx],
+                                x_fit_list[idx],
+                            )
 
-                        x_concentration = interpretation(y_intersection)
-                        # Constrain box to 50% drug response
+                        # Constrain box to target drug response
                         ymax_box = (y_intersection - axes[i, j].get_ylim()[0]) / (
-                                axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
+                            axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
                         )
 
                         axes[i, j].axvline(
@@ -1185,56 +1152,12 @@ class PlotCurve:
                         )
                         if verbose is True:
                             print(
-                                f"Box X intersection ({name_list[j]}): ",
+                                f"Box X intersection ({name_list[idx]}): ",
                                 np.round(x_concentration, 3),
                                 f"{conc_unit}",
                             )
                             print(
-                                f"Box Y intersection ({name_list[j]}): ",
-                                np.round(y_intersection, 3),
-                                "%",
-                            )
-
-                    elif (
-                            box_intercept is not None
-                            and isinstance(box_intercept, (int, float))
-                            and reverse == 0
-                    ):
-                        y_intersection = box_intercept
-
-                        x_concentration = np.interp(
-                            y_intersection,
-                            y_fit_list[idx],
-                            x_fit_list[idx],
-                        )
-
-                        # Constrain box to 50% drug response
-                        ymax_box = (y_intersection - axes[i, j].get_ylim()[0]) / (
-                                axes[i, j].get_ylim()[1] - axes[i, j].get_ylim()[0]
-                        )
-
-                        axes[i, j].axvline(
-                            x=x_concentration,
-                            ymin=0,
-                            ymax=ymax_box,
-                            color=box_color,
-                            linestyle="--",
-                        )
-                        axes[i, j].hlines(
-                            y=y_intersection,
-                            xmin=0,
-                            xmax=x_concentration,
-                            colors=box_color,
-                            linestyles="--",
-                        )
-                        if verbose is True:
-                            print(
-                                f"Box X intersection ({name_list[j]}): ",
-                                np.round(x_concentration, 3),
-                                f"{conc_unit}",
-                            )
-                            print(
-                                f"Box Y intersection ({name_list[j]}): ",
+                                f"Box Y intersection ({name_list[idx]}): ",
                                 np.round(y_intersection, 3),
                                 "%",
                             )
