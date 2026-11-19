@@ -1095,6 +1095,8 @@ class PlotCurve:
 
         # Generate figure in grid layout
         # Calculate the number of rows needed
+        if not isinstance(column_num, int) or isinstance(column_num, bool) or column_num < 1:
+            raise ValueError("column_num must be a positive integer.")
         num_plots = len(name_list)  # determine total plots to make
         row_num = -(-num_plots // column_num)  # Round up to the nearest integer
         # Squeeze to handle possible 1D array
@@ -1104,21 +1106,26 @@ class PlotCurve:
         # Loop through the data and plot scatter and line plots on each subplot
         for i in range(row_num):
             for j in range(column_num):
+                idx = i * column_num + j
+                if idx >= num_plots:
+                    axes[i, j].set_visible(False)
+                    continue
+
                 # Line plot
                 axes[i, j].plot(
-                    x_fit_list[i * column_num + j],
-                    y_fit_list[i * column_num + j],
+                    x_fit_list[idx],
+                    y_fit_list[idx],
                     label="Line Plot",
-                    color=line_color[i * column_num + j],
+                    color=line_color[idx],
                     linewidth=line_width,
                 )
 
                 # Scatter plot
                 axes[i, j].scatter(
-                    concentration_list[i * column_num + j],
-                    response_list[i * column_num + j],
+                    concentration_list[idx],
+                    response_list[idx],
                     label="Scatter Plot",
-                    color=line_color[i * column_num + j],
+                    color=line_color[idx],
                 )
 
                 # Set x-axis scale
@@ -1144,14 +1151,14 @@ class PlotCurve:
                 axes[i, j].set_ylim(ymin, max_value)
 
                 # Set subplot title
-                axes[i, j].set_title(name_list[i * column_num + j])
+                axes[i, j].set_title(name_list[idx])
 
                 if box is True:
                     if isinstance(box_intercept, (int, float)) and reverse == 1:
                         y_intersection = box_intercept
                         interpretation = interp1d(
-                            y_fit_list[i * column_num + j],
-                            x_fit_list[i * column_num + j],
+                            y_fit_list[idx],
+                            x_fit_list[idx],
                             kind="linear",
                             fill_value="extrapolate",
                         )
@@ -1197,8 +1204,8 @@ class PlotCurve:
 
                         x_concentration = np.interp(
                             y_intersection,
-                            y_fit_list[i * column_num + j],
-                            x_fit_list[i * column_num + j],
+                            y_fit_list[idx],
+                            x_fit_list[idx],
                         )
 
                         # Constrain box to 50% drug response
@@ -1248,6 +1255,8 @@ class PlotCurve:
         # Remove grid lines and plot ticks for each subplot
         for ax_row in axes:
             for ax in ax_row:
+                if not ax.get_visible():
+                    continue
                 ax.grid(kwargs.get("grid", False))
                 # Set tick for axis
                 ax.tick_params(
