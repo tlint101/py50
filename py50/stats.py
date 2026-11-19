@@ -6,6 +6,7 @@ from typing import Optional, Union, List, Any
 import pandas as pd
 from itertools import combinations
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import seaborn as sns
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 import scikit_posthocs as sp
@@ -1582,9 +1583,9 @@ class Plots(Stats):
         :param figsize: tuple
             Set the figure size. Defaults to (8,6).
         :param return_stats: bool
-            If True, return a ``(tukey_df, fig)`` tuple where ``tukey_df`` is a pandas DataFrame
-            of the Tukey HSD summary table. If False (default), return ``fig``.
-        :return: matplotlib.figure.Figure or tuple[pandas.DataFrame, matplotlib.figure.Figure]
+            If True, return a ``(tukey_df, ax)`` tuple where ``tukey_df`` is a pandas DataFrame
+            of the Tukey HSD summary table. If False (default), return ``ax``.
+        :return: matplotlib.axes.Axes or tuple[pandas.DataFrame, matplotlib.axes.Axes]
         """
         if data is None:
             data = self.data
@@ -1634,78 +1635,99 @@ class Plots(Stats):
         if return_stats:
             summary_rows = tukey.summary().data
             tukey_df = pd.DataFrame(summary_rows[1:], columns=summary_rows[0])
-            return tukey_df, fig
+            return tukey_df, ax
 
-        return fig
+        return ax
 
-    # todo add support for lineplot
-    def _lineplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None,
-                  subject_col=None, within_subject_col=None, pairs=None, pvalue_label=None, palette=None, orient="v",
-                  loc="inside", ci="sd", capsize=0.1, return_df=None, **kwargs):
+    def pointplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None,
+                  subject_col=None, within_subject_col=None, pairs=None, pvalue_label=None, hide_ns=False,
+                  palette=None, orient="v", loc="inside", errorbar="sd", capsize=0.1, linestyles="-",
+                  dodge=None, return_df=None, **kwargs):
         """
-        Draw a lineplot from the input DataFrame.
+        Draw a categorical pointplot showing means with error bars connected by lines.
+
+        When ``subgroup_col`` is provided and ``dodge`` is ``None``, subgroup points are
+        automatically dodged to align with ``statannotations`` brackets. If ``errorbar``
+        is ``None`` and ``loc="inside"``, ``loc`` falls back to ``"outside"`` because
+        ``statannotations`` detects category heights from the error-bar artists.
 
         :param test: String
-            Name of test for calculations. Names must match the test names from the py50.Stats()
+            Name of test for calculations. Names must match the test names from ``py50.Stats()``.
         :param group_col: String
-            Name of column containing groups. This should be the between depending on the selected test.
+            Name of column containing groups. This should be the between variable depending on the selected test.
         :param value_col: String
             Name of the column containing the values. This is the dependent variable.
-        :param group_order: List.
+        :param group_order: List
             Place the groups in a specific order on the plot.
         :param subgroup_col: String
-            Name of the column containing the subgroup for the group column. This is associated with the hue parameters
-            in Seaborn.
+            Name of the column containing the subgroup for the group column (mapped to Seaborn ``hue``).
         :param subject_col: String
-            Name of the column containing the subject column.
+            Name of the column containing the subject identifier.
         :param within_subject_col: String
-            Name of the column containing the within subject column.
+            Name of the column containing the within-subject variable.
         :param pairs: List
-            A list containing specific pairings for annotation on the plot.
-        :param pvalue_label: List.
-            A list containing specific pvalue labels. This order must match the length of pairs list.
-        :param palette: String or List.
-            Color palette used for the plot. Can be given as common color name or in hex code.
+            Specific pairings for significance annotation on the plot.
+        :param pvalue_label: List
+            Custom p-value labels matching the length of ``pairs``.
+        :param hide_ns: bool
+            Automatically hide non-significant pairs from plot annotations.
+        :param palette: String, List, or Dict
+            Color palette or single color used for the plot.
         :param orient: String
-            Orientation of the plot. Only "v" and "h" are for vertical and horizontal, respectively, is supported
+            Orientation of the plot. Only ``"v"`` (vertical) and ``"h"`` (horizontal) are supported.
         :param loc: String
-            Set location of annotations. Only "inside" or "outside" are supported.
-        :param ci: String
-            Set confidence interval on plot.
-        :param capsize: Int
-            Set cap size on plot.
+            Location of annotations. Only ``"inside"`` or ``"outside"`` are supported.
+        :param errorbar: String, Tuple, Callable, or None
+            Name of error bar method passed to ``seaborn.pointplot`` (defaults to ``"sd"``).
+        :param capsize: Float
+            Width of the error bar caps in axis units.
+        :param linestyles: String, List of Strings, or None
+            Line style connecting group means. This is passed to the``seaborn.pointplot``. Defaults to ``"-"`` (solid).
+            Supports standard Matplotlib styles such as ``"--"`` (dashed), ``"-."`` (dash-dot), and ``":"`` (dotted), a
+            list of styles (e.g., ``["-", "--"]``) when using ``subgroup_col``, or ``None`` / ``"none"`` to draw points
+            and error bars without connecting lines.
+        :param dodge: Float, Bool, or None
+            Amount to separate hue levels along the categorical axis. When ``None`` and
+            ``subgroup_col`` is set, computed automatically to match ``statannotations``.
         :param return_df: Boolean
-            Returns a DataFrame of calculated results. If pairs used, only return rows with annotated pairs.
-
-        :return:
+            If True, returns ``(stat_df_result, annotator)``; otherwise returns ``annotator``.
+        :param kwargs: Optional
+            Additional keyword arguments forwarded to ``seaborn.pointplot``,
+            ``statannotations.Annotator``, statistical test functions, or plot title
+            settings (``title``, ``titlesize``).
+        :return: Annotator or tuple[pandas.DataFrame, Annotator]
         """
-
-        # separate kwargs for sns and sns
-        valid_sns = utils.get_kwargs(sns.lineplot)
+        valid_sns = utils.get_kwargs(sns.pointplot)
         valid_annot = utils.get_kwargs(Annotator)
 
         sns_kwargs = {key: value for key, value in kwargs.items() if key in valid_sns}
         annot_kwargs = {key: value for key, value in kwargs.items() if key in valid_annot}
 
+        for key in ("data", "x", "y", "hue", "order", "palette", "orient", "errorbar", "capsize", "linestyles",
+                    "dodge"):
+            sns_kwargs.pop(key, None)
+        for key in ("ax", "pairs", "data", "x", "y", "order", "orient", "hue", "verbose"):
+            annot_kwargs.pop(key, None)
+
         # Perform Stat calculations and get pairs and pvalue for annotation
-        pairs, pvalue_plot, stat_df_result = Plots._get_test(self, group_col, kwargs, pairs, subgroup_col, subject_col,
-                                                             within_subject_col, test, value_col)
+        pairs, pvalue_plot, stat_df_result = Plots._get_test(
+            self, group_col, kwargs, pairs, subgroup_col, subject_col,
+            within_subject_col, test, value_col
+        )
 
         # Set kwargs dictionary for line annotations
         annotate_kwargs = {}
         if "line_offset_to_group" in kwargs and "line_offset" in kwargs:
-            # Get kwargs from input
-            line_offset_to_group = kwargs["line_offset_to_group"]
-            line_offset = kwargs["line_offset"]
-            # Add to dictionary
-            annotate_kwargs["line_offset_to_group"] = line_offset_to_group
-            annotate_kwargs["line_offset"] = line_offset
+            annotate_kwargs["line_offset_to_group"] = kwargs["line_offset_to_group"]
+            annotate_kwargs["line_offset"] = kwargs["line_offset"]
 
-        # Set order for groups on plot
-        if group_order:
-            group_order = group_order
+        # Hide ns label
+        if hide_ns:
+            pairs, pvalue_plot, data_is_sig = _option_to_hide_ns(hide_ns, pairs, pvalue_plot)
+        else:
+            data_is_sig = True
 
-        # set orientation for plot and Annotator
+        # Set orientation for plot and Annotator
         orient = orient.lower()
         if orient == "v":
             x_input = group_col
@@ -1716,44 +1738,115 @@ class Plots(Stats):
         else:
             raise ValueError("Orientation must be 'v' or 'h'!")
 
-        # set optional subgroup_col
+        # Configure hue, palette/color, and dodge alignment with statannotations
         if subgroup_col:
             subgroup_hue = subgroup_col
+            point_palette = palette
+            point_color = sns_kwargs.pop("color", None)
+            if dodge is None:
+                hue_order = sns_kwargs.get("hue_order")
+                n_hue = (
+                    len(hue_order)
+                    if hue_order is not None
+                    else self.data[subgroup_col].dropna().nunique()
+                )
+                point_dodge = 0.8 * (n_hue - 1) / n_hue if n_hue > 1 else False
+            else:
+                point_dodge = dodge
         else:
-            subgroup_hue = group_col
-
-        # plot
-        # ci and capsize for errorbar
-        ax = sns.lineplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
-                          ci=ci, capsize=capsize, **sns_kwargs)
-        annotator = Annotator(ax, pairs=pairs, data=self.data, x=x_input, y=y_input, order=group_order, verbose=False,
-                              orient=orient, hue=subgroup_hue, **annot_kwargs)
-
-        # optional input for custom annotations
-        if pvalue_label:
-            pvalue_plot = pvalue_label
+            # Leave hue=None so sns.pointplot connects groups instead of NaN-masking segments
+            subgroup_hue = None
+            point_palette = None
+            point_color = sns_kwargs.pop("color", None)
+            if point_color is None and palette is not None:
+                if isinstance(palette, str):
+                    point_color = (
+                        palette
+                        if mcolors.is_color_like(palette)
+                        else sns.color_palette(palette)[0]
+                    )
+                elif isinstance(palette, dict):
+                    point_color = next(iter(palette.values()), None)
+                else:
+                    point_color = next(iter(palette), None)
+            point_dodge = False if dodge is None else dodge
 
         # Location of annotations
         if loc not in ["inside", "outside"]:
             raise ValueError("Invalid loc! Only 'inside' or 'outside' are accepted!")
 
-        if loc == "inside":
-            annotator.configure(loc=loc, test=None)
+        if errorbar is None and loc == "inside":
+            warnings.warn(
+                "errorbar=None with loc='inside' is not supported by statannotations "
+                "height detection; using loc='outside'."
+            )
+            loc = "outside"
+
+        # Normalize linestyles so None/False hides connecting lines in seaborn.pointplot
+        if linestyles is None or linestyles is False:
+            point_linestyles = "none"
+        elif linestyles is True:
+            point_linestyles = "-"
+        elif isinstance(linestyles, (list, tuple)):
+            point_linestyles = [
+                "none" if ls is None or ls is False else ("-" if ls is True else ls)
+                for ls in linestyles
+            ]
         else:
-            annotator.configure(loc=loc, test=None)
+            point_linestyles = linestyles
+
+        # Draw pointplot and attach Annotator
+        ax = sns.pointplot(
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            hue=subgroup_hue,
+            palette=point_palette,
+            color=point_color,
+            orient=orient,
+            errorbar=errorbar,
+            capsize=capsize,
+            linestyles=point_linestyles,
+            dodge=point_dodge,
+            **sns_kwargs,
+        )
+        annotator = Annotator(
+            ax,
+            pairs=pairs,
+            data=self.data,
+            x=x_input,
+            y=y_input,
+            order=group_order,
+            verbose=False,
+            orient=orient,
+            hue=subgroup_hue,
+            **annot_kwargs,
+        )
+
+        # Optional input for custom annotations
+        if pvalue_label:
+            pvalue_plot = pvalue_label
+
+        annotator.configure(loc=loc, test=None)
 
         # Make sure the pairs and pvalue lists match
         if len(pairs) != len(pvalue_plot):
             raise Exception("pairs and pvalue_order length does not match!")
+        elif not data_is_sig:
+            pass
         else:
             annotator.set_custom_annotations(pvalue_plot)
             annotator.annotate(**annotate_kwargs)
 
-        # Adjust title and title titlesize from kwargs
-        if "title" in kwargs:
-            plt.title(kwargs["title"])
-        if "title" and "titlesize" in kwargs:
-            plt.title(kwargs["title"], titlesize=kwargs["titlesize"])
+        # Adjust title and titlesize from kwargs
+        title = kwargs.pop("title", None)
+        titlesize = kwargs.pop("titlesize", None)
+        if title:
+            if titlesize:
+                ax.set_title(title, fontsize=titlesize)
+            else:
+                ax.set_title(title)
         plt.tight_layout()
 
         # Return DataFrame AND figure
