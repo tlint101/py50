@@ -755,8 +755,9 @@ class Plots(Stats):
         :return:
         """
         print(
-            "List of tests available for plotting: 'tukey', 'gameshowell', 'pairwise-parametric', 'pairwise-rm', 'pairwise-mixed', 'pairwise-nonparametric', 'wilcoxon', 'mannu', 'kruskal'"
-            "'kruskal'"
+            "List of tests available for plotting: 'tukey', 'gameshowell', "
+            "'pairwise-parametric', 'pairwise-rm', 'pairwise-mixed', "
+            "'pairwise-nonparametric', 'wilcoxon', 'mannu'"
         )
 
     def boxplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None, subject_col=None,
@@ -1980,18 +1981,12 @@ class Plots(Stats):
             pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
 
         elif test == "kruskal":
-            # Get kwargs for pingouin
-            valid_pg = utils.get_kwargs(pg.kruskal)
-            pg_kwargs = {key: value for key, value in kwargs.items() if key in valid_pg}
-
-            stat_df = Stats(self.data).get_kruskal(value_col=value_col, group_col=group_col, **pg_kwargs)
-
-            """Get pvalue and pairs from table"""
-            # result_df has removed rows with n.s. This is only needed if plot has specific pairs input
-            stat_df = _get_pair_subgroup(stat_df, hue=pairs)
-
-            pvalue = [utils.star_value(value) for value in stat_df.p_unc.tolist()]
-            pairs = [(a, b) for a, b in zip(stat_df["A"], stat_df["B"])]
+            raise ValueError(
+                "Plotting is not supported for 'kruskal' because Kruskal-Wallis is an "
+                "omnibus test without pairwise group p-values. Use Stats.get_kruskal() "
+                "for the omnibus test, or test='pairwise-nonparametric' / test='mannu' "
+                "for pairwise significance brackets."
+            )
         else:
             print(f"Plotting not supported for {test}!")
         return pairs, pvalue, stat_df
