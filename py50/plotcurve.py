@@ -261,7 +261,6 @@ class PlotCurve:
 
         :return: Figure
         """
-        global x_fit, drug_query, y_intersection, x_intersection, reverse, data, response_col_is_list
         # set instance variables
         if name_col is None:
             name_col = self.name_col
@@ -392,9 +391,19 @@ class PlotCurve:
 
         # Plot box to IC50 on curve
         # Interpolate to find the x-value (Concentration) at the intersection point
-        if box_intercept is None:
-            print("Input Inhibition % target")
-        elif box_intercept and conc_target is None and reverse == 1:
+        y_intersection = None
+        if conc_target is not None:
+            x_intersection = conc_target
+            y_intersection = np.interp(x_intersection, x_fit, y_fit)
+            if verbose is True:
+                print(
+                    "Box X intersection: ", np.round(x_intersection, 3), f"{final_unit}"
+                )
+                print("Box Y intersection: ", np.round(y_intersection, 3), "%")
+        elif box_intercept is None:
+            if box is True:
+                print("Input Inhibition % target")
+        elif reverse == 1:
             y_intersection = box_intercept
             interpretation = interp1d(
                 y_fit, x_fit, kind="linear", fill_value="extrapolate"
@@ -405,8 +414,7 @@ class PlotCurve:
                     "Box X intersection: ", np.round(x_intersection, 3), f"{final_unit}"
                 )
                 print("Box Y intersection: ", np.round(y_intersection, 3), "%")
-
-        elif box_intercept and conc_target is None and reverse == 0:
+        elif reverse == 0:
             y_intersection = box_intercept
             x_intersection = np.interp(y_intersection, y_fit, x_fit)
             if verbose is True:
@@ -415,23 +423,15 @@ class PlotCurve:
                 )
                 print("Box Y intersection: ", np.round(y_intersection, 3), "%")
 
-        if conc_target is not None:
-            x_intersection = conc_target
-            y_intersection = np.interp(x_intersection, x_fit, y_fit)
-            if verbose is True:
-                print(
-                    "Box X intersection: ", np.round(x_intersection, 3), f"{final_unit}"
-                )
-                print("Box Y intersection: ", np.round(y_intersection, 3), "%")
-
         # Calculate yaxis scale for box highlight
-        CurveSettings().yaxis_scale(
-            box=box,
-            reverse=reverse,
-            y_intersection=y_intersection,
-            x_intersection=x_intersection,
-            box_color=box_color,
-        )
+        if box is True and x_intersection is not None and y_intersection is not None:
+            CurveSettings().yaxis_scale(
+                box=box,
+                reverse=reverse,
+                y_intersection=y_intersection,
+                x_intersection=x_intersection,
+                box_color=box_color,
+            )
 
         # Arguments for hline and vline
         if hline is not None:
@@ -556,7 +556,6 @@ class PlotCurve:
 
         :return: Figure
         """
-        global response, x_fit, y_fit, y_intersection, x_intersection, reverse, params, response_col_is_list, query, concentration, list_data, melted_df
         # Resolve instance defaults before checking response_col type
         if name_col is None:
             name_col = self.name_col
@@ -567,6 +566,9 @@ class PlotCurve:
 
         plot_df = self.data
         name_list = np.unique(plot_df[name_col])
+        if len(name_list) == 0:
+            raise ValueError(f"Column {name_col!r} contains no compound names.")
+        melted_df = None
 
         concentration_list = []
         response_list = []
@@ -954,10 +956,11 @@ class PlotCurve:
         :return: Figure
         """
 
-        global x_fit, reverse, params, response, concentration
         if name_col is None:
             name_col = self.name_col
         name_list = np.unique(self.data[name_col])
+        if len(name_list) == 0:
+            raise ValueError(f"Column {name_col!r} contains no compound names.")
 
         # Generate lists for modifying plots (vline, box, etc)
         concentration_list = []
