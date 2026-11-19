@@ -59,25 +59,67 @@ class PlotCurve:
         self.data.to_csv(path, index=index, **kwargs)
 
     # Filter input data based on Compound Name to generate single plot
-    def _filter_dataframe(self, drug_name: Optional[str] = None):
+    def _filter_dataframe(
+        self,
+        drug_name: Optional[Union[str, int, float]] = None,
+        name_col: Optional[str] = None,
+    ) -> pd.DataFrame:
         """
-        Filter input DataFrame by query drug name.
+        Filter input DataFrame by exact compound name match in ``name_col``.
 
-        :param drug_name: str
-            Column name containing drug name.
+        :param drug_name: Optional[Union[str, int, float]]
+            Compound name to select. When ``None``, returns all rows if ``name_col``
+            is not provided or contains a single unique compound; raises ``ValueError``
+            if ``name_col`` contains multiple compounds.
+        :param name_col: Optional[str]
+            Column name containing compound names. Defaults to ``self.name_col``.
         :return: DataFrame
         """
-        # filter row based on drug name input. Row must match drug name somewhere
-        if drug_name is None:
-            filtered_df = self.data  # Skip filtering, use all data
-        else:
-            # filter row based on drug name input
-            filtered_df = self.data[
-                self.data.apply(lambda row: drug_name in "".join(map(str, row.values)), axis=1)
-            ]
+        if name_col is None:
+            name_col = self.name_col
 
-        # # for debugging
-        # print(filtered_df)
+        if name_col is None:
+            if drug_name is not None:
+                raise ValueError(
+                    "name_col must be provided when filtering by a compound query."
+                )
+            if self.data.empty:
+                raise ValueError("Input DataFrame is empty.")
+            return self.data
+
+        if name_col not in self.data.columns:
+            raise ValueError(
+                f"Column {name_col!r} not found in DataFrame. "
+                f"Available columns: {list(self.data.columns)}"
+            )
+
+        name_series = self.data[name_col]
+        unique_names = name_series.dropna().astype(str).drop_duplicates().tolist()
+
+        if drug_name is None:
+            if len(unique_names) == 0:
+                raise ValueError(
+                    f"Column {name_col!r} contains no compound names."
+                )
+            if len(unique_names) > 1:
+                raise ValueError(
+                    f"Multiple compounds found in column {name_col!r}: {unique_names}. "
+                    "Pass `query` with an exact compound name to plot a single curve, "
+                    "or use `multi_curve_plot` / `grid_curve_plot`."
+                )
+            target = unique_names[0]
+        else:
+            target = str(drug_name)
+
+        filtered_df = self.data.loc[
+            name_series.notna() & (name_series.astype(str) == target)
+        ]
+
+        if filtered_df.empty:
+            raise ValueError(
+                f"Compound {drug_name!r} not found in column {name_col!r}. "
+                f"Available compounds: {unique_names}"
+            )
 
         return filtered_df
 
@@ -128,7 +170,7 @@ class PlotCurve:
         :param name_col: str
             Column containing drug name for plotting.
         :param query: str
-            Draw a curve for a specific query in the dataset. Only needed when response_col is a list.
+            Exact compound name to plot from ``name_col``. Required when the dataset contains multiple compounds; optional for single-compound datasets.
         :param title: str
             Title of the figure.
         :param titlesize: tuple
@@ -209,17 +251,11 @@ class PlotCurve:
         if response_col is None:
             response_col = self.response_col
 
+        query_df = self._filter_dataframe(drug_name=query, name_col=name_col).copy()
         if name_col is not None:
-            query_df = self._filter_dataframe(drug_name=query).copy()
-            if not query_df.empty:  # extract value from first row of name col
-                drug_name = str(query_df[name_col].iloc[0])
-            else:
-                drug_name = "Unknown Drug"
-                print("Drug not found!")
+            drug_name = str(query_df[name_col].iloc[0])
         else:
-            query_df = self.data.copy()
             drug_name = "Unknown Drug"
-            print("Drug not found!")
 
         # if response_col is a list, table will be reformated to produce a column with average values
         if isinstance(response_col, list):
@@ -501,6 +537,8 @@ class PlotCurve:
         :return: Figure
         """
         global response, x_fit, y_fit, y_intersection, x_intersection, reverse, params, response_col_is_list, query, concentration, list_data, melted_df
+        if name_col is None:
+            name_col = self.name_col
         name_list = np.unique(self.data[name_col])
 
         concentration_list = []
@@ -538,7 +576,7 @@ class PlotCurve:
             response_col = self.response_col
 
         for drug in name_list:
-            drug_query = self._filter_dataframe(drug)
+            drug_query = self._filter_dataframe(drug, name_col=name_col)
 
             concentration = drug_query[concentration_col]
             response = drug_query[response_col]
@@ -930,6 +968,8 @@ class PlotCurve:
         """
 
         global x_fit, reverse, params, response, concentration
+        if name_col is None:
+            name_col = self.name_col
         name_list = np.unique(self.data[name_col])
 
         # Generate lists for modifying plots (vline, box, etc)
@@ -939,7 +979,7 @@ class PlotCurve:
         x_fit_list = []
 
         for drug in name_list:
-            drug_query = self._filter_dataframe(drug)
+            drug_query = self._filter_dataframe(drug, name_col=name_col)
 
             # Create variables for inputs. Extract column from Dataframe
             if concentration_col is None:
