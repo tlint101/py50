@@ -268,46 +268,43 @@ class Stats:
         warnings.filterwarnings("ignore", message="Exact p-value calculation does not work if there are zeros.*")
 
         if subgroup_col:
-            # Convert 'Name' and 'Status' columns to string
-            self.data[group_col] = self.data[group_col].astype(str)
-            self.data[subgroup_col] = self.data[subgroup_col].astype(str)
-            self.data["subgroup"] = self.data[group_col] + "-" + self.data[subgroup_col]
+            work_df = (
+                self.data[[group_col, subgroup_col, value_col]]
+                .dropna(subset=[group_col, subgroup_col])
+                .copy()
+            )
+            work_df[group_col] = work_df[group_col].astype(str)
+            work_df[subgroup_col] = work_df[subgroup_col].astype(str)
 
-            subgroup_list = self.data["subgroup"].unique().tolist()
-            subgroup_df = self.data[self.data["subgroup"].isin(subgroup_list)].copy()
-
-            # Get unique pairs between group and subgroup
-            group = subgroup_df["subgroup"].unique()
-
-            # From unique items in group list, generate pairs
-            pairs = list(combinations(group, 2))
+            # Get unique (group, subgroup) tuples in first-seen order without splitting on "-"
+            unique_subgroups = list(
+                work_df[[group_col, subgroup_col]]
+                .drop_duplicates()
+                .itertuples(index=False, name=None)
+            )
+            pairs = list(combinations(unique_subgroups, 2))
 
             results_list = []
-            for pair in pairs:
-                # Get items from pair list and split by hyphen
-                group1, subgroup1 = pair[0].split("-", 1)
-                group2, subgroup2 = pair[1].split("-", 1)
+            for (group1, subgroup1), (group2, subgroup2) in pairs:
+                vals1 = work_df.loc[
+                    (work_df[group_col] == group1)
+                    & (work_df[subgroup_col] == subgroup1),
+                    value_col,
+                ]
+                vals2 = work_df.loc[
+                    (work_df[group_col] == group2)
+                    & (work_df[subgroup_col] == subgroup2),
+                    value_col,
+                ]
 
-                # # For troubleshooting
-                # print("first:", data[(data[group_col] == group1)][value_col].shape)
-                # print("second:", data[(data[group_col] == group2)][value_col].shape)
-
-                # Check length of groups
-                group1_length = self.data[self.data[group_col] == group1][value_col]
-                group2_length = self.data[self.data[group_col] == group2][value_col]
-
-                # print(len(group1_length), len(group2_length)) # For troubleshooting
-
-                if len(group1_length) != len(group2_length):
+                if len(vals1) != len(vals2):
                     raise ValueError(
-                        "The lengths of the groups in group_col are not equal!"
+                        f"The lengths of subgroup ({group1!r}, {subgroup1!r}) ({len(vals1)}) "
+                        f"and subgroup ({group2!r}, {subgroup2!r}) ({len(vals2)}) are not equal!"
                     )
 
                 # Perform Wilcoxon signed-rank test
-                result = pg.wilcoxon(
-                    self.data[(self.data[group_col] == group1) & (self.data[subgroup_col] == subgroup1)][value_col],
-                    self.data[(self.data[group_col] == group2) & (self.data[subgroup_col] == subgroup2)][value_col],
-                    alternative=alternative, **kwargs)
+                result = pg.wilcoxon(vals1, vals2, alternative=alternative, **kwargs)
 
                 # Convert significance by pvalue
                 pvalue_output = [utils.star_value(value) for value in result.p_val]
@@ -315,8 +312,8 @@ class Stats:
                 # Store the results in the list
                 results_list.append(
                     {
-                        "A": f"{group1}-{subgroup1}",
-                        "B": f"{group2}-{subgroup2}",
+                        "A": (group1, subgroup1),
+                        "B": (group2, subgroup2),
                         "W-val": result.W_val.iloc[0],
                         "p-val": result.p_val.iloc[0],
                         "significance": pvalue_output[0],
@@ -325,14 +322,7 @@ class Stats:
                     }
                 )
 
-            # Convert the list of dictionaries to a DataFrame
-            result_df = pd.DataFrame(results_list)
-
-            # Split values into and separate by comma
-            result_df["A"] = result_df.A.apply(lambda x: tuple(x.split("-", 1)))
-            result_df["B"] = result_df.B.apply(lambda x: tuple(x.split("-", 1)))
-
-            return result_df
+            return pd.DataFrame(results_list)
         else:
             """
             No subgroups found. Tests single group and values.
@@ -414,41 +404,45 @@ class Stats:
         """
 
         if subgroup_col:
-            # Convert 'Name' and 'Status' columns to string
-            self.data[group_col] = self.data[group_col].astype(str)
-            self.data[subgroup_col] = self.data[subgroup_col].astype(str)
-            self.data["subgroup"] = self.data[group_col] + "-" + self.data[subgroup_col]
-
-            subgroup_list = self.data["subgroup"].unique().tolist()
-            subgroup_df = self.data[self.data["subgroup"].isin(subgroup_list)].copy()
-
-            # Get unique pairs between group and subgroup
-            group = subgroup_df["subgroup"].unique()
-
-            # From unique items in group list, generate pairs
-            pairs = list(combinations(group, 2))
-
-            # Check to ensure right columns selected
-            if self.data[group_col].dtype != "object":
+            # Check to ensure right columns selected (works on pandas 1.5/2.x object & pandas 3.0+ StringDtype/Categorical)
+            if not pd.api.types.is_string_dtype(self.data[group_col].dropna()):
                 raise ValueError(f"Is group_col: '{group_col}' strings?")
-            elif self.data[subgroup_col].dtype != "object":
+            elif not pd.api.types.is_string_dtype(self.data[subgroup_col].dropna()):
                 raise ValueError(f"Is subgroup_col: '{subgroup_col}' strings?")
-            elif self.data[value_col].dtype == "object":
+            elif not pd.api.types.is_numeric_dtype(self.data[value_col]):
                 raise ValueError(f"Is value_col: '{value_col}' should be numerical?")
 
+            work_df = (
+                self.data[[group_col, subgroup_col, value_col]]
+                .dropna(subset=[group_col, subgroup_col])
+                .copy()
+            )
+            work_df[group_col] = work_df[group_col].astype(str)
+            work_df[subgroup_col] = work_df[subgroup_col].astype(str)
+
+            # Get unique (group, subgroup) tuples in first-seen order without splitting on "-"
+            unique_subgroups = list(
+                work_df[[group_col, subgroup_col]]
+                .drop_duplicates()
+                .itertuples(index=False, name=None)
+            )
+            pairs = list(combinations(unique_subgroups, 2))
+
             results_list = []
-            for pair in pairs:
-                # print('this is the pair:', pair)  # for troubleshooting
-                # print('this is the pairs:', pairs)
-                # Get items from pair list and split by hyphen
-                group1, subgroup1 = pair[0].split("-", 1)
-                group2, subgroup2 = pair[1].split("-", 1)
+            for (group1, subgroup1), (group2, subgroup2) in pairs:
+                vals1 = work_df.loc[
+                    (work_df[group_col] == group1)
+                    & (work_df[subgroup_col] == subgroup1),
+                    value_col,
+                ]
+                vals2 = work_df.loc[
+                    (work_df[group_col] == group2)
+                    & (work_df[subgroup_col] == subgroup2),
+                    value_col,
+                ]
 
                 # Perform mwu
-                result = pg.mwu(
-                    self.data[(self.data[group_col] == group1) & (self.data[subgroup_col] == subgroup1)][value_col],
-                    self.data[(self.data[group_col] == group2) & (self.data[subgroup_col] == subgroup2)][value_col],
-                    alternative=alternative, **kwargs)
+                result = pg.mwu(vals1, vals2, alternative=alternative, **kwargs)
 
                 # Convert significance by pvalue
                 pvalue_output = [utils.star_value(value) for value in result.p_val]
@@ -456,8 +450,8 @@ class Stats:
                 # Store the results in the list
                 results_list.append(
                     {
-                        "A": f"{group1}-{subgroup1}",
-                        "B": f"{group2}-{subgroup2}",
+                        "A": (group1, subgroup1),
+                        "B": (group2, subgroup2),
                         "U-val": result.U_val.iloc[0],
                         "p-val": result.p_val.iloc[0],
                         "significance": pvalue_output[0],
@@ -466,14 +460,7 @@ class Stats:
                     }
                 )
 
-            # Convert the list of dictionaries to a DataFrame
-            df = pd.DataFrame(results_list)
-
-            # Split values into and separate by comma
-            df["A"] = df["A"].apply(lambda x: tuple(x.split("-", 1)))
-            df["B"] = df["B"].apply(lambda x: tuple(x.split("-", 1)))
-
-            return df
+            return pd.DataFrame(results_list)
         else:
             """
             No subgroups found. Tests single group and values.
@@ -1595,8 +1582,9 @@ class Plots(Stats):
         :param figsize: tuple
             Set the figure size. Defaults to (8,6).
         :param return_stats: bool
-            Whether to return the Tukey HSD test.
-        :return:
+            If True, return a ``(tukey_df, fig)`` tuple where ``tukey_df`` is a pandas DataFrame
+            of the Tukey HSD summary table. If False (default), return ``fig``.
+        :return: matplotlib.figure.Figure or tuple[pandas.DataFrame, matplotlib.figure.Figure]
         """
         if data is None:
             data = self.data
@@ -1605,12 +1593,12 @@ class Plots(Stats):
         tukey = pairwise_tukeyhsd(endog=data[value_col], groups=data[group_col], alpha=alpha)
 
         # calculate anova
-        stat = Stats(data=self.data)
+        stat = Stats(data=data)
         anova_table = stat.get_anova(value_col=value_col, group_col=group_col)
         anova = anova_table.p_unc.iloc[0]
 
         # identify highest mean
-        group_means = data.groupby(group_col)[value_col].mean()
+        group_means = data.groupby(group_col, observed=True)[value_col].mean()
         best_group = group_means.idxmax()
 
         # set labels
@@ -1618,10 +1606,6 @@ class Plots(Stats):
             xlabel = value_col
         if ylabel is None:
             ylabel = group_col
-
-        # optional return of calculated stats
-        if return_stats:
-            print(tukey.summary())
 
         # plot CI
         fig, ax = plt.subplots(figsize=figsize)
@@ -1642,10 +1626,17 @@ class Plots(Stats):
                     marker_size = original_marker_size
                 line.set_markersize(marker_size)
 
-        plt.title(f"{title} | ANOVA p={anova:.3f}", fontsize=18)
-        plt.xlabel(xlabel, fontsize=12, labelpad=10)
-        plt.ylabel(ylabel, fontsize=12, labelpad=10)
-        plt.tight_layout()
+        ax.set_title(f"{title} | ANOVA p={anova:.3f}", fontsize=18)
+        ax.set_xlabel(xlabel, fontsize=12, labelpad=10)
+        ax.set_ylabel(ylabel, fontsize=12, labelpad=10)
+        fig.tight_layout()
+
+        if return_stats:
+            summary_rows = tukey.summary().data
+            tukey_df = pd.DataFrame(summary_rows[1:], columns=summary_rows[0])
+            return tukey_df, fig
+
+        return fig
 
     # todo add support for lineplot
     def _lineplot(self, test=None, group_col=None, value_col=None, group_order=None, subgroup_col=None,
