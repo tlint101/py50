@@ -19,8 +19,6 @@ import warnings
 
 __all__ = ["Stats", "Plots"]
 
-sns.set_style("ticks")
-
 
 class Stats:
     """
@@ -265,9 +263,6 @@ class Stats:
         :return: Pandas.DataFrame
         """
 
-        # ignore Wilcoxon warnings
-        warnings.filterwarnings("ignore", message="Exact p-value calculation does not work if there are zeros.*")
-
         if subgroup_col:
             work_df = (
                 self.data[[group_col, subgroup_col, value_col]]
@@ -305,7 +300,12 @@ class Stats:
                     )
 
                 # Perform Wilcoxon signed-rank test
-                result = pg.wilcoxon(vals1, vals2, alternative=alternative, **kwargs)
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        message="Exact p-value calculation does not work if there are zeros.*",
+                    )
+                    result = pg.wilcoxon(vals1, vals2, alternative=alternative, **kwargs)
 
                 # Convert significance by pvalue
                 pvalue_output = [utils.star_value(value) for value in result.p_val]
@@ -356,12 +356,17 @@ class Stats:
                     )
 
                 # Perform wilcoxon
-                result = pg.wilcoxon(
-                    self.data[(self.data[group_col] == group1)][value_col],
-                    self.data[(self.data[group_col] == group2)][value_col],
-                    alternative=alternative,
-                    **kwargs,
-                )
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        message="Exact p-value calculation does not work if there are zeros.*",
+                    )
+                    result = pg.wilcoxon(
+                        self.data[(self.data[group_col] == group1)][value_col],
+                        self.data[(self.data[group_col] == group2)][value_col],
+                        alternative=alternative,
+                        **kwargs,
+                    )
                 pvalue_output = [utils.star_value(value) for value in result.p_val]
                 results_list.append(
                     {
@@ -836,6 +841,11 @@ class Plots(Stats):
             subgroup_hue = subgroup_col
         else:
             subgroup_hue = group_col
+            sns_kwargs.setdefault("dodge", False)
+            if group_order is not None:
+                sns_kwargs.setdefault("hue_order", group_order)
+            if "legend" in valid_sns:
+                sns_kwargs.setdefault("legend", False)
 
         # plot
         ax = sns.boxplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
@@ -970,6 +980,11 @@ class Plots(Stats):
             subgroup_hue = subgroup_col
         else:
             subgroup_hue = group_col
+            sns_kwargs.setdefault("dodge", False)
+            if group_order is not None:
+                sns_kwargs.setdefault("hue_order", group_order)
+            if "legend" in valid_sns:
+                sns_kwargs.setdefault("legend", False)
 
         # plot
         ax = sns.barplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
@@ -1101,6 +1116,11 @@ class Plots(Stats):
             subgroup_hue = subgroup_col
         else:
             subgroup_hue = group_col
+            sns_kwargs.setdefault("dodge", False)
+            if group_order is not None:
+                sns_kwargs.setdefault("hue_order", group_order)
+            if "legend" in valid_sns:
+                sns_kwargs.setdefault("legend", False)
 
         # plot
         ax = sns.violinplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
@@ -1185,9 +1205,6 @@ class Plots(Stats):
         :return:
         """
 
-        # remove palette/hue warning
-        warnings.filterwarnings("ignore", category=FutureWarning)
-
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.swarmplot)
         valid_annot = utils.get_kwargs(Annotator)
@@ -1235,10 +1252,17 @@ class Plots(Stats):
             subgroup_hue = subgroup_col
         else:
             subgroup_hue = group_col
+            sns_kwargs.setdefault("dodge", False)
+            if group_order is not None:
+                sns_kwargs.setdefault("hue_order", group_order)
+            if "legend" in valid_sns:
+                sns_kwargs.setdefault("legend", False)
 
         # plot
-        ax = sns.swarmplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
-                           **sns_kwargs)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=FutureWarning)
+            ax = sns.swarmplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
+                               **sns_kwargs)
         annotator = Annotator(ax, pairs=pairs, data=self.data, x=x_input, y=y_input, order=group_order, verbose=False,
                               orient=orient, hue=subgroup_hue, **annot_kwargs, )
 
@@ -1323,9 +1347,6 @@ class Plots(Stats):
         :return:
         """
 
-        # remove palette/hue warning
-        warnings.filterwarnings("ignore", category=FutureWarning)
-
         # separate kwargs for sns and sns
         valid_sns = utils.get_kwargs(sns.stripplot)
         valid_annot = utils.get_kwargs(Annotator)
@@ -1373,10 +1394,17 @@ class Plots(Stats):
             subgroup_hue = subgroup_col
         else:
             subgroup_hue = group_col
+            sns_kwargs.setdefault("dodge", False)
+            if group_order is not None:
+                sns_kwargs.setdefault("hue_order", group_order)
+            if "legend" in valid_sns:
+                sns_kwargs.setdefault("legend", False)
 
         # plot
-        ax = sns.stripplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
-                           **sns_kwargs)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=FutureWarning)
+            ax = sns.stripplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
+                               **sns_kwargs)
         annotator = Annotator(ax, pairs=pairs, data=self.data, x=x_input, y=y_input, order=group_order, verbose=False,
                               orient=orient, hue=subgroup_hue, **annot_kwargs)
 
@@ -1508,6 +1536,11 @@ class Plots(Stats):
             subgroup_hue = subgroup_col
         else:
             subgroup_hue = group_col
+            sns_kwargs.setdefault("dodge", False)
+            if group_order is not None:
+                sns_kwargs.setdefault("hue_order", group_order)
+            if "legend" in valid_sns:
+                sns_kwargs.setdefault("legend", False)
 
         # plot
         ax = sns.boxenplot(data=self.data, x=x_input, y=y_input, order=group_order, palette=palette, hue=subgroup_hue,
@@ -1939,7 +1972,6 @@ class Plots(Stats):
         :param value_col: value_col
         :return:
         """
-        global stat_df, pvalue
         # Check input test and run calculation
         if test == "tukey":
             # Get kwargs for pingouin
