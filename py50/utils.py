@@ -71,11 +71,13 @@ def get_pairs(df, group_col=None, value_col=None, pairs=2):
 
 def tukey_plot_logic(test_value):
     """
+    Convert Tukey HSD p-values into significance star labels.
 
-    :param test_value:
-    :return:
+    :param test_value: pandas.DataFrame
+        Output DataFrame from ``Stats.get_tukey()`` / ``pingouin.pairwise_tukey()``.
+    :return: list[str]
     """
-    pvalue = [star_value(value) for value in test_value["p-tukey"].tolist()]
+    pvalue = [star_value(value) for value in test_value["p_tukey"].tolist()]
     return pvalue
 
 
@@ -95,92 +97,74 @@ def multi_group(df, group_col1=None, group_col2=None, test=None, order=None):
     :param df: pandas.DataFrame
         Input DataFrame.
     :param group_col1: String
-        Column with first group of data.
+        Column with first group of data. Defaults to ``"A"``.
     :param group_col2: String
-        Column with second group of data.
+        Column with second group of data. Defaults to ``"B"``.
     :param test: String
         Test type. This will extract pvalue column from statistics table.
-    :param order: List
-        Reorder the groups for the final table. If input is string "alpha", the order of the groups will be
-            alphabetized.
+    :param order: List or String
+        Reorder the groups for the final table. If input is string ``"alpha"``, the order of the groups will be
+        alphabetized.
 
-    :return:
+    :return: pandas.DataFrame
     """
-    global p_col, row_order_list, column_order_list
-    if test == "tukey":
-        p_col = "p_tukey"
+    test_p_col = {
+        "tukey": "p_tukey",
+        "gameshowell": "pval",
+        "mannu": "p-val",
+        "wilcoxon": "p-val",
+        "pairwise-parametric": "p_unc",
+        "pairwise-nonparametric": "p_unc",
+        "pairwise-rm": "p_unc",
+        "pairwise-mixed": "p_unc",
+    }
+    if test not in test_p_col:
+        raise ValueError(
+            f"Unsupported test {test!r}. Supported tests are: {sorted(test_p_col)}."
+        )
+
+    p_col = test_p_col[test]
+    if group_col1 is None:
         group_col1 = "A"
-        group_col2 = "B"
-    elif test == "gameshowell":
-        p_col = "pval"
-        group_col1 = "A"
-        group_col2 = "B"
-    elif test == "mannu" or test == "wilcoxon":
-        p_col = "p-val"
-        group_col1 = "A"
-        group_col2 = "B"
-    elif test == "pairwise-parametric" or test == "pairwise-nonparametric":
-        p_col = "p_unc"
-        group_col1 = "A"
+    if group_col2 is None:
         group_col2 = "B"
 
-    # Create empty matrix table
-    groups = sorted(set(df[group_col1]) | set(df[group_col2]))
-    matrix_df = pd.DataFrame(index=groups, columns=groups)
+    if df.empty:
+        return pd.DataFrame(dtype=float)
 
-    # Fill the matrix with p-values
+    def _format_label(value):
+        if isinstance(value, tuple):
+            return "-".join(str(part) for part in value)
+        return value
 
-    # If table utilizes subgroup
-    if isinstance(matrix_df.index[0], tuple):
-        matrix_df.index = matrix_df.index.map(lambda x: str(x))
-        dummy_df = pd.DataFrame()
-        for i, row in df.iterrows():
-            dummy_df.loc[str(row[group_col1]), str(row[group_col2])] = row[p_col]
-            dummy_df.loc[str(row[group_col2]), str(row[group_col1])] = row[p_col]
+    # Deterministic first-seen order (no random permutation, no eval())
+    labels = list(
+        dict.fromkeys(
+            [_format_label(v) for v in df[group_col1]]
+            + [_format_label(v) for v in df[group_col2]]
+        )
+    )
+    matrix_df = pd.DataFrame(1.0, index=labels, columns=labels, dtype=float)
 
-        # Convert index and header into (group1, group2) format
-        dummy_df.index = dummy_df.index.map(lambda x: eval(x))
-        dummy_df.columns = dummy_df.columns.map(lambda x: eval(x))
+    for _, row in df.iterrows():
+        lbl1 = _format_label(row[group_col1])
+        lbl2 = _format_label(row[group_col2])
+        pval = float(row[p_col])
+        matrix_df.loc[lbl1, lbl2] = pval
+        matrix_df.loc[lbl2, lbl1] = pval
 
-        # Rename and flatten index and column headers
-        dummy_df.index = [f"{idx[0]}-{idx[1]}" for idx in dummy_df.index]
-        dummy_df.columns = [f"{col[0]}-{col[1]}" for col in dummy_df.columns]
-
-        # Ensure that the matrix contains 1 diagonally. Row Index and Column Headers should be in same order
-        # Create a permutation
-        permutation = np.random.permutation(dummy_df.index)
-        # Reindex the DataFrame with the permutation for both index and columns
-        dummy_df = dummy_df.reindex(index=permutation, columns=permutation)
-
-        matrix_df = dummy_df
-
-    # If table does not use subgroup
-    else:
-        for i, row in df.iterrows():
-            matrix_df.loc[row[group_col1], row[group_col2]] = row[p_col]
-            matrix_df.loc[row[group_col2], row[group_col1]] = row[p_col]
-
-    # Fill NaN cells with NS (Not Significant)
-    matrix_df.fillna(1, inplace=True)
-
-    # sort table order
-    if isinstance(order, list):
-        row_order_list = order
-        column_order_list = order
-    # else sort alphabetically
-    elif order == "alpha":
-        row_order_list = sorted(matrix_df.index)
-        column_order_list = sorted(matrix_df.columns)
-    elif order is None:
+    # Sort table order
+    if order is None:
         pass
+    elif order == "alpha":
+        sorted_labels = sorted(matrix_df.index, key=str)
+        matrix_df = matrix_df.loc[sorted_labels, sorted_labels]
+    elif isinstance(order, list):
+        matrix_df = matrix_df.loc[order, order]
     else:
-        print("order param can only be alpha or a list")
-
-    if isinstance(order, list) or order == "alpha":
-        matrix_df = matrix_df.loc[row_order_list, column_order_list]
-
-    # # For trouble shooting
-    # print(matrix_df)
+        raise ValueError(
+            f"Invalid order {order!r}. order param must be None, 'alpha', or a list."
+        )
 
     return matrix_df
 
@@ -209,15 +193,12 @@ def single_group(df, group_col=None, test=None):
     # Get unique groups
     groups = sorted(set(df[group_col]))
 
-    # Create an empty DataFrame with groups as both index and columns
-    matrix_df = pd.DataFrame(index=groups, columns=groups)
+    # Create a float64 matrix filled with 1.0 (not significant)
+    matrix_df = pd.DataFrame(1.0, index=groups, columns=groups, dtype=float)
 
     # Fill the matrix with values
-    for i, row in df.iterrows():
-        matrix_df.loc[row[group_col], row[group_col]] = row[p_col]
-
-    # Fill NaN cells if any
-    matrix_df.fillna(1, inplace=True)
+    for _, row in df.iterrows():
+        matrix_df.loc[row[group_col], row[group_col]] = float(row[p_col])
 
     return matrix_df
 
