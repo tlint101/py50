@@ -2,6 +2,7 @@ from typing import Optional, Union
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
+from py50.utils import _normalize_units
 
 __all__ = ["Calculator"]
 
@@ -315,16 +316,7 @@ class Calculator:
     @staticmethod
     def _normalize_units(input_units: Optional[str] = None) -> str:
         """Normalize concentration unit aliases to 'nM', 'µM', or 'pM'."""
-        if input_units is None or input_units in ("nM", "nm"):
-            return "nM"
-        if input_units in ("µM", "uM", "um", "μM", "μm", "µm"):
-            return "µM"
-        if input_units in ("pM", "pm"):
-            return "pM"
-        raise ValueError(
-            f"Unsupported concentration unit {input_units!r}. "
-            "Supported units are 'nM', 'µM' ('uM'), or 'pM'."
-        )
+        return _normalize_units(input_units)
 
     @classmethod
     def _resolve_units(

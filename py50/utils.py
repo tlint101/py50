@@ -5,9 +5,23 @@ for maintainability.
 
 import inspect
 from itertools import combinations
+from typing import Optional
 import numpy as np
 import pandas as pd
-import seaborn as sns
+
+
+def _normalize_units(unit: Optional[str] = None) -> str:
+    """Normalize concentration unit aliases to 'nM', 'µM', or 'pM'."""
+    if unit is None or unit in ("nM", "nm"):
+        return "nM"
+    if unit in ("µM", "uM", "um", "μM", "μm", "µm"):
+        return "µM"
+    if unit in ("pM", "pm"):
+        return "pM"
+    raise ValueError(
+        f"Unsupported concentration unit {unit!r}. "
+        "Supported units are 'nM', 'µM' ('uM'), or 'pM'."
+    )
 
 
 def star_value(p_value):
@@ -30,6 +44,8 @@ def star_value(p_value):
 
 
 def palette(list=None):
+    import seaborn as sns
+
     if list:
         colors = sns.color_palette(list)
     else:
