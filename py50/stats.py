@@ -1898,8 +1898,8 @@ class Plots(Stats):
             A list of colors. Can be color names or hex codes.
         :param title: String
             Input title for figure.
-        :param title_titlesize: Int
-            Set size of figure legend.
+        :param titlesize: int
+            Set font size of figure title.
         :param linewidths: Int
             Set line width of figure.
         :param linecolor: String
