@@ -66,31 +66,28 @@ here: [py50-streamlit](https://github.com/tlint101/py50-streamlit)
 
 # MCP
 
-py50 ships an MCP server that exposes its dose-response calculations and plots to
-an MCP-compatible client — Claude Desktop, or a local LLM through a runner such as
-Jan or LM Studio.
+py50 ships a local MCP server (`py50-mcp`) exposing 7 tools (`read_csv`,
+`calculate_ic50`, `single_curve`, `multi_curve`, `grid_curve`, `run_stats`, and
+`stats_plot`) for `.csv`, `.tsv`, and `.xlsx` assay files.
 
-To get started, install py50 with the MCP dependencies:
+Run directly with `uvx`:
 
 ```bash
-pip install 'py50[mcp]'
+uvx --from 'py50[mcp]' py50-mcp
 ```
 
-This adds a `py50-mcp` executable to your environment. The MCP can then be set up as follows:
-
+Standard MCP client configuration (`mcpServers`):
 
 ```json
 {
   "mcpServers": {
     "py50": {
-      "command": "/absolute/path/to/env/bin/py50-mcp"
+      "command": "uvx",
+      "args": ["--from", "py50[mcp]", "py50-mcp"]
     }
   }
 }
 ```
-
-Test installation by running `which py50-mcp` in the activated environment.
-
 
 ## Citation
 
