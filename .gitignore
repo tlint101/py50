@@ -1,3 +1,28 @@
+# Local dev / notes
 /.devcontainer/
-/dist/
 /notes/
+
+# Python build / cache / virtualenvs
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+/build/
+/dist/
+/.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Docs build
+/docs/_build/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
