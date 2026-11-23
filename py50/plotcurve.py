@@ -230,17 +230,17 @@ class PlotCurve:
             Determine legend location. Default is best. Matplotlib options can be found here
             https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
         :param box: Optional bool.
-            Draw a box to highlight a specific location. If box = True, then the box_color, box_intercept, and
-            x_concentration MUST ALSO BE GIVEN.
+            Draw a box to highlight a specific location. Uses box_color and box_intercept (default 50%) or
+            conc_target when provided.
         :param box_color: str
             Set color of box. Default is gray.
         :param box_intercept: int
             Set horizontal location of box. By default, it is set at 50% of the Y-axis.
         :param conc_target: int
             Set vertical location of the box. By default, this is set to None. For example, if the box_intercept is set
-            to 50%, then the x_concentration must be the Absolute IC50 value. If there is an input to x_concentration,
+            to 50%, then the conc_target must be the Absolute IC50 value. If there is an input to conc_target,
             it will override the box_intercept and the response data will move accordingly. Finally, the number must be
-            in the same unit as the X-axis. i.e., if the axis is in µM, then the number for the x_concentration should
+            in the same unit as the X-axis. i.e., if the axis is in µM, then the number for the conc_target should
             be in µM and vice versa.
         :param hline: Int or float
             Draw a horizontal line across the graph. This line will stretch across the length of the plot. This is
