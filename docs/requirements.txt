@@ -8,6 +8,6 @@ matplotlib
 seaborn
 scipy
 statsmodels
+scikit-posthocs
 pingouin
 statannotations
-py50

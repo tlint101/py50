@@ -13,19 +13,15 @@ Installation
 
 py50 can be installed by using pip:
 
-.. code-block:: python
+.. code-block:: bash
 
    pip install py50
 
 The package can be upgraded specifically in an environment using pip:
 
-.. code-block:: python
+.. code-block:: bash
 
    pip install py50 -U
-
-.. toctree::
-   :caption: Contents
-   :maxdepth: 1
 
 .. toctree::
    :maxdepth: 2
@@ -38,6 +34,12 @@ The package can be upgraded specifically in an environment using pip:
    :caption: API Reference
 
    api
+
+.. toctree::
+   :maxdepth: 2
+   :caption: MCP Server (AI Clients)
+
+   mcp
 
 Indices and tables
 ==================
